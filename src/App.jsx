@@ -6,9 +6,15 @@ import { Search, X, ArrowRight, FileText, Instagram, Twitter, Facebook, Mail, Up
    [REGION 1] CONFIG & DATA
    ================================================================================== */
 const CONFIG = {
-  COVERS: ["./img/cover1.jpg", "./img/cover2.jpg", "./img/cover3.jpg", "./img/cover4.jpg"],
-  FEEDBACK_BG: "https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=1600&q=80",
-  HERO_BG: "./img/hero-bg.jpg"
+  COVERS: [
+    "/img/cover1.jpg",
+    "/img/cover2.jpg",
+    "/img/cover3.jpg",
+    "/img/cover4.jpg"
+  ],
+  FEEDBACK_BG:
+    "https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=1600&q=80",
+  HERO_BG: "/img/hero-bg.jpg"
 };
 
 const INITIAL_DOCS = [
