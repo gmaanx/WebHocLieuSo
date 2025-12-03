@@ -1,20 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
-import { Search, X, ArrowRight, FileText, Instagram, Twitter, Facebook, Mail, UploadCloud, Loader, Trash2 } from 'lucide-react';
+import { motion, useScroll, useTransform, AnimatePresence, useMotionValue } from 'framer-motion';
+import { Search, X, ArrowRight, FileText, Instagram, Twitter, Facebook, Mail, UploadCloud, Loader, Trash2, Heart, CheckCircle2, Play, Pause, RotateCcw, Moon, Sun, FilePenLine } from 'lucide-react';
 
-/* ==================================================================================
-   [REGION 1] CONFIG & DATA
-   ================================================================================== */
+// --- 1. CONFIGURATION & MOCK DATA ---
 const CONFIG = {
-  COVERS: [
-    "/img/cover1.jpg",
-    "/img/cover2.jpg",
-    "/img/cover3.jpg",
-    "/img/cover4.jpg"
-  ],
-  FEEDBACK_BG:
-    "https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=1600&q=80",
-  HERO_BG: "/img/hero-bg.jpg"
+  COVERS: ["./img/cover1.jpg", "./img/cover2.jpg", "./img/cover3.jpg", "./img/cover4.jpg"],
+  FEEDBACK_BG: "https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=1600&q=80",
+  HERO_BG: "./img/hero-bg.jpg"
 };
 
 const INITIAL_DOCS = [
@@ -28,9 +20,7 @@ const INITIAL_DOCS = [
   { id: 8, title: "Pháp luật đại cương", desc: "Câu hỏi trắc nghiệm có đáp án.", year: "K50", major: "Luật", type: "Trắc nghiệm", cover: CONFIG.COVERS[3], fileUrl: "#" },
 ];
 
-/* ==================================================================================
-   [REGION 2] UTILS
-   ================================================================================== */
+// --- 2. UTILITIES ---
 const Utils = {
   removeTones: (str) => {
     return str.normalize('NFD')
@@ -54,27 +44,35 @@ const Utils = {
         if (title.includes(word)) { score += 10; matchedTokens++; }
         else if (desc.includes(word)) { score += 2; matchedTokens++; }
     });
-    if (matchedTokens === keywords.length) score += 15;
+    if (matchedTokens === keywords.length && keywords.length > 1) score += 15;
     return score;
   },
 
   getRandomCover: () => CONFIG.COVERS[Math.floor(Math.random() * CONFIG.COVERS.length)]
 };
 
-/* ==================================================================================
-   [REGION 3] STYLES
-   ================================================================================== */
+// --- 3. STYLES ---
 const Styles = {
     colors: {
         primary: '#1d1d1f',
         white: '#ffffff',
         orange: '#f97316',
+        green: '#34C759',
         gray: '#e0e0e0',
         lightGray: '#f5f5f7'
     },
     global: `
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
-        :root, body, #root { width: 100%; margin: 0; padding: 0; background-color: #ffffff; font-family: "Montserrat", sans-serif; overflow-x: hidden; scroll-behavior: smooth; }
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap'); 
+        
+        :root, body, #root { width: 100%; margin: 0; padding: 0; background-color: #ffffff; font-family: "Montserrat", sans-serif; overflow-x: hidden; scroll-behavior: auto !important; }
+        
+        html.lenis { height: auto; } 
+        .lenis.lenis-smooth { scroll-behavior: auto; } 
+        .lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; } 
+        .lenis.lenis-stopped { overflow: hidden; } 
+        .lenis.lenis-scrolling iframe { pointer-events: none; } 
+
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; max-width: 1200px; margin: 0 auto; padding: 40px; }
         @media (max-width: 768px) { .menu-grid { grid-template-columns: 1fr; padding: 20px; } }
         ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: #f1f1f1; } ::-webkit-scrollbar-thumb { background: #bbb; border-radius: 10px; }
@@ -87,9 +85,7 @@ const Styles = {
     glassTag: { fontSize: '11px', fontWeight: '700', background: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: '10px', color: '#fff', backdropFilter: 'blur(5px)' }
 };
 
-/* ==================================================================================
-   [REGION 4] UI COMPONENTS
-   ================================================================================== */
+// --- 4. UI COMPONENTS ---
 
 const NavButton = ({ children, onClick, isActive, isDarkBg }) => {
   const activeBg = isDarkBg ? Styles.colors.white : Styles.colors.primary;
@@ -137,14 +133,14 @@ const InteractiveButton = ({ primary = true, children, onClick, style, className
         borderInitial = primary ? "transparent" : (isDarkBg ? "#ffffff" : "#1d1d1f");
         bgHover = primary ? (isDarkBg ? "#e0e0e0" : "#333") : (isDarkBg ? "#ffffff" : "#1d1d1f");
         textHover = primary ? (isDarkBg ? "#1d1d1f" : "#ffffff") : (isDarkBg ? "#1d1d1f" : "#ffffff");
-        borderHover = borderInitial; 
+        borderInitial = primary ? "transparent" : (isDarkBg ? "#ffffff" : "#1d1d1f"); 
     }
 
     return (
         <motion.button
             onClick={onClick} disabled={disabled} initial={false}
             animate={{ backgroundColor: bgInitial, color: textInitial, border: `1px solid ${borderInitial}`, opacity: disabled ? 0.7 : 1 }}
-            whileHover={!disabled ? { backgroundColor: bgHover, color: textHover, borderColor: borderHover, scale: 1.05 } : {}}
+            whileHover={!disabled ? { backgroundColor: bgHover, color: textHover, borderColor: borderHover || (primary ? "transparent" : borderInitial), scale: 1.05 } : {}}
             whileTap={!disabled ? { scale: 0.95 } : {}}
             transition={{ duration: 0.2 }}
             style={{ padding: '12px 28px', borderRadius: '50px', fontWeight: '700', fontSize: '14px', cursor: disabled ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', ...style }}
@@ -155,15 +151,9 @@ const InteractiveButton = ({ primary = true, children, onClick, style, className
     );
 };
 
-const MenuCard = ({ item }) => {
-  const openFile = () => {
-      if(!item.fileUrl || item.fileUrl === "#") return alert("Đây là dữ liệu mẫu.");
-      const win = window.open();
-      win.document.write(`<iframe src="${item.fileUrl}" frameborder="0" style="border:0; inset:0; width:100%; height:100%;" allowfullscreen></iframe>`);
-  };
-
+const MenuCard = ({ item, onClick }) => {
   return (
-    <motion.div initial="rest" whileHover="hover" animate="rest" onClick={openFile} style={{ position: 'relative', height: '450px', borderRadius: '30px', overflow: 'hidden', cursor: 'pointer', background: '#000', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
+    <motion.div initial="rest" whileHover="hover" animate="rest" onClick={onClick} style={{ position: 'relative', height: '450px', borderRadius: '30px', overflow: 'hidden', cursor: 'pointer', background: '#000', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
       <motion.div variants={{ rest: { scale: 1 }, hover: { scale: 1.1 } }} transition={{ duration: 0.8, ease: "easeInOut" }} style={{ position: 'absolute', inset: 0, backgroundImage: `url(${item.cover})`, backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 0 }} />
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.6) 100%)', zIndex: 1 }} />
       <motion.div variants={{ rest: { backgroundColor: "rgba(255,255,255,0)", color: "#ffffff", scale: 1 }, hover: { backgroundColor: "#ffffff", color: "#000000", scale: 1.1 } }} transition={{ duration: 0.3 }} style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 3, width: '48px', height: '48px', borderRadius: '50%', border: '1px solid #ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}> <ArrowRight size={24} /> </motion.div>
@@ -180,25 +170,283 @@ const MenuCard = ({ item }) => {
   );
 };
 
+// [UPDATED] TEXT PRESSURE HOVER EFFECT
+const PressureChar = ({ char, mouseX }) => {
+    const ref = useRef(null);
+    const [width, setWidth] = useState(0);
+    const [x, setX] = useState(0);
+
+    useEffect(() => {
+        if (ref.current) {
+            setWidth(ref.current.offsetWidth);
+            setX(ref.current.offsetLeft);
+        }
+    }, []);
+
+    const distance = useTransform(mouseX, (val) => {
+        const bounds = ref.current?.getBoundingClientRect() ?? { x: 0, width: 0 };
+        return val - bounds.x - bounds.width / 2;
+    });
+
+    // Giảm độ gắt của scaleY (0.8 thay vì 0.6) để tránh méo chữ
+    const scaleY = useTransform(distance, [-200, 0, 200], [1, 0.8, 1]);
+    const scaleX = useTransform(distance, [-200, 0, 200], [1, 1.1, 1]);
+    // Chuyển tâm biến dạng về giữa để các dấu (chấm, mũ) không bị bay mất
+    const originY = "center";
+
+    return (
+        <motion.span
+            ref={ref}
+            style={{ 
+                display: 'inline-block', 
+                scaleY, 
+                scaleX, 
+                originY,
+                marginRight: char === ' ' ? '15px' : '2px'
+            }}
+        >
+            {char}
+        </motion.span>
+    );
+};
+
+const TextPressure = ({ text }) => {
+    const mouseX = useMotionValue(0);
+
+    return (
+        <div 
+            onMouseMove={(e) => mouseX.set(e.clientX)}
+            onMouseLeave={() => mouseX.set(Infinity)}
+            style={{ 
+                display: 'flex', justifyContent: 'center', 
+                cursor: 'default', overflow: 'hidden', padding: '10px 0',
+                // Giảm size chữ xuống
+                fontSize: 'clamp(40px, 6vw, 80px)', fontWeight: '900', 
+                color: '#1d1d1f', textTransform: 'uppercase', lineHeight: 1
+            }}
+        >
+            {text.split('').map((char, i) => (
+                <PressureChar key={i} char={char} mouseX={mouseX} />
+            ))}
+        </div>
+    );
+};
+
 const ScrollRevealText = ({ text }) => {
   const container = useRef(null);
-  const { scrollYProgress } = useScroll({ target: container, offset: ["start 0.9", "start 0.5"] });
+  const { scrollYProgress } = useScroll({ target: container, offset: ["start 0.9", "end 0.6"] });
   return (
     <p ref={container} style={{ fontSize: 'clamp(24px, 4vw, 36px)', lineHeight: 1.4, fontWeight: '700', color: '#1d1d1f', flexWrap: 'wrap', display: 'flex', justifyContent: 'center', gap: '8px 12px', margin: '0 auto', maxWidth: '1200px', padding: '0 40px' }}>
       {text.split(" ").map((word, i) => {
         const start = i / text.split(" ").length;
         const end = start + (1 / text.split(" ").length);
         const opacity = useTransform(scrollYProgress, [start, end], [0.1, 1]);
-        const color = useTransform(scrollYProgress, [start, end], ["#ccc", "#1d1d1f"]);
-        return <motion.span key={i} style={{ opacity, color }}>{word}</motion.span>
+        return <motion.span key={i} style={{ opacity }}>{word}</motion.span>
       })}
     </p>
   );
 };
 
-/* ==================================================================================
-   [REGION 5] SECTION COMPONENTS
-   ================================================================================== */
+// --- 5. WIDGETS & SPECIAL COMPONENTS ---
+
+const PomodoroHeaderWidget = () => {
+    const WORK_TIME = 30; 
+    const BREAK_TIME = 30; 
+    
+    const [timeLeft, setTimeLeft] = useState(WORK_TIME);
+    const [isActive, setIsActive] = useState(false);
+    const [mode, setMode] = useState('work'); 
+
+    useEffect(() => {
+        let interval = null;
+        if (isActive && timeLeft > 0) {
+            interval = setInterval(() => setTimeLeft(timeLeft - 1), 1000);
+        } else if (timeLeft === 0) {
+            const nextMode = mode === 'work' ? 'break' : 'work';
+            setMode(nextMode);
+            setTimeLeft(nextMode === 'work' ? WORK_TIME : BREAK_TIME);
+            setIsActive(false); 
+        }
+        return () => clearInterval(interval);
+    }, [isActive, timeLeft, mode]);
+
+    const toggleTimer = () => setIsActive(!isActive);
+    const resetTimer = () => {
+        setIsActive(false);
+        setMode('work');
+        setTimeLeft(WORK_TIME);
+    };
+
+    const formatTime = (seconds) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    const themeColor = mode === 'work' ? Styles.colors.orange : Styles.colors.green;
+
+    return (
+        <div style={{ 
+            display: 'flex', alignItems: 'center', gap: '10px', 
+            padding: '4px 10px', background: '#f5f5f7', borderRadius: '30px',
+            border: '1px solid #e0e0e0',
+            boxShadow: '0 2px 5px rgba(0,0,0,0.05)'
+        }}>
+            <div style={{ fontSize: '14px', fontWeight: '700', color: themeColor, minWidth: '45px', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>
+                {formatTime(timeLeft)}
+            </div>
+
+            <div style={{ display: 'flex', gap: '6px' }}>
+                <button onClick={toggleTimer} style={{ 
+                    background: themeColor, border: 'none', borderRadius: '12px', 
+                    padding: '4px 12px', display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                    cursor: 'pointer', color: 'white', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px'
+                }}>
+                    {isActive ? "PAUSE" : "START"}
+                </button>
+                <button onClick={resetTimer} style={{ 
+                    background: '#fff', border: '1px solid #ddd', borderRadius: '12px', 
+                    padding: '4px 10px', display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                    cursor: 'pointer', color: '#666', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase'
+                }}>
+                    RESET
+                </button>
+            </div>
+            
+            <span style={{ fontSize: '10px', fontWeight: '600', color: '#999', textTransform: 'uppercase', letterSpacing: '0.5px', marginLeft: '4px' }}>
+                {mode === 'work' ? 'FOCUS' : 'BREAK'}
+            </span>
+        </div>
+    );
+};
+
+const ThemeSwitchFixed = ({ isNightMode, toggle }) => {
+    return (
+        <div 
+            onClick={toggle}
+            style={{
+                width: '56px', height: '32px',
+                backgroundColor: isNightMode ? '#27272a' : '#f4f4f5',
+                borderRadius: '99px',
+                display: 'flex', alignItems: 'center',
+                padding: '4px',
+                cursor: 'pointer',
+                border: `1px solid ${isNightMode ? '#3f3f46' : '#e4e4e7'}`,
+                justifyContent: isNightMode ? 'flex-end' : 'flex-start'
+            }}
+        >
+            <motion.div
+                layout
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                style={{
+                    width: '24px', height: '24px',
+                    backgroundColor: '#ffffff',
+                    borderRadius: '50%',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                }}
+            >
+                 <AnimatePresence mode='wait'>
+                    <motion.div
+                        key={isNightMode ? 'moon' : 'sun'}
+                        initial={{ scale: 0.5, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.5, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                    >
+                        {isNightMode ? <Moon size={14} color="#1d1d1f" /> : <Sun size={14} color="#f97316" fill="#f97316" />}
+                    </motion.div>
+                 </AnimatePresence>
+            </motion.div>
+        </div>
+    )
+}
+
+const DocViewer = ({ doc, onClose }) => {
+    const [isNightMode, setIsNightMode] = useState(false);
+
+    if (!doc) return null;
+    
+    const contentFilter = isNightMode ? 'invert(1) hue-rotate(180deg)' : 'none';
+    const bgColor = isNightMode ? '#1a1a1a' : 'white';
+    const headerBg = isNightMode ? '#222' : '#fff';
+    const textColor = isNightMode ? '#eee' : '#1d1d1f';
+    const subTextColor = isNightMode ? '#aaa' : '#666';
+    const borderColor = isNightMode ? '#333' : '#eee';
+
+    return (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+            <motion.div 
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                onClick={onClose}
+                style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }}
+            />
+            <motion.div 
+                initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                style={{ 
+                    position: 'relative', width: '100%', maxWidth: '1000px', height: '90vh', 
+                    background: bgColor, borderRadius: '24px', overflow: 'hidden', 
+                    display: 'flex', flexDirection: 'column', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                    transition: 'background-color 0.3s ease'
+                }}
+            >
+                {/* HEADER */}
+                <div style={{ padding: '12px 24px', borderBottom: `1px solid ${borderColor}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: headerBg, transition: 'background-color 0.3s ease' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1, overflow: 'hidden' }}>
+                        <div style={{ padding: '8px', borderRadius: '8px', background: isNightMode ? '#333' : '#f5f5f7', flexShrink: 0, transition: 'background-color 0.3s ease' }}><FileText size={20} color={textColor}/></div>
+                        <div style={{ minWidth: 0, flex: 1 }}>
+                            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: textColor, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', transition: 'color 0.3s ease' }}>{doc.title}</h3>
+                            <p style={{ margin: 0, fontSize: '12px', color: subTextColor, transition: 'color 0.3s ease' }}>{doc.year} • {doc.major}</p>
+                        </div>
+                    </div>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <PomodoroHeaderWidget />
+                        <ThemeSwitchFixed isNightMode={isNightMode} toggle={() => setIsNightMode(!isNightMode)} />
+                        <button onClick={onClose} style={{ padding: '8px', borderRadius: '50%', border: 'none', background: isNightMode ? '#333' : '#f5f5f7', cursor: 'pointer', color: textColor, flexShrink: 0, transition: 'all 0.3s ease' }}><X size={20}/></button>
+                    </div>
+                </div>
+
+                <div style={{ flex: 1, background: isNightMode ? '#121212' : '#f9fafb', position: 'relative', filter: contentFilter, transition: 'all 0.3s ease' }}>
+                    {doc.fileUrl && doc.fileUrl !== "#" ? (
+                        <iframe src={doc.fileUrl} style={{ width: '100%', height: '100%', border: 'none' }} title="Document Viewer" />
+                    ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#999', gap: '16px' }}>
+                            <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <FileText size={32} color="#ccc" />
+                            </div>
+                            <p style={{ fontSize: '15px' }}>Đây là dữ liệu mẫu, chưa có file đính kèm.</p>
+                        </div>
+                    )}
+                </div>
+            </motion.div>
+        </div>
+    );
+};
+
+const Toast = ({ message }) => (
+    <motion.div
+        initial={{ opacity: 0, y: 50, scale: 0.9 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 20, scale: 0.9 }}
+        transition={{ type: "spring", stiffness: 400, damping: 25 }}
+        style={{
+            position: 'fixed', bottom: '40px', left: '50%', x: '-50%', 
+            background: 'rgba(255, 255, 255, 0.95)', backdropFilter: 'blur(12px)',
+            padding: '12px 24px', borderRadius: '100px',
+            boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
+            display: 'flex', alignItems: 'center', gap: '10px', zIndex: 9999,
+            border: '1px solid rgba(0,0,0,0.05)', whiteSpace: 'nowrap'
+        }}
+    >
+        <div style={{ width: '22px', height: '22px', background: '#34C759', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <CheckCircle2 size={14} color="white" strokeWidth={3} />
+        </div>
+        <span style={{ fontSize: '14px', fontWeight: '600', color: '#1d1d1f' }}>{message}</span>
+    </motion.div>
+);
+
+// --- 6. SECTIONS ---
 
 const Navbar = ({ view, setView, setIsModalOpen }) => {
     const isHome = view === 'home';
@@ -209,7 +457,12 @@ const Navbar = ({ view, setView, setIsModalOpen }) => {
                 <NavButton onClick={() => setView('home')} isActive={view === 'home'} isDarkBg={isHome}>Trang chủ</NavButton>
                 <NavButton onClick={() => setView('all')} isActive={view === 'all'} isDarkBg={isHome}>Tài liệu</NavButton>
             </div>
-            <div style={{ paddingRight: '4px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingRight: '4px' }}>
+                {/* Nút Tạo Đề Thi Mới */}
+                <InteractiveButton onClick={() => alert("Tính năng tạo đề thi đang phát triển!")} primary={false} isDarkBg={isHome} isNav={true} isUpload={true} style={{ width: '44px', height: '44px', padding: 0, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <FilePenLine size={20} />
+                </InteractiveButton>
+                {/* Nút Upload */}
                 <InteractiveButton onClick={() => setIsModalOpen(true)} primary={false} isDarkBg={isHome} isNav={true} isUpload={true} style={{ width: '44px', height: '44px', padding: 0, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <UploadCloud size={20} />
                 </InteractiveButton>
@@ -228,10 +481,10 @@ const HeroSection = ({ scrollY }) => {
             <motion.div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${CONFIG.HERO_BG})`, backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 0 }} />
             <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1 }} />
             <motion.header style={{ position: 'relative', zIndex: 10, textAlign: 'center', color: 'white', opacity: heroOpacity }}>
-                <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} style={{ marginBottom: '20px', display: 'inline-block', background: 'rgba(255,255,255,0.2)', color: '#fff', padding: '8px 20px', borderRadius: '30px', fontWeight: '600', fontSize: '13px', backdropFilter: 'blur(5px)' }}>KHO TÀI LIỆU SINH VIÊN UEH</motion.div>
+                <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} style={{ marginBottom: '20px', display: 'inline-block', background: 'rgba(255,255,255,0.2)', color: '#fff', padding: '8px 20px', borderRadius: '30px', fontWeight: '600', fontSize: '13px', backdropFilter: 'blur(5px)' }}>KHO TÀI LIỆU SINH VIÊN</motion.div>
                 <div style={{ overflow: 'visible' }}>
-                    <motion.h1 initial={{ x: -100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 1.2, ease: "easeOut" }} style={{ x: floatLeft, fontSize: 'clamp(50px, 9vw, 100px)', fontWeight: '800', color: '#ffffff', margin: 0, lineHeight: 1 }}>Green Learning</motion.h1>
-                    <motion.h1 initial={{ x: 100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 1.2, delay: 0.2, ease: "easeOut" }} style={{ x: floatRight, fontSize: 'clamp(50px, 9vw, 100px)', fontWeight: '800', color: '#ffffff', margin: 0, lineHeight: 1 }}>Better Future.</motion.h1>
+                    <motion.h1 initial={{ x: -100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 1.2, ease: "easeOut" }} style={{ x: floatLeft, fontSize: 'clamp(50px, 9vw, 100px)', fontWeight: '800', color: '#ffffff', margin: 0, lineHeight: 1 }}>Less Paper</motion.h1>
+                    <motion.h1 initial={{ x: 100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 1.2, delay: 0.2, ease: "easeOut" }} style={{ x: floatRight, fontSize: 'clamp(50px, 9vw, 100px)', fontWeight: '800', color: '#ffffff', margin: 0, lineHeight: 1 }}>More Knowledge.</motion.h1>
                 </div>
             </motion.header>
         </div>
@@ -280,20 +533,43 @@ const SearchSection = ({ searchTerm, setSearchTerm, suggestions, onSelectSuggest
     );
 };
 
-const FeedbackSection = () => (
-    <div style={{ marginTop: '120px', marginBottom: '30px', width: 'calc(100% - 40px)', height: '500px', borderRadius: '40px', overflow: 'hidden', position: 'relative', margin: '120px auto 30px auto', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${CONFIG.FEEDBACK_BG})`, backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 0 }} />
-        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1 }} />
-        <div style={{ position: 'relative', zIndex: 2, width: '90%', maxWidth: '500px', textAlign: 'center', color: '#fff', marginBottom: '40px' }}>
-            <h2 style={{ fontSize: '40px', fontWeight: '800', marginBottom: '20px' }}>Đóng góp ý kiến</h2>
-            <div style={{ display: 'flex', gap: '5px', background: 'rgba(255,255,255,0.9)', padding: '6px', borderRadius: '50px' }}>
-                <input placeholder="Bạn nghĩ gì..." style={{ flex: 1, background: 'transparent', border: 'none', padding: '12px 20px', fontSize: '15px', color: '#000', outline: 'none' }}/>
-                <InteractiveButton primary={true} style={{ padding: '12px 30px' }} isDarkBg={true} customBlackWhite={true}>Gửi</InteractiveButton>
+const FeedbackSection = ({ onSend }) => {
+    const [value, setValue] = useState("");
+
+    const handleSubmit = () => {
+        if (!value.trim()) return;
+        onSend(value);
+        setValue("");
+    };
+
+    return (
+        <div style={{ marginTop: '40px', marginBottom: '0px', width: 'calc(100% - 40px)', height: '500px', borderRadius: '40px', overflow: 'hidden', position: 'relative', margin: '40px auto 0px auto', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${CONFIG.FEEDBACK_BG})`, backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 0 }} />
+            <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1 }} />
+            <div style={{ position: 'relative', zIndex: 2, width: '90%', maxWidth: '500px', textAlign: 'center', color: '#fff', marginBottom: '40px' }}>
+                <h2 style={{ fontSize: '40px', fontWeight: '800', marginBottom: '20px' }}>Đóng góp ý kiến</h2>
+                <div style={{ display: 'flex', gap: '5px', background: 'rgba(255,255,255,0.9)', padding: '6px', borderRadius: '50px' }}>
+                    <input 
+                        placeholder="Bạn nghĩ gì..." 
+                        style={{ flex: 1, background: 'transparent', border: 'none', padding: '12px 20px', fontSize: '15px', color: '#000', outline: 'none' }}
+                        value={value}
+                        onChange={(e) => setValue(e.target.value)}
+                    />
+                    <InteractiveButton onClick={handleSubmit} primary={true} style={{ padding: '12px 30px' }} isDarkBg={true} customBlackWhite={true}>Gửi</InteractiveButton>
+                </div>
+            </div>
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '20px', background: 'rgba(0,0,0,0.2)', backdropFilter: 'blur(10px)', display: 'flex', justifyContent: 'center', gap: '30px' }}>
+                <Instagram size={18} color="white" style={{cursor: 'pointer'}}/><Twitter size={18} color="white" style={{cursor: 'pointer'}}/><Facebook size={18} color="white" style={{cursor: 'pointer'}}/><Mail size={18} color="white" style={{cursor: 'pointer'}}/>
             </div>
         </div>
-        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '20px', background: 'rgba(0,0,0,0.2)', backdropFilter: 'blur(10px)', display: 'flex', justifyContent: 'center', gap: '30px' }}>
-            <Instagram size={18} color="white" style={{cursor: 'pointer'}}/><Twitter size={18} color="white" style={{cursor: 'pointer'}}/><Facebook size={18} color="white" style={{cursor: 'pointer'}}/><Mail size={18} color="white" style={{cursor: 'pointer'}}/>
-        </div>
+    );
+};
+
+const Footer = () => (
+    <div style={{ textAlign: 'center', padding: '15px 0 30px 0', backgroundColor: '#fff', color: '#1d1d1f' }}>
+        <p style={{ margin: 0, fontSize: '15px', fontWeight: '500', opacity: 0.8 }}>
+            Made by <span style={{ fontFamily: 'Dancing Script, cursive', fontSize: '20px', fontWeight: '700' }}>Gia Man</span>
+        </p>
     </div>
 );
 
@@ -309,7 +585,10 @@ const UploadModal = ({ isOpen, onClose, formData, setFormData, onFileSelect, onR
              {!formData.file ? (
                  <div style={{ border: '2px dashed #ddd', padding: '40px 20px', borderRadius: '16px', textAlign: 'center', cursor: 'pointer', background: '#fafafa' }}>
                      <input type="file" id="pdf-upload" accept=".pdf" style={{ display: 'none' }} onChange={onFileSelect} />
-                     <label htmlFor="pdf-upload" style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}><UploadCloud size={32} color="#2E7D32" /><div><span style={{ color: '#1d1d1f', fontSize: '16px', fontWeight: '700' }}>Chọn file PDF</span></div></label>
+                     <label htmlFor="pdf-upload" style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+                         <UploadCloud size={32} color="#2E7D32" />
+                         <div><span style={{ color: '#1d1d1f', fontSize: '16px', fontWeight: '700' }}>Chọn file PDF</span></div>
+                     </label>
                  </div>
              ) : (
                  <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
@@ -336,15 +615,13 @@ const UploadModal = ({ isOpen, onClose, formData, setFormData, onFileSelect, onR
     );
 };
 
-const DocumentGrid = ({ documents }) => (
+const DocumentGrid = ({ documents, onView }) => (
     <div className="menu-grid">
-        {documents.length > 0 ? ( documents.map(item => (<MenuCard key={item.id} item={item} />)) ) : ( <div style={{ gridColumn: 'span 2', textAlign: 'center', padding: '60px', color: '#999' }}>Không tìm thấy tài liệu phù hợp.</div> )}
+        {documents.length > 0 ? ( documents.map(item => (<MenuCard key={item.id} item={item} onClick={() => onView(item)} />)) ) : ( <div style={{ gridColumn: 'span 2', textAlign: 'center', padding: '60px', color: '#999' }}>Không tìm thấy tài liệu phù hợp.</div> )}
     </div>
 );
 
-/* ==================================================================================
-   [REGION 6] MAIN APP
-   ================================================================================== */
+// --- 6. MAIN APP ---
 export default function App() {
   const [view, setView] = useState('home');
   const [activeTab, setActiveTab] = useState('All');
@@ -355,6 +632,33 @@ export default function App() {
   const [formData, setFormData] = useState({ title: '', desc: '', year: '', major: '', file: null });
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState([]);
+  const [toastMessage, setToastMessage] = useState(null);
+  const [viewingDoc, setViewingDoc] = useState(null); // State cho trình xem tài liệu
+
+  // --- Lenis Scroll ---
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = "https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js";
+    script.async = true;
+    script.onload = () => {
+      const lenis = new window.Lenis({
+        duration: 1.2,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        direction: 'vertical',
+        gestureDirection: 'vertical',
+        smooth: true,
+        mouseMultiplier: 1,
+        smoothTouch: false,
+        touchMultiplier: 2,
+      });
+      function raf(time) {
+        lenis.raf(time);
+        requestAnimationFrame(raf);
+      }
+      requestAnimationFrame(raf);
+    };
+    document.body.appendChild(script);
+  }, []);
 
   // Init Data
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, [view]);
@@ -363,7 +667,7 @@ export default function App() {
       if (savedDocs) { setDocuments(JSON.parse(savedDocs)); } else { setDocuments(INITIAL_DOCS); }
   }, []);
 
-  // Search Logic (Updated for Autocomplete)
+  // Search Logic
   useEffect(() => {
       if (searchTerm.length > 0) {
           const scoredDocs = documents.map(doc => ({ ...doc, score: Utils.calcScore(doc, searchTerm) })).filter(doc => doc.score > 0).sort((a, b) => b.score - a.score).slice(0, 5);
@@ -383,10 +687,11 @@ export default function App() {
       setUploading(true);
       const reader = new FileReader();
       reader.onload = (e) => {
-          const newDoc = { id: Date.now(), title: formData.title, desc: formData.desc || "Tài liệu", year: formData.year, major: formData.major, type: "PDF", fileUrl: e.target.result, cover: Utils.getRandomCover(), createdAt: new Date().toISOString() };
+          const newDoc = { id: Date.now(), title: formData.title, desc: formData.desc || "Tài liệu sinh viên", year: formData.year, major: formData.major, type: "PDF", fileUrl: e.target.result, cover: Utils.getRandomCover(), createdAt: new Date().toISOString() };
           const updatedDocs = [newDoc, ...documents];
           setDocuments(updatedDocs); localStorage.setItem('hoclieuso_docs', JSON.stringify(updatedDocs));
-          setUploading(false); setIsModalOpen(false); setFormData({ title: '', desc: '', year: '', major: '', file: null }); alert("Upload thành công!");
+          setUploading(false); setIsModalOpen(false); setFormData({ title: '', desc: '', year: '', major: '', file: null });
+          showToast("Upload thành công!");
       };
       reader.readAsDataURL(formData.file);
   };
@@ -394,13 +699,23 @@ export default function App() {
   const handleFileSelect = (e) => {
       const file = e.target.files[0];
       if (file && file.type === "application/pdf") setFormData({ ...formData, file: file, title: file.name.replace(/\.pdf$/i, "") });
-      else alert("Chỉ nhận file PDF!");
+      else showToast("Chỉ nhận file PDF!");
+  };
+
+  const showToast = (message) => {
+      setToastMessage(message);
+      setTimeout(() => setToastMessage(null), 3000);
   };
 
   return (
     <>
       <style>{Styles.global}</style>
       <Navbar view={view} setView={setView} setIsModalOpen={setIsModalOpen} />
+
+      <AnimatePresence>
+          {toastMessage && <Toast message={toastMessage} />}
+          {viewingDoc && <DocViewer doc={viewingDoc} onClose={() => setViewingDoc(null)} />}
+      </AnimatePresence>
 
       <div style={{ position: 'relative', minHeight: '100vh', backgroundColor: '#ffffff' }}>
         <AnimatePresence mode="wait">
@@ -409,7 +724,7 @@ export default function App() {
                     <HeroSection scrollY={scrollY} />
                     <div style={{ marginTop: '80px' }}>
                         <div style={{ marginBottom: '80px' }}>
-                            <ScrollRevealText text="Không gian số hiện đại nơi tài liệu và đề thi được lưu trữ, kết nối và chia sẻ bền vững. Nơi tri thức UEH luôn sẵn sàng đồng hành cùng bạn trên hành trình học tập không giới hạn." />
+                            <ScrollRevealText text="Không gian số hiện đại nơi tài liệu và đề thi được lưu trữ, kết nối và chia sẻ bền vững. Nơi tri thức luôn sẵn sàng đồng hành cùng bạn trên hành trình học tập không giới hạn." />
                         </div>
                         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px', display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '30px' }}>
                             <motion.h2 initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, margin: "-100px" }} transition={{ duration: 1.0, ease: "easeOut" }} style={{ fontSize: 'clamp(32px, 4vw, 48px)', fontWeight: '800', lineHeight: 1, margin: 0, color: '#1d1d1f' }}>Tài Liệu Mới</motion.h2>
@@ -417,9 +732,11 @@ export default function App() {
                                 <InteractiveButton primary={false} isDarkBg={false} onClick={() => setView('all')} customBlackWhite={true}>Xem tất cả <ArrowRight size={16}/></InteractiveButton>
                             </motion.div>
                         </div>
-                        <DocumentGrid documents={documents.slice(0, 4)} />
+                        {/* Truyền hàm xem tài liệu xuống */}
+                        <DocumentGrid documents={documents.slice(0, 4)} onView={(doc) => setViewingDoc(doc)} />
                     </div>
-                    <FeedbackSection />
+                    <FeedbackSection onSend={() => showToast("Cảm ơn đóng góp của bạn!")} />
+                    <Footer />
                 </motion.div>
             )}
 
@@ -427,8 +744,8 @@ export default function App() {
                 <motion.div key="all" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} style={{ paddingTop: '100px', minHeight: '100vh', color: '#1d1d1f', position: 'relative', zIndex: 10 }}>
                     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px' }}>
                         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-                            <h1 style={{ fontSize: 'clamp(40px, 6vw, 72px)', fontWeight: '800', margin: '0 0 20px 0', color: '#1d1d1f', lineHeight: 1 }}>Kho Tài Liệu</h1>
-                            <p style={{ fontSize: '16px', color: '#666', maxWidth: '600px', margin: '0 auto', lineHeight: 1.6 }}>Truy cập không giới hạn vào kho tàng tri thức UEH.</p>
+                            <TextPressure text="KHO TÀI LIỆU" />
+                            <p style={{ fontSize: '16px', color: '#666', maxWidth: '600px', margin: '0 auto', lineHeight: 1.6 }}>Truy cập không giới hạn vào kho tàng tri thức.</p>
                         </div>
                         <SearchSection searchTerm={searchTerm} setSearchTerm={setSearchTerm} suggestions={suggestions} onSelectSuggestion={(doc) => setSearchTerm(doc.title)} />
                         <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '60px', flexWrap: 'wrap' }}>
@@ -436,7 +753,8 @@ export default function App() {
                                 <InteractiveButton key={tab} primary={activeTab === tab} onClick={() => setActiveTab(tab)} style={{ padding: '10px 32px', fontSize: '15px' }} isDarkBg={false}>{tab === 'All' ? 'Tất cả' : `Khóa ${tab}`}</InteractiveButton>
                             ))}
                         </div>
-                        <DocumentGrid documents={getDisplayDocuments()} />
+                        {/* Truyền hàm xem tài liệu xuống */}
+                        <DocumentGrid documents={getDisplayDocuments()} onView={(doc) => setViewingDoc(doc)} />
                     </div>
                 </motion.div>
             )}
