@@ -1,12 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, useScroll, useTransform, AnimatePresence, useMotionValue } from 'framer-motion';
-import { Search, X, ArrowRight, FileText, Instagram, Twitter, Facebook, Mail, UploadCloud, Loader, Trash2, Heart, CheckCircle2, Play, Pause, RotateCcw, Moon, Sun, FilePenLine } from 'lucide-react';
+import { Search, X, ArrowRight, FileText, Instagram, Twitter, Facebook, Mail, UploadCloud, Loader, Trash2, Heart, CheckCircle2, Play, Pause, RotateCcw, Moon, Sun, FilePenLine, TreeDeciduous, Droplets, Wind } from 'lucide-react';
 
 // --- 1. CONFIGURATION & MOCK DATA ---
 const CONFIG = {
   COVERS: ["./img/cover1.jpg", "./img/cover2.jpg", "./img/cover3.jpg", "./img/cover4.jpg"],
-  FEEDBACK_BG: "https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=1600&q=80",
-  HERO_BG: "./img/hero-bg.jpg"
+  FEEDBACK_BG: "./img/feedback-bg.jpg",
+  HERO_BG: "./img/hero-bg.jpg",
+  DASHBOARD_IMGS: {
+      PAPER: "./img/dashboard1.jpg", 
+      WATER: "./img/dashboard2.jpg", 
+      CO2: "./img/dashboard3.jpg"   
+  }
 };
 
 const INITIAL_DOCS = [
@@ -22,23 +27,15 @@ const INITIAL_DOCS = [
 
 // --- 2. UTILITIES ---
 const Utils = {
-  removeTones: (str) => {
-    return str.normalize('NFD')
-              .replace(/[\u0300-\u036f]/g, "")
-              .replace(/đ/g, "d").replace(/Đ/g, "D")
-              .toLowerCase();
-  },
-  
+  removeTones: (str) => str.normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D").toLowerCase(),
   calcScore: (doc, searchTerm) => {
     const term = Utils.removeTones(searchTerm.trim());
     const title = Utils.removeTones(doc.title);
     const desc = Utils.removeTones(doc.desc);
     const keywords = term.split(/\s+/); 
     let score = 0;
-
     if (title.includes(term)) score += 100;
     if (desc.includes(term)) score += 20;
-
     let matchedTokens = 0;
     keywords.forEach(word => {
         if (title.includes(word)) { score += 10; matchedTokens++; }
@@ -47,32 +44,29 @@ const Utils = {
     if (matchedTokens === keywords.length && keywords.length > 1) score += 15;
     return score;
   },
-
   getRandomCover: () => CONFIG.COVERS[Math.floor(Math.random() * CONFIG.COVERS.length)]
 };
 
 // --- 3. STYLES ---
 const Styles = {
-    colors: {
-        primary: '#1d1d1f',
-        white: '#ffffff',
-        orange: '#f97316',
-        green: '#34C759',
-        gray: '#e0e0e0',
-        lightGray: '#f5f5f7'
+    colors: { 
+        primary: '#1d1d1f', 
+        white: '#ffffff', 
+        orange: '#f97316', // Quay về màu cam gốc cho toàn app
+        loading: '#007E6E', // Màu xanh ngọc CHỈ DÙNG CHO LOADING
+        green: '#34C759', 
+        gray: '#e0e0e0', 
+        lightGray: '#f5f5f7' 
     },
     global: `
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap'); 
-        
         :root, body, #root { width: 100%; margin: 0; padding: 0; background-color: #ffffff; font-family: "Montserrat", sans-serif; overflow-x: hidden; scroll-behavior: auto !important; }
-        
         html.lenis { height: auto; } 
         .lenis.lenis-smooth { scroll-behavior: auto; } 
         .lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; } 
         .lenis.lenis-stopped { overflow: hidden; } 
         .lenis.lenis-scrolling iframe { pointer-events: none; } 
-
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; max-width: 1200px; margin: 0 auto; padding: 40px; }
         @media (max-width: 768px) { .menu-grid { grid-template-columns: 1fr; padding: 20px; } }
         ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: #f1f1f1; } ::-webkit-scrollbar-thumb { background: #bbb; border-radius: 10px; }
@@ -86,68 +80,25 @@ const Styles = {
 };
 
 // --- 4. UI COMPONENTS ---
-
 const NavButton = ({ children, onClick, isActive, isDarkBg }) => {
   const activeBg = isDarkBg ? Styles.colors.white : Styles.colors.primary;
   const activeColor = isDarkBg ? Styles.colors.primary : Styles.colors.white;
   const initialBorder = isDarkBg ? `1px solid ${Styles.colors.white}` : `1px solid rgba(0,0,0,0.1)`;
-
   return (
-    <motion.button
-      onClick={onClick}
-      animate={{
-        backgroundColor: isActive ? activeBg : "transparent",
-        color: isActive ? activeColor : (isDarkBg ? Styles.colors.white : Styles.colors.primary),
-        border: isActive ? "1px solid transparent" : initialBorder,
-      }}
-      whileHover={{ backgroundColor: activeBg, color: activeColor, border: "1px solid transparent", scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-      transition={{ duration: 0.2 }}
-      style={{ padding: '8px 20px', borderRadius: '30px', fontWeight: '600', fontSize: '14px', cursor: 'pointer', margin: '0 4px' }}
-    >
-      {children}
-    </motion.button>
+    <motion.button onClick={onClick} animate={{ backgroundColor: isActive ? activeBg : "transparent", color: isActive ? activeColor : (isDarkBg ? Styles.colors.white : Styles.colors.primary), border: isActive ? "1px solid transparent" : initialBorder }} whileHover={{ backgroundColor: activeBg, color: activeColor, border: "1px solid transparent", scale: 1.05 }} whileTap={{ scale: 0.95 }} transition={{ duration: 0.2 }} style={{ padding: '8px 20px', borderRadius: '30px', fontWeight: '600', fontSize: '14px', cursor: 'pointer', margin: '0 4px' }}>{children}</motion.button>
   );
 };
 
 const InteractiveButton = ({ primary = true, children, onClick, style, className, disabled, icon, isDarkBg = false, customBlackWhite = false, isNav = false, isUpload = false }) => {
     let bgInitial, textInitial, borderInitial, bgHover, textHover, borderHover;
-
     if (isUpload) {
-        if (isDarkBg) { 
-            bgInitial = "transparent"; borderInitial = "#ffffff"; textInitial = "#f97316";
-            bgHover = "#f97316"; borderHover = "#ffffff"; textHover = "#ffffff";
-        } else { 
-            bgInitial = "transparent"; borderInitial = "#1d1d1f"; textInitial = "#f97316";
-            bgHover = "#f97316"; borderHover = "#1d1d1f"; textHover = "#ffffff";
-        }
-    } else if (isNav && isDarkBg) {
-       bgInitial = "transparent"; textInitial = "#ffffff"; borderInitial = "#ffffff";
-       bgHover = "#ffffff"; textHover = "#1d1d1f"; borderHover = "transparent";
-    } else if (customBlackWhite) {
-        bgInitial = "#1d1d1f"; textInitial = "#ffffff"; borderInitial = "#1d1d1f";
-        bgHover = "#ffffff"; textHover = "#1d1d1f"; borderHover = "#1d1d1f";
-    } else {
-        bgInitial = primary ? (isDarkBg ? "#ffffff" : "#1d1d1f") : "transparent";
-        textInitial = primary ? (isDarkBg ? "#1d1d1f" : "#ffffff") : (isDarkBg ? "#ffffff" : "#1d1d1f");
-        borderInitial = primary ? "transparent" : (isDarkBg ? "#ffffff" : "#1d1d1f");
-        bgHover = primary ? (isDarkBg ? "#e0e0e0" : "#333") : (isDarkBg ? "#ffffff" : "#1d1d1f");
-        textHover = primary ? (isDarkBg ? "#1d1d1f" : "#ffffff") : (isDarkBg ? "#1d1d1f" : "#ffffff");
-        borderInitial = primary ? "transparent" : (isDarkBg ? "#ffffff" : "#1d1d1f"); 
-    }
-
+        if (isDarkBg) { bgInitial = "transparent"; borderInitial = "#ffffff"; textInitial = Styles.colors.orange; bgHover = Styles.colors.orange; borderHover = "#ffffff"; textHover = "#ffffff"; }
+        else { bgInitial = "transparent"; borderInitial = "#1d1d1f"; textInitial = Styles.colors.orange; bgHover = Styles.colors.orange; borderHover = "#1d1d1f"; textHover = "#ffffff"; }
+    } else if (isNav && isDarkBg) { bgInitial = "transparent"; textInitial = "#ffffff"; borderInitial = "#ffffff"; bgHover = "#ffffff"; textHover = "#1d1d1f"; borderHover = "transparent"; }
+    else if (customBlackWhite) { bgInitial = "#1d1d1f"; textInitial = "#ffffff"; borderInitial = "#1d1d1f"; bgHover = "#ffffff"; textHover = "#1d1d1f"; borderHover = "#1d1d1f"; }
+    else { bgInitial = primary ? (isDarkBg ? "#ffffff" : "#1d1d1f") : "transparent"; textInitial = primary ? (isDarkBg ? "#1d1d1f" : "#ffffff") : (isDarkBg ? "#ffffff" : "#1d1d1f"); borderInitial = primary ? "transparent" : (isDarkBg ? "#ffffff" : "#1d1d1f"); bgHover = primary ? (isDarkBg ? "#e0e0e0" : "#333") : (isDarkBg ? "#ffffff" : "#1d1d1f"); textHover = primary ? (isDarkBg ? "#1d1d1f" : "#ffffff") : (isDarkBg ? "#1d1d1f" : "#ffffff"); borderInitial = primary ? "transparent" : (isDarkBg ? "#ffffff" : "#1d1d1f"); }
     return (
-        <motion.button
-            onClick={onClick} disabled={disabled} initial={false}
-            animate={{ backgroundColor: bgInitial, color: textInitial, border: `1px solid ${borderInitial}`, opacity: disabled ? 0.7 : 1 }}
-            whileHover={!disabled ? { backgroundColor: bgHover, color: textHover, borderColor: borderHover || (primary ? "transparent" : borderInitial), scale: 1.05 } : {}}
-            whileTap={!disabled ? { scale: 0.95 } : {}}
-            transition={{ duration: 0.2 }}
-            style={{ padding: '12px 28px', borderRadius: '50px', fontWeight: '700', fontSize: '14px', cursor: disabled ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', ...style }}
-            className={className}
-        >
-            {children} {icon && icon}
-        </motion.button>
+        <motion.button onClick={onClick} disabled={disabled} initial={false} animate={{ backgroundColor: bgInitial, color: textInitial, border: `1px solid ${borderInitial}`, opacity: disabled ? 0.7 : 1 }} whileHover={!disabled ? { backgroundColor: bgHover, color: textHover, borderColor: borderHover || (primary ? "transparent" : borderInitial), scale: 1.05 } : {}} whileTap={!disabled ? { scale: 0.95 } : {}} transition={{ duration: 0.2 }} style={{ padding: '12px 28px', borderRadius: '50px', fontWeight: '700', fontSize: '14px', cursor: disabled ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', ...style }} className={className}>{children} {icon && icon}</motion.button>
     );
 };
 
@@ -170,64 +121,22 @@ const MenuCard = ({ item, onClick }) => {
   );
 };
 
-// [UPDATED] TEXT PRESSURE HOVER EFFECT
 const PressureChar = ({ char, mouseX }) => {
     const ref = useRef(null);
     const [width, setWidth] = useState(0);
     const [x, setX] = useState(0);
-
-    useEffect(() => {
-        if (ref.current) {
-            setWidth(ref.current.offsetWidth);
-            setX(ref.current.offsetLeft);
-        }
-    }, []);
-
-    const distance = useTransform(mouseX, (val) => {
-        const bounds = ref.current?.getBoundingClientRect() ?? { x: 0, width: 0 };
-        return val - bounds.x - bounds.width / 2;
-    });
-
-    // Giảm độ gắt của scaleY (0.8 thay vì 0.6) để tránh méo chữ
+    useEffect(() => { if (ref.current) { setWidth(ref.current.offsetWidth); setX(ref.current.offsetLeft); } }, []);
+    const distance = useTransform(mouseX, (val) => { const bounds = ref.current?.getBoundingClientRect() ?? { x: 0, width: 0 }; return val - bounds.x - bounds.width / 2; });
     const scaleY = useTransform(distance, [-200, 0, 200], [1, 0.8, 1]);
     const scaleX = useTransform(distance, [-200, 0, 200], [1, 1.1, 1]);
-    // Chuyển tâm biến dạng về giữa để các dấu (chấm, mũ) không bị bay mất
-    const originY = "center";
-
-    return (
-        <motion.span
-            ref={ref}
-            style={{ 
-                display: 'inline-block', 
-                scaleY, 
-                scaleX, 
-                originY,
-                marginRight: char === ' ' ? '15px' : '2px'
-            }}
-        >
-            {char}
-        </motion.span>
-    );
+    return <motion.span ref={ref} style={{ display: 'inline-block', scaleY, scaleX, originY: "center", marginRight: char === ' ' ? '10px' : '0px' }}>{char}</motion.span>;
 };
 
 const TextPressure = ({ text }) => {
     const mouseX = useMotionValue(0);
-
     return (
-        <div 
-            onMouseMove={(e) => mouseX.set(e.clientX)}
-            onMouseLeave={() => mouseX.set(Infinity)}
-            style={{ 
-                display: 'flex', justifyContent: 'center', 
-                cursor: 'default', overflow: 'hidden', padding: '10px 0',
-                // Giảm size chữ xuống
-                fontSize: 'clamp(40px, 6vw, 80px)', fontWeight: '900', 
-                color: '#1d1d1f', textTransform: 'uppercase', lineHeight: 1
-            }}
-        >
-            {text.split('').map((char, i) => (
-                <PressureChar key={i} char={char} mouseX={mouseX} />
-            ))}
+        <div onMouseMove={(e) => mouseX.set(e.clientX)} onMouseLeave={() => mouseX.set(Infinity)} style={{ display: 'flex', justifyContent: 'center', cursor: 'default', overflow: 'hidden', padding: '10px 0', fontSize: 'clamp(30px, 5vw, 60px)', fontWeight: '900', color: '#1d1d1f', textTransform: 'uppercase', lineHeight: 1 }}>
+            {text.split('').map((char, i) => (<PressureChar key={i} char={char} mouseX={mouseX} />))}
         </div>
     );
 };
@@ -247,115 +156,106 @@ const ScrollRevealText = ({ text }) => {
   );
 };
 
+// [UPDATED] COUNTER PRELOADER - Sử dụng màu xanh Styles.colors.loading
+const CounterPreloader = ({ onComplete }) => {
+    const [count, setCount] = useState(0);
+    const [isFinished, setIsFinished] = useState(false);
+
+    useEffect(() => {
+        const duration = 2000; 
+        const interval = 20;
+        const steps = duration / interval;
+        const increment = 100 / steps;
+
+        let current = 0;
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= 100) {
+                current = 100;
+                clearInterval(timer);
+                setIsFinished(true); 
+                setTimeout(onComplete, 900); 
+            }
+            setCount(Math.floor(current));
+        }, interval);
+
+        return () => clearInterval(timer);
+    }, [onComplete]);
+
+    return (
+        <motion.div
+            animate={isFinished ? { y: "-100%" } : { y: 0 }}
+            transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }}
+            style={{
+                position: 'fixed', inset: 0, zIndex: 99999,
+                background: '#1d1d1f',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                color: '#ffffff'
+            }}
+        >
+            {/* Flexbox căn chỉnh số và % */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', lineHeight: 0.8 }}>
+                <motion.h1 
+                    style={{ 
+                        fontSize: 'clamp(80px, 15vw, 150px)', fontWeight: '900', 
+                        margin: 0, letterSpacing: '-0.05em',
+                        fontVariantNumeric: 'tabular-nums',
+                        fontFamily: 'Montserrat, sans-serif'
+                    }}
+                >
+                    {count}
+                </motion.h1>
+                <span style={{ 
+                    fontSize: 'clamp(20px, 4vw, 40px)', fontWeight: '700', 
+                    marginTop: '10px', // Căn chỉnh vị trí dấu %
+                    color: Styles.colors.loading // MÀU XANH
+                }}>%</span>
+            </div>
+            
+            {/* Thanh loading bar */}
+            <motion.div 
+                initial={{ width: 0 }} 
+                animate={{ width: isFinished ? 300 : (count / 100) * 300 }} 
+                transition={{ ease: "linear", duration: 0.1 }} 
+                style={{ height: '4px', background: Styles.colors.loading, marginTop: '20px', borderRadius: '2px' }} // MÀU XANH
+            />
+        </motion.div>
+    );
+};
+
 // --- 5. WIDGETS & SPECIAL COMPONENTS ---
 
 const PomodoroHeaderWidget = () => {
-    const WORK_TIME = 30; 
-    const BREAK_TIME = 30; 
-    
-    const [timeLeft, setTimeLeft] = useState(WORK_TIME);
-    const [isActive, setIsActive] = useState(false);
-    const [mode, setMode] = useState('work'); 
-
+    const WORK_TIME = 30; const BREAK_TIME = 30; 
+    const [timeLeft, setTimeLeft] = useState(WORK_TIME); const [isActive, setIsActive] = useState(false); const [mode, setMode] = useState('work'); 
     useEffect(() => {
         let interval = null;
-        if (isActive && timeLeft > 0) {
-            interval = setInterval(() => setTimeLeft(timeLeft - 1), 1000);
-        } else if (timeLeft === 0) {
-            const nextMode = mode === 'work' ? 'break' : 'work';
-            setMode(nextMode);
-            setTimeLeft(nextMode === 'work' ? WORK_TIME : BREAK_TIME);
-            setIsActive(false); 
-        }
+        if (isActive && timeLeft > 0) { interval = setInterval(() => setTimeLeft(timeLeft - 1), 1000); } 
+        else if (timeLeft === 0) { const nextMode = mode === 'work' ? 'break' : 'work'; setMode(nextMode); setTimeLeft(nextMode === 'work' ? WORK_TIME : BREAK_TIME); setIsActive(false); }
         return () => clearInterval(interval);
     }, [isActive, timeLeft, mode]);
-
     const toggleTimer = () => setIsActive(!isActive);
-    const resetTimer = () => {
-        setIsActive(false);
-        setMode('work');
-        setTimeLeft(WORK_TIME);
-    };
-
-    const formatTime = (seconds) => {
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    };
-
+    const resetTimer = () => { setIsActive(false); setMode('work'); setTimeLeft(WORK_TIME); };
+    const formatTime = (seconds) => { const mins = Math.floor(seconds / 60); const secs = seconds % 60; return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`; };
     const themeColor = mode === 'work' ? Styles.colors.orange : Styles.colors.green;
-
     return (
-        <div style={{ 
-            display: 'flex', alignItems: 'center', gap: '10px', 
-            padding: '4px 10px', background: '#f5f5f7', borderRadius: '30px',
-            border: '1px solid #e0e0e0',
-            boxShadow: '0 2px 5px rgba(0,0,0,0.05)'
-        }}>
-            <div style={{ fontSize: '14px', fontWeight: '700', color: themeColor, minWidth: '45px', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>
-                {formatTime(timeLeft)}
-            </div>
-
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '4px 10px', background: '#f5f5f7', borderRadius: '30px', border: '1px solid #e0e0e0', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
+            <div style={{ fontSize: '14px', fontWeight: '700', color: themeColor, minWidth: '45px', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{formatTime(timeLeft)}</div>
             <div style={{ display: 'flex', gap: '6px' }}>
-                <button onClick={toggleTimer} style={{ 
-                    background: themeColor, border: 'none', borderRadius: '12px', 
-                    padding: '4px 12px', display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                    cursor: 'pointer', color: 'white', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px'
-                }}>
-                    {isActive ? "PAUSE" : "START"}
-                </button>
-                <button onClick={resetTimer} style={{ 
-                    background: '#fff', border: '1px solid #ddd', borderRadius: '12px', 
-                    padding: '4px 10px', display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                    cursor: 'pointer', color: '#666', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase'
-                }}>
-                    RESET
-                </button>
+                <button onClick={toggleTimer} style={{ background: themeColor, border: 'none', borderRadius: '12px', padding: '4px 12px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'white', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{isActive ? "PAUSE" : "START"}</button>
+                <button onClick={resetTimer} style={{ background: '#fff', border: '1px solid #ddd', borderRadius: '12px', padding: '4px 10px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#666', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase' }}>RESET</button>
             </div>
-            
-            <span style={{ fontSize: '10px', fontWeight: '600', color: '#999', textTransform: 'uppercase', letterSpacing: '0.5px', marginLeft: '4px' }}>
-                {mode === 'work' ? 'FOCUS' : 'BREAK'}
-            </span>
+            <span style={{ fontSize: '10px', fontWeight: '600', color: '#999', textTransform: 'uppercase', letterSpacing: '0.5px', marginLeft: '4px' }}>{mode === 'work' ? 'FOCUS' : 'BREAK'}</span>
         </div>
     );
 };
 
 const ThemeSwitchFixed = ({ isNightMode, toggle }) => {
     return (
-        <div 
-            onClick={toggle}
-            style={{
-                width: '56px', height: '32px',
-                backgroundColor: isNightMode ? '#27272a' : '#f4f4f5',
-                borderRadius: '99px',
-                display: 'flex', alignItems: 'center',
-                padding: '4px',
-                cursor: 'pointer',
-                border: `1px solid ${isNightMode ? '#3f3f46' : '#e4e4e7'}`,
-                justifyContent: isNightMode ? 'flex-end' : 'flex-start'
-            }}
-        >
-            <motion.div
-                layout
-                transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                style={{
-                    width: '24px', height: '24px',
-                    backgroundColor: '#ffffff',
-                    borderRadius: '50%',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-                }}
-            >
+        <div onClick={toggle} style={{ width: '56px', height: '32px', backgroundColor: isNightMode ? '#27272a' : '#f4f4f5', borderRadius: '99px', display: 'flex', alignItems: 'center', padding: '4px', cursor: 'pointer', border: `1px solid ${isNightMode ? '#3f3f46' : '#e4e4e7'}`, justifyContent: isNightMode ? 'flex-end' : 'flex-start' }}>
+            <motion.div layout transition={{ type: "spring", stiffness: 500, damping: 30 }} style={{ width: '24px', height: '24px', backgroundColor: '#ffffff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                  <AnimatePresence mode='wait'>
-                    <motion.div
-                        key={isNightMode ? 'moon' : 'sun'}
-                        initial={{ scale: 0.5, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0.5, opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                    >
-                        {isNightMode ? <Moon size={14} color="#1d1d1f" /> : <Sun size={14} color="#f97316" fill="#f97316" />}
-                    </motion.div>
+                    <motion.div key={isNightMode ? 'moon' : 'sun'} initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.5, opacity: 0 }} transition={{ duration: 0.2 }}>{isNightMode ? <Moon size={14} color="#1d1d1f" /> : <Sun size={14} color={Styles.colors.orange} fill={Styles.colors.orange} />}</motion.div>
                  </AnimatePresence>
             </motion.div>
         </div>
@@ -364,33 +264,17 @@ const ThemeSwitchFixed = ({ isNightMode, toggle }) => {
 
 const DocViewer = ({ doc, onClose }) => {
     const [isNightMode, setIsNightMode] = useState(false);
-
     if (!doc) return null;
-    
     const contentFilter = isNightMode ? 'invert(1) hue-rotate(180deg)' : 'none';
     const bgColor = isNightMode ? '#1a1a1a' : 'white';
     const headerBg = isNightMode ? '#222' : '#fff';
     const textColor = isNightMode ? '#eee' : '#1d1d1f';
     const subTextColor = isNightMode ? '#aaa' : '#666';
     const borderColor = isNightMode ? '#333' : '#eee';
-
     return (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-            <motion.div 
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                onClick={onClose}
-                style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }}
-            />
-            <motion.div 
-                initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                style={{ 
-                    position: 'relative', width: '100%', maxWidth: '1000px', height: '90vh', 
-                    background: bgColor, borderRadius: '24px', overflow: 'hidden', 
-                    display: 'flex', flexDirection: 'column', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-                    transition: 'background-color 0.3s ease'
-                }}
-            >
-                {/* HEADER */}
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }} />
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} style={{ position: 'relative', width: '100%', maxWidth: '1000px', height: '90vh', background: bgColor, borderRadius: '24px', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', transition: 'background-color 0.3s ease' }}>
                 <div style={{ padding: '12px 24px', borderBottom: `1px solid ${borderColor}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: headerBg, transition: 'background-color 0.3s ease' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1, overflow: 'hidden' }}>
                         <div style={{ padding: '8px', borderRadius: '8px', background: isNightMode ? '#333' : '#f5f5f7', flexShrink: 0, transition: 'background-color 0.3s ease' }}><FileText size={20} color={textColor}/></div>
@@ -399,25 +283,14 @@ const DocViewer = ({ doc, onClose }) => {
                             <p style={{ margin: 0, fontSize: '12px', color: subTextColor, transition: 'color 0.3s ease' }}>{doc.year} • {doc.major}</p>
                         </div>
                     </div>
-                    
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                         <PomodoroHeaderWidget />
                         <ThemeSwitchFixed isNightMode={isNightMode} toggle={() => setIsNightMode(!isNightMode)} />
                         <button onClick={onClose} style={{ padding: '8px', borderRadius: '50%', border: 'none', background: isNightMode ? '#333' : '#f5f5f7', cursor: 'pointer', color: textColor, flexShrink: 0, transition: 'all 0.3s ease' }}><X size={20}/></button>
                     </div>
                 </div>
-
                 <div style={{ flex: 1, background: isNightMode ? '#121212' : '#f9fafb', position: 'relative', filter: contentFilter, transition: 'all 0.3s ease' }}>
-                    {doc.fileUrl && doc.fileUrl !== "#" ? (
-                        <iframe src={doc.fileUrl} style={{ width: '100%', height: '100%', border: 'none' }} title="Document Viewer" />
-                    ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#999', gap: '16px' }}>
-                            <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <FileText size={32} color="#ccc" />
-                            </div>
-                            <p style={{ fontSize: '15px' }}>Đây là dữ liệu mẫu, chưa có file đính kèm.</p>
-                        </div>
-                    )}
+                    {doc.fileUrl && doc.fileUrl !== "#" ? (<iframe src={doc.fileUrl} style={{ width: '100%', height: '100%', border: 'none' }} title="Document Viewer" />) : (<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#999', gap: '16px' }}><div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FileText size={32} color="#ccc" /></div><p style={{ fontSize: '15px' }}>Đây là dữ liệu mẫu, chưa có file đính kèm.</p></div>)}
                 </div>
             </motion.div>
         </div>
@@ -425,37 +298,157 @@ const DocViewer = ({ doc, onClose }) => {
 };
 
 const Toast = ({ message }) => (
-    <motion.div
-        initial={{ opacity: 0, y: 50, scale: 0.9 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 20, scale: 0.9 }}
-        transition={{ type: "spring", stiffness: 400, damping: 25 }}
-        style={{
-            position: 'fixed', bottom: '40px', left: '50%', x: '-50%', 
-            background: 'rgba(255, 255, 255, 0.95)', backdropFilter: 'blur(12px)',
-            padding: '12px 24px', borderRadius: '100px',
-            boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
-            display: 'flex', alignItems: 'center', gap: '10px', zIndex: 9999,
-            border: '1px solid rgba(0,0,0,0.05)', whiteSpace: 'nowrap'
-        }}
-    >
-        <div style={{ width: '22px', height: '22px', background: '#34C759', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <CheckCircle2 size={14} color="white" strokeWidth={3} />
-        </div>
+    <motion.div initial={{ opacity: 0, y: 50, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 20, scale: 0.9 }} transition={{ type: "spring", stiffness: 400, damping: 25 }} style={{ position: 'fixed', bottom: '40px', left: '50%', x: '-50%', background: 'rgba(255, 255, 255, 0.95)', backdropFilter: 'blur(12px)', padding: '12px 24px', borderRadius: '100px', boxShadow: '0 10px 40px rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', gap: '10px', zIndex: 9999, border: '1px solid rgba(0,0,0,0.05)', whiteSpace: 'nowrap' }}>
+        <div style={{ width: '22px', height: '22px', background: '#34C759', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CheckCircle2 size={14} color="white" strokeWidth={3} /></div>
         <span style={{ fontSize: '14px', fontWeight: '600', color: '#1d1d1f' }}>{message}</span>
     </motion.div>
 );
 
+const AnimatedCounter = ({ from, to, duration = 2 }) => {
+    const nodeRef = useRef();
+    useEffect(() => {
+      const node = nodeRef.current;
+      let startTime;
+      const step = (timestamp) => {
+          if (!startTime) startTime = timestamp;
+          const progress = Math.min((timestamp - startTime) / (duration * 1000), 1);
+          const easedProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+          const currentValue = Math.floor(from + (to - from) * easedProgress);
+          if (node) { node.textContent = currentValue.toLocaleString(); }
+          if (progress < 1) { requestAnimationFrame(step); }
+      };
+      requestAnimationFrame(step);
+    }, [from, to, duration]);
+    return <span ref={nodeRef}>{from}</span>;
+};
+
+// [UPDATED] IMPACT DASHBOARD WITH ACCORDION EFFECT
+const ImpactDashboard = () => {
+    const totalViews = 12500; 
+    const papersSaved = totalViews * 5;
+    const waterSaved = Math.floor(papersSaved * 0.01); 
+    const co2Reduced = (papersSaved * 0.005).toFixed(1); 
+
+    // State để theo dõi thẻ nào đang được hover
+    const [hoveredCard, setHoveredCard] = useState(1); // Mặc định thẻ đầu tiên mở
+
+    const cards = [
+        { id: 1, label: "Papers Saved", sub: "Số giấy tiết kiệm", value: papersSaved, icon: <FileText size={20} color="white" />, image: CONFIG.DASHBOARD_IMGS.PAPER, color: "#4CAF50" },
+        { id: 2, label: "Water Saved", sub: "Lít nước bảo vệ", value: waterSaved, icon: <Droplets size={20} color="white" />, image: CONFIG.DASHBOARD_IMGS.WATER, color: "#2196F3" },
+        { id: 3, label: "CO2 Reduced", sub: "Kg khí thải giảm", value: co2Reduced, unit: "kg", icon: <Wind size={20} color="white" />, image: CONFIG.DASHBOARD_IMGS.CO2, color: "#FF9800" }
+    ];
+
+    return (
+        <div style={{ maxWidth: '1200px', margin: '80px auto 40px', padding: '0 40px' }}>
+            {/* TITLE SECTION WITH FLOAT IN/OUT */}
+            <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+                <motion.h2 
+                    initial={{ opacity: 0, y: 30 }} 
+                    whileInView={{ opacity: 1, y: 0 }} 
+                    viewport={{ once: false, margin: "-100px" }} 
+                    transition={{ duration: 1.0, ease: "easeOut" }} 
+                    style={{ fontSize: 'clamp(36px, 5vw, 56px)', fontWeight: '900', lineHeight: 1, margin: '0 0 16px 0', color: '#1d1d1f', letterSpacing: '-1px' }}
+                >
+                    Tác Động Xanh
+                </motion.h2>
+                
+                <motion.p 
+                     initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 1.0, delay: 0.4, ease: "easeOut" }}
+                     style={{ fontSize: '18px', color: '#666', maxWidth: '600px', margin: '0 auto' }}
+                >
+                    Mỗi lượt xem tài liệu hay tạo đề thi không chỉ giúp học tập hiệu quả hơn mà còn góp phần bảo vệ môi trường.
+                </motion.p>
+            </div>
+
+            {/* CARDS FLEX CONTAINER (ACCORDION) */}
+            <div style={{ display: 'flex', gap: '20px', height: '350px' }}>
+                {cards.map((card) => {
+                    const isActive = hoveredCard === card.id;
+                    return (
+                        <motion.div
+                            key={card.id}
+                            onHoverStart={() => setHoveredCard(card.id)} // Hover để mở
+                            layout // Kích hoạt layout animation tự động
+                            transition={{ type: "spring", stiffness: 120, damping: 20 }} // Hiệu ứng co giãn mượt, chậm hơn
+                            style={{ 
+                                flex: isActive ? 3 : 1, // Active chiếm 3 phần, còn lại 1 phần
+                                position: 'relative', borderRadius: '30px', overflow: 'hidden', 
+                                cursor: 'pointer', boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+                                minWidth: '100px' // Đảm bảo không bị co quá nhỏ
+                            }}
+                        >
+                            {/* Background Image */}
+                            <motion.div 
+                                animate={{ scale: isActive ? 1.1 : 1 }} // Zoom ảnh nhẹ khi active
+                                transition={{ duration: 0.8 }}
+                                style={{ 
+                                    position: 'absolute', inset: 0, backgroundImage: `url(${card.image})`, 
+                                    backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 0 
+                                }} 
+                            />
+                            
+                            {/* Overlay */}
+                            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.1) 100%)', zIndex: 1 }} />
+                            
+                            {/* Content */}
+                            <div style={{ position: 'absolute', inset: 0, zIndex: 2, padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                                {/* Top: Icon + Label */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.3)', flexShrink: 0 }}>
+                                        {card.icon}
+                                    </div>
+                                    {/* Chỉ hiện chữ khi thẻ active (hoặc có thể dùng opacity animation) */}
+                                    <AnimatePresence>
+                                        {isActive && (
+                                            <motion.div 
+                                                initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}
+                                                style={{ overflow: 'hidden', whiteSpace: 'nowrap' }}
+                                            >
+                                                <div style={{ color: 'white', fontWeight: '700', fontSize: '16px' }}>{card.label}</div>
+                                                <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: '12px' }}>{card.sub}</div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+
+                                {/* Bottom: Big Number + Arrow */}
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                                     <motion.div layout style={{ fontSize: isActive ? '48px' : '32px', fontWeight: '800', color: 'white', lineHeight: 1 }}>
+                                        {card.id === 3 ? card.value : <AnimatedCounter from={0} to={card.value} />} 
+                                        {card.unit && <span style={{ fontSize: '24px', marginLeft: '5px' }}>{card.unit}</span>}
+                                    </motion.div>
+
+                                    {isActive && (
+                                        <motion.div
+                                            initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1 }}
+                                            style={{ 
+                                                width: '40px', height: '40px', borderRadius: '50%', background: 'white',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'black'
+                                            }}
+                                        >
+                                            <ArrowRight size={20} />
+                                        </motion.div>
+                                    )}
+                                </div>
+                            </div>
+                        </motion.div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+};
+
 // --- 6. SECTIONS ---
 
-const Navbar = ({ view, setView, setIsModalOpen }) => {
+const Navbar = ({ view, setView, setIsModalOpen, onNavigate }) => {
     const isHome = view === 'home';
     return (
         <nav style={{ position: 'absolute', top: isHome ? '30px' : '20px', left: '50%', transform: 'translateX(-50%)', width: isHome ? 'calc(100% - 60px)' : '100%', maxWidth: '1200px', background: isHome ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.8)', backdropFilter: 'blur(12px)', border: isHome ? '1px solid rgba(255,255,255,0.3)' : '1px solid rgba(0,0,0,0.1)', borderRadius: '100px', padding: '8px 20px', boxSizing: 'border-box', display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 100, color: isHome ? 'white' : '#1d1d1f' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800', fontSize: '18px', cursor: 'pointer', paddingLeft: '10px' }} onClick={() => setView('home')}>HocLieuSo</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800', fontSize: '18px', cursor: 'pointer', paddingLeft: '10px' }} onClick={() => onNavigate('home')}>HocLieuSo</div>
             <div style={{ display: 'flex', gap: '4px' }}>
-                <NavButton onClick={() => setView('home')} isActive={view === 'home'} isDarkBg={isHome}>Trang chủ</NavButton>
-                <NavButton onClick={() => setView('all')} isActive={view === 'all'} isDarkBg={isHome}>Tài liệu</NavButton>
+                <NavButton onClick={() => onNavigate('home')} isActive={view === 'home'} isDarkBg={isHome}>Trang chủ</NavButton>
+                <NavButton onClick={() => onNavigate('all')} isActive={view === 'all'} isDarkBg={isHome}>Tài liệu</NavButton>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingRight: '4px' }}>
                 {/* Nút Tạo Đề Thi Mới */}
@@ -634,6 +627,7 @@ export default function App() {
   const [suggestions, setSuggestions] = useState([]);
   const [toastMessage, setToastMessage] = useState(null);
   const [viewingDoc, setViewingDoc] = useState(null); // State cho trình xem tài liệu
+  const [isLoading, setIsLoading] = useState(true);
 
   // --- Lenis Scroll ---
   useEffect(() => {
@@ -660,11 +654,19 @@ export default function App() {
     document.body.appendChild(script);
   }, []);
 
-  // Init Data
-  useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, [view]);
-  useEffect(() => {
+  // Init Data & Fake Loading
+  useEffect(() => { 
       const savedDocs = localStorage.getItem('hoclieuso_docs');
       if (savedDocs) { setDocuments(JSON.parse(savedDocs)); } else { setDocuments(INITIAL_DOCS); }
+      
+      // Preload images for better UX
+      Object.values(CONFIG.DASHBOARD_IMGS).forEach(src => {
+          const img = new Image();
+          img.src = src;
+      });
+
+      const timer = setTimeout(() => setIsLoading(false), 2000); // Intro load
+      return () => clearTimeout(timer);
   }, []);
 
   // Search Logic
@@ -680,6 +682,16 @@ export default function App() {
       if (activeTab !== 'All') docs = docs.filter(doc => doc.year === activeTab);
       if (searchTerm.trim() !== '') docs = docs.map(doc => ({ ...doc, score: Utils.calcScore(doc, searchTerm) })).filter(doc => doc.score > 0).sort((a, b) => b.score - a.score);
       return docs;
+  };
+
+  const handleNavigation = (newView) => {
+      if (view === newView) return;
+      setIsLoading(true);
+      setTimeout(() => {
+          setView(newView);
+          setIsLoading(false);
+          window.scrollTo({ top: 0, behavior: 'instant' });
+      }, 800);
   };
 
   const handleUpload = () => {
@@ -710,9 +722,10 @@ export default function App() {
   return (
     <>
       <style>{Styles.global}</style>
-      <Navbar view={view} setView={setView} setIsModalOpen={setIsModalOpen} />
+      <Navbar view={view} setView={setView} setIsModalOpen={setIsModalOpen} onNavigate={handleNavigation} />
 
       <AnimatePresence>
+          {isLoading && <CounterPreloader onComplete={() => setIsLoading(false)} />}
           {toastMessage && <Toast message={toastMessage} />}
           {viewingDoc && <DocViewer doc={viewingDoc} onClose={() => setViewingDoc(null)} />}
       </AnimatePresence>
@@ -729,12 +742,15 @@ export default function App() {
                         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px', display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '30px' }}>
                             <motion.h2 initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, margin: "-100px" }} transition={{ duration: 1.0, ease: "easeOut" }} style={{ fontSize: 'clamp(32px, 4vw, 48px)', fontWeight: '800', lineHeight: 1, margin: 0, color: '#1d1d1f' }}>Tài Liệu Mới</motion.h2>
                             <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, margin: "-100px" }} transition={{ duration: 1.0, delay: 0.3, ease: "easeOut" }}>
-                                <InteractiveButton primary={false} isDarkBg={false} onClick={() => setView('all')} customBlackWhite={true}>Xem tất cả <ArrowRight size={16}/></InteractiveButton>
+                                <InteractiveButton primary={false} isDarkBg={false} onClick={() => handleNavigation('all')} customBlackWhite={true}>Xem tất cả <ArrowRight size={16}/></InteractiveButton>
                             </motion.div>
                         </div>
                         {/* Truyền hàm xem tài liệu xuống */}
                         <DocumentGrid documents={documents.slice(0, 4)} onView={(doc) => setViewingDoc(doc)} />
                     </div>
+                    {/* BỔ SUNG IMPACT DASHBOARD (Bên trên FeedbackSection) */}
+                    <ImpactDashboard />
+                    
                     <FeedbackSection onSend={() => showToast("Cảm ơn đóng góp của bạn!")} />
                     <Footer />
                 </motion.div>
