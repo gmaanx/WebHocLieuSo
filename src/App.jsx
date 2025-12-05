@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, useScroll, useTransform, AnimatePresence, useMotionValue } from 'framer-motion';
-import { Search, X, ArrowRight, FileText, Instagram, Twitter, Facebook, Mail, UploadCloud, Loader, Trash2, Heart, CheckCircle2, Play, Pause, RotateCcw, Moon, Sun, FilePenLine, TreeDeciduous, Droplets, Wind } from 'lucide-react';
+import { Search, X, ArrowRight, FileText, Instagram, Twitter, Facebook, Mail, Github, UploadCloud, Loader, Trash2, Heart, CheckCircle2, Play, Pause, RotateCcw, Moon, Sun, FilePenLine, TreeDeciduous, Droplets, Wind, Eye, Compass } from 'lucide-react';
 
 // --- 1. CONFIGURATION & MOCK DATA ---
 const CONFIG = {
@@ -52,8 +52,8 @@ const Styles = {
     colors: { 
         primary: '#1d1d1f', 
         white: '#ffffff', 
-        orange: '#f97316', // Quay về màu cam gốc cho toàn app
-        loading: '#007E6E', // Màu xanh ngọc CHỈ DÙNG CHO LOADING
+        orange: '#f97316', 
+        loading: '#007E6E', 
         green: '#34C759', 
         gray: '#e0e0e0', 
         lightGray: '#f5f5f7' 
@@ -102,6 +102,7 @@ const InteractiveButton = ({ primary = true, children, onClick, style, className
     );
 };
 
+// [RESTORED] Original MenuCard with Hover Effect and Arrow
 const MenuCard = ({ item, onClick }) => {
   return (
     <motion.div initial="rest" whileHover="hover" animate="rest" onClick={onClick} style={{ position: 'relative', height: '450px', borderRadius: '30px', overflow: 'hidden', cursor: 'pointer', background: '#000', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
@@ -322,113 +323,96 @@ const AnimatedCounter = ({ from, to, duration = 2 }) => {
     return <span ref={nodeRef}>{from}</span>;
 };
 
-// [UPDATED] IMPACT DASHBOARD WITH ACCORDION EFFECT
+// [RESTORED] PRAGUE STYLE IMPACT DASHBOARD
 const ImpactDashboard = () => {
     const totalViews = 12500; 
     const papersSaved = totalViews * 5;
     const waterSaved = Math.floor(papersSaved * 0.01); 
     const co2Reduced = (papersSaved * 0.005).toFixed(1); 
 
-    // State để theo dõi thẻ nào đang được hover
-    const [hoveredCard, setHoveredCard] = useState(1); // Mặc định thẻ đầu tiên mở
+    const [hoveredCard, setHoveredCard] = useState(1);
 
     const cards = [
-        { id: 1, label: "Papers Saved", sub: "Số giấy tiết kiệm", value: papersSaved, icon: <FileText size={20} color="white" />, image: CONFIG.DASHBOARD_IMGS.PAPER, color: "#4CAF50" },
-        { id: 2, label: "Water Saved", sub: "Lít nước bảo vệ", value: waterSaved, icon: <Droplets size={20} color="white" />, image: CONFIG.DASHBOARD_IMGS.WATER, color: "#2196F3" },
-        { id: 3, label: "CO2 Reduced", sub: "Kg khí thải giảm", value: co2Reduced, unit: "kg", icon: <Wind size={20} color="white" />, image: CONFIG.DASHBOARD_IMGS.CO2, color: "#FF9800" }
+        { id: 1, label: "Papers Saved", sub: "Số giấy tiết kiệm", value: papersSaved, icon: <FileText size={16} color="white" />, image: CONFIG.DASHBOARD_IMGS.PAPER, color: "#4CAF50" },
+        { id: 2, label: "Water Saved", sub: "Lít nước bảo vệ", value: waterSaved, icon: <Droplets size={16} color="white" />, image: CONFIG.DASHBOARD_IMGS.WATER, color: "#2196F3" },
+        { id: 3, label: "CO2 Reduced", sub: "Kg khí thải giảm", value: co2Reduced, unit: "kg", icon: <Wind size={16} color="white" />, image: CONFIG.DASHBOARD_IMGS.CO2, color: "#FF9800" }
     ];
 
     return (
         <div style={{ maxWidth: '1200px', margin: '80px auto 40px', padding: '0 40px' }}>
-            {/* TITLE SECTION WITH FLOAT IN/OUT */}
+            {/* TITLE SECTION - FIXED FLOAT OUT */}
             <div style={{ textAlign: 'center', marginBottom: '40px' }}>
                 <motion.h2 
                     initial={{ opacity: 0, y: 30 }} 
                     whileInView={{ opacity: 1, y: 0 }} 
-                    viewport={{ once: false, margin: "-100px" }} 
-                    transition={{ duration: 1.0, ease: "easeOut" }} 
+                    viewport={{ once: false, margin: "-150px" }} 
+                    transition={{ duration: 0.5, ease: "easeOut" }} 
                     style={{ fontSize: 'clamp(36px, 5vw, 56px)', fontWeight: '900', lineHeight: 1, margin: '0 0 16px 0', color: '#1d1d1f', letterSpacing: '-1px' }}
                 >
-                    Tác Động Xanh
+                    "Tác Động Xanh"
                 </motion.h2>
                 
                 <motion.p 
-                     initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 1.0, delay: 0.4, ease: "easeOut" }}
+                     initial={{ opacity: 0, y: 20 }} 
+                     whileInView={{ opacity: 1, y: 0 }} 
+                     viewport={{ once: false, margin: "-150px" }}
+                     transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
                      style={{ fontSize: '18px', color: '#666', maxWidth: '600px', margin: '0 auto' }}
                 >
                     Mỗi lượt xem tài liệu hay tạo đề thi không chỉ giúp học tập hiệu quả hơn mà còn góp phần bảo vệ môi trường.
                 </motion.p>
             </div>
 
-            {/* CARDS FLEX CONTAINER (ACCORDION) */}
-            <div style={{ display: 'flex', gap: '20px', height: '350px' }}>
+            {/* CARDS FLEX CONTAINER */}
+            <div style={{ display: 'flex', gap: '20px', height: '400px' }}>
                 {cards.map((card) => {
                     const isActive = hoveredCard === card.id;
                     return (
                         <motion.div
                             key={card.id}
-                            onHoverStart={() => setHoveredCard(card.id)} // Hover để mở
-                            layout // Kích hoạt layout animation tự động
-                            transition={{ type: "spring", stiffness: 120, damping: 20 }} // Hiệu ứng co giãn mượt, chậm hơn
+                            onHoverStart={() => setHoveredCard(card.id)}
+                            layout 
+                            transition={{ type: "spring", stiffness: 120, damping: 20 }}
                             style={{ 
-                                flex: isActive ? 3 : 1, // Active chiếm 3 phần, còn lại 1 phần
-                                position: 'relative', borderRadius: '30px', overflow: 'hidden', 
+                                flex: isActive ? 3 : 1, 
+                                position: 'relative', borderRadius: '32px', overflow: 'hidden', 
                                 cursor: 'pointer', boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
-                                minWidth: '100px' // Đảm bảo không bị co quá nhỏ
+                                minWidth: '100px' 
                             }}
                         >
-                            {/* Background Image */}
                             <motion.div 
-                                animate={{ scale: isActive ? 1.1 : 1 }} // Zoom ảnh nhẹ khi active
+                                animate={{ scale: isActive ? 1.05 : 1 }} 
                                 transition={{ duration: 0.8 }}
-                                style={{ 
-                                    position: 'absolute', inset: 0, backgroundImage: `url(${card.image})`, 
-                                    backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 0 
-                                }} 
+                                style={{ position: 'absolute', inset: 0, backgroundImage: `url(${card.image})`, backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 0 }} 
                             />
+                            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.4) 100%)', zIndex: 1 }} />
                             
-                            {/* Overlay */}
-                            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.1) 100%)', zIndex: 1 }} />
-                            
-                            {/* Content */}
                             <div style={{ position: 'absolute', inset: 0, zIndex: 2, padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                                {/* Top: Icon + Label */}
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.3)', flexShrink: 0 }}>
-                                        {card.icon}
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                    <div style={{ width: '100%', paddingRight: '10px' }}>
+                                        <motion.h3 layout="position" style={{ color: 'white', fontSize: isActive ? '32px' : '24px', fontWeight: '800', margin: '0 0 8px 0', lineHeight: 1.1 }}>{card.label}</motion.h3>
+                                        <AnimatePresence>
+                                            {isActive && (
+                                                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
+                                                    <motion.p layout="position" style={{ color: 'rgba(255,255,255,0.8)', fontSize: '14px', margin: 0 }}>{card.sub}</motion.p>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
                                     </div>
-                                    {/* Chỉ hiện chữ khi thẻ active (hoặc có thể dùng opacity animation) */}
-                                    <AnimatePresence>
-                                        {isActive && (
-                                            <motion.div 
-                                                initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}
-                                                style={{ overflow: 'hidden', whiteSpace: 'nowrap' }}
-                                            >
-                                                <div style={{ color: 'white', fontWeight: '700', fontSize: '16px' }}>{card.label}</div>
-                                                <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: '12px' }}>{card.sub}</div>
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
+                                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'black', boxShadow: '0 4px 10px rgba(0,0,0,0.2)', flexShrink: 0 }}>
+                                        <ArrowRight size={20} />
+                                    </div>
                                 </div>
 
-                                {/* Bottom: Big Number + Arrow */}
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                                     <motion.div layout style={{ fontSize: isActive ? '48px' : '32px', fontWeight: '800', color: 'white', lineHeight: 1 }}>
+                                    <div style={{ backgroundColor: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(8px)', padding: '8px 16px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                        {card.icon}
+                                        {isActive && <motion.span initial={{opacity:0}} animate={{opacity:1}} style={{ color: 'white', fontSize: '13px', fontWeight: '600', whiteSpace:'nowrap' }}>Live Data</motion.span>}
+                                    </div>
+                                     <motion.div layout="position" style={{ fontSize: isActive ? '48px' : '32px', fontWeight: '800', color: 'white', lineHeight: 1, textAlign: 'right' }}>
                                         {card.id === 3 ? card.value : <AnimatedCounter from={0} to={card.value} />} 
-                                        {card.unit && <span style={{ fontSize: '24px', marginLeft: '5px' }}>{card.unit}</span>}
+                                        {card.unit && <span style={{ fontSize: '20px', marginLeft: '4px' }}>{card.unit}</span>}
                                     </motion.div>
-
-                                    {isActive && (
-                                        <motion.div
-                                            initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1 }}
-                                            style={{ 
-                                                width: '40px', height: '40px', borderRadius: '50%', background: 'white',
-                                                display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'black'
-                                            }}
-                                        >
-                                            <ArrowRight size={20} />
-                                        </motion.div>
-                                    )}
                                 </div>
                             </div>
                         </motion.div>
@@ -441,7 +425,7 @@ const ImpactDashboard = () => {
 
 // --- 6. SECTIONS ---
 
-const Navbar = ({ view, setView, setIsModalOpen, onNavigate }) => {
+const Navbar = ({ view, setView, setIsModalOpen, onNavigate, showToast }) => {
     const isHome = view === 'home';
     return (
         <nav style={{ position: 'absolute', top: isHome ? '30px' : '20px', left: '50%', transform: 'translateX(-50%)', width: isHome ? 'calc(100% - 60px)' : '100%', maxWidth: '1200px', background: isHome ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.8)', backdropFilter: 'blur(12px)', border: isHome ? '1px solid rgba(255,255,255,0.3)' : '1px solid rgba(0,0,0,0.1)', borderRadius: '100px', padding: '8px 20px', boxSizing: 'border-box', display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 100, color: isHome ? 'white' : '#1d1d1f' }}>
@@ -452,7 +436,7 @@ const Navbar = ({ view, setView, setIsModalOpen, onNavigate }) => {
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingRight: '4px' }}>
                 {/* Nút Tạo Đề Thi Mới */}
-                <InteractiveButton onClick={() => alert("Tính năng tạo đề thi đang phát triển!")} primary={false} isDarkBg={isHome} isNav={true} isUpload={true} style={{ width: '44px', height: '44px', padding: 0, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <InteractiveButton onClick={() => showToast("Tính năng đang phát triển!")} primary={false} isDarkBg={isHome} isNav={true} isUpload={true} style={{ width: '44px', height: '44px', padding: 0, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <FilePenLine size={20} />
                 </InteractiveButton>
                 {/* Nút Upload */}
@@ -526,6 +510,7 @@ const SearchSection = ({ searchTerm, setSearchTerm, suggestions, onSelectSuggest
     );
 };
 
+// [UPDATED] FEEDBACK SECTION - VIDEO STYLE + SOCIAL LINKS
 const FeedbackSection = ({ onSend }) => {
     const [value, setValue] = useState("");
 
@@ -534,6 +519,12 @@ const FeedbackSection = ({ onSend }) => {
         onSend(value);
         setValue("");
     };
+
+    const socialLinks = [
+        { icon: <Instagram size={20} />, url: "https://www.instagram.com/21sep.05/" },
+        { icon: <Facebook size={20} />, url: "https://www.facebook.com/gmpty2109/" },
+        { icon: <Github size={20} />, url: "https://github.com/gmaanx" }
+    ];
 
     return (
         <div style={{ marginTop: '40px', marginBottom: '0px', width: 'calc(100% - 40px)', height: '500px', borderRadius: '40px', overflow: 'hidden', position: 'relative', margin: '40px auto 0px auto', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
@@ -551,8 +542,28 @@ const FeedbackSection = ({ onSend }) => {
                     <InteractiveButton onClick={handleSubmit} primary={true} style={{ padding: '12px 30px' }} isDarkBg={true} customBlackWhite={true}>Gửi</InteractiveButton>
                 </div>
             </div>
-            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '20px', background: 'rgba(0,0,0,0.2)', backdropFilter: 'blur(10px)', display: 'flex', justifyContent: 'center', gap: '30px' }}>
-                <Instagram size={18} color="white" style={{cursor: 'pointer'}}/><Twitter size={18} color="white" style={{cursor: 'pointer'}}/><Facebook size={18} color="white" style={{cursor: 'pointer'}}/><Mail size={18} color="white" style={{cursor: 'pointer'}}/>
+            
+            {/* Social Links with Hover Effects */}
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '30px', background: 'rgba(0,0,0,0.2)', backdropFilter: 'blur(10px)', display: 'flex', justifyContent: 'center', gap: '20px', zIndex: 3 }}>
+                {socialLinks.map((item, i) => (
+                    <motion.a 
+                        key={i}
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        whileHover={{ scale: 1.2, backgroundColor: 'rgba(255,255,255,0.2)', rotate: 5 }}
+                        whileTap={{ scale: 0.9 }}
+                        style={{ 
+                            width: '44px', height: '44px', borderRadius: '50%', 
+                            border: '1px solid rgba(255,255,255,0.5)', 
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                            color: 'white', cursor: 'pointer', backdropFilter: 'blur(5px)',
+                            textDecoration: 'none'
+                        }}
+                    >
+                        {item.icon}
+                    </motion.a>
+                ))}
             </div>
         </div>
     );
@@ -626,32 +637,35 @@ export default function App() {
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [toastMessage, setToastMessage] = useState(null);
-  const [viewingDoc, setViewingDoc] = useState(null); // State cho trình xem tài liệu
+  const [viewingDoc, setViewingDoc] = useState(null); 
   const [isLoading, setIsLoading] = useState(true);
 
   // --- Lenis Scroll ---
   useEffect(() => {
-    const script = document.createElement('script');
-    script.src = "https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js";
-    script.async = true;
-    script.onload = () => {
-      const lenis = new window.Lenis({
-        duration: 1.2,
-        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-        direction: 'vertical',
-        gestureDirection: 'vertical',
-        smooth: true,
-        mouseMultiplier: 1,
-        smoothTouch: false,
-        touchMultiplier: 2,
-      });
-      function raf(time) {
-        lenis.raf(time);
+    // Only load Lenis if not already present
+    if (!window.Lenis) {
+        const script = document.createElement('script');
+        script.src = "https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js";
+        script.async = true;
+        script.onload = () => {
+        const lenis = new window.Lenis({
+            duration: 1.2,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+            direction: 'vertical',
+            gestureDirection: 'vertical',
+            smooth: true,
+            mouseMultiplier: 1,
+            smoothTouch: false,
+            touchMultiplier: 2,
+        });
+        function raf(time) {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
+        }
         requestAnimationFrame(raf);
-      }
-      requestAnimationFrame(raf);
-    };
-    document.body.appendChild(script);
+        };
+        document.body.appendChild(script);
+    }
   }, []);
 
   // Init Data & Fake Loading
@@ -694,8 +708,13 @@ export default function App() {
       }, 800);
   };
 
+  const showToast = (message) => {
+      setToastMessage(message);
+      setTimeout(() => setToastMessage(null), 3000);
+  };
+
   const handleUpload = () => {
-      if (!formData.file || !formData.title || !formData.year || !formData.major) return alert("Vui lòng nhập đủ thông tin!");
+      if (!formData.file || !formData.title || !formData.year || !formData.major) return showToast("Vui lòng nhập đủ thông tin!");
       setUploading(true);
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -714,15 +733,10 @@ export default function App() {
       else showToast("Chỉ nhận file PDF!");
   };
 
-  const showToast = (message) => {
-      setToastMessage(message);
-      setTimeout(() => setToastMessage(null), 3000);
-  };
-
   return (
     <>
       <style>{Styles.global}</style>
-      <Navbar view={view} setView={setView} setIsModalOpen={setIsModalOpen} onNavigate={handleNavigation} />
+      <Navbar view={view} setView={setView} setIsModalOpen={setIsModalOpen} onNavigate={handleNavigation} showToast={showToast} />
 
       <AnimatePresence>
           {isLoading && <CounterPreloader onComplete={() => setIsLoading(false)} />}
@@ -737,18 +751,33 @@ export default function App() {
                     <HeroSection scrollY={scrollY} />
                     <div style={{ marginTop: '80px' }}>
                         <div style={{ marginBottom: '80px' }}>
-                            <ScrollRevealText text="Không gian số hiện đại nơi tài liệu và đề thi được lưu trữ, kết nối và chia sẻ bền vững. Nơi tri thức luôn sẵn sàng đồng hành cùng bạn trên hành trình học tập không giới hạn." />
+                            <ScrollRevealText text="Giảm thời gian tìm kiếm, tăng hiệu quả học tập. Tất cả tài liệu và đề thi được sắp xếp thông minh để bạn tiếp cận đúng thứ mình cần chỉ trong vài giây." />
                         </div>
                         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px', display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '30px' }}>
-                            <motion.h2 initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, margin: "-100px" }} transition={{ duration: 1.0, ease: "easeOut" }} style={{ fontSize: 'clamp(32px, 4vw, 48px)', fontWeight: '800', lineHeight: 1, margin: 0, color: '#1d1d1f' }}>Tài Liệu Mới</motion.h2>
-                            <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, margin: "-100px" }} transition={{ duration: 1.0, delay: 0.3, ease: "easeOut" }}>
+                            <motion.h2 
+                                initial={{ opacity: 0, y: 30 }} 
+                                whileInView={{ opacity: 1, y: 0 }} 
+                                // [UPDATED] - Wait until fully scrolled out
+                                viewport={{ once: false, margin: "-150px" }} 
+                                transition={{ duration: 0.5, ease: "easeOut" }} 
+                                style={{ fontSize: 'clamp(32px, 4vw, 48px)', fontWeight: '800', lineHeight: 1, margin: 0, color: '#1d1d1f' }}
+                            >
+                                "Tài Liệu Mới"
+                            </motion.h2>
+                            <motion.div 
+                                initial={{ opacity: 0, y: 30 }} 
+                                whileInView={{ opacity: 1, y: 0 }} 
+                                // [UPDATED]
+                                viewport={{ once: false, amount: 0.2 }} 
+                                transition={{ duration: 0.5, delay: 0.3, ease: "easeOut" }}
+                            >
                                 <InteractiveButton primary={false} isDarkBg={false} onClick={() => handleNavigation('all')} customBlackWhite={true}>Xem tất cả <ArrowRight size={16}/></InteractiveButton>
                             </motion.div>
                         </div>
                         {/* Truyền hàm xem tài liệu xuống */}
                         <DocumentGrid documents={documents.slice(0, 4)} onView={(doc) => setViewingDoc(doc)} />
                     </div>
-                    {/* BỔ SUNG IMPACT DASHBOARD (Bên trên FeedbackSection) */}
+                    {/* IMPACT DASHBOARD */}
                     <ImpactDashboard />
                     
                     <FeedbackSection onSend={() => showToast("Cảm ơn đóng góp của bạn!")} />
