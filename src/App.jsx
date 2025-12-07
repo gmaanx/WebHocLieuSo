@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, useScroll, useTransform, AnimatePresence, useMotionValue } from 'framer-motion';
-import { Search, X, ArrowRight, FileText, Instagram, Twitter, Facebook, Mail, Github, UploadCloud, Loader, Trash2, Heart, CheckCircle2, Play, Pause, RotateCcw, Moon, Sun, FilePenLine, TreeDeciduous, Droplets, Wind, Eye, Compass } from 'lucide-react';
+import { Search, X, ArrowRight, FileText, Instagram, Twitter, Facebook, Mail, Github, UploadCloud, Loader, Trash2, Heart, CheckCircle2, Play, Pause, RotateCcw, Moon, Sun, FilePenLine, TreeDeciduous, Droplets, Wind, Eye, Compass, ChevronRight, ChevronLeft, Check, Leaf } from 'lucide-react';
 
 // --- 1. CONFIGURATION & MOCK DATA ---
 const CONFIG = {
@@ -23,6 +23,34 @@ const INITIAL_DOCS = [
   { id: 6, title: "C++ Programming Basic", desc: "Giáo trình nhập môn lập trình cho người mới bắt đầu.", year: "K50", major: "CNTT", type: "Giáo trình", cover: CONFIG.COVERS[1], fileUrl: "#" },
   { id: 7, title: "Kinh tế vi mô", desc: "Bài tập lớn và đề cương ôn tập.", year: "K51", major: "Kinh tế", type: "Đề cương", cover: CONFIG.COVERS[2], fileUrl: "#" },
   { id: 8, title: "Pháp luật đại cương", desc: "Câu hỏi trắc nghiệm có đáp án.", year: "K50", major: "Luật", type: "Trắc nghiệm", cover: CONFIG.COVERS[3], fileUrl: "#" },
+];
+
+const MOCK_EXAM_QUESTIONS = [
+    {
+        id: 1,
+        question: "Kết quả của phép tính: 3/4 + 1/2 là bao nhiêu?",
+        options: ["5/4", "4/6", "1/2", "7/4"]
+    },
+    {
+        id: 2,
+        question: "Một hình chữ nhật có chiều dài 12cm và chiều rộng 8cm. Diện tích là?",
+        options: ["96 cm²", "40 cm²", "20 cm²", "84 cm²"]
+    },
+    {
+        id: 3,
+        question: "Tìm x biết: x × 4 = 12,8",
+        options: ["3,2", "3,6", "4,2", "32"]
+    },
+    {
+        id: 4,
+        question: "Lớp 5A có 40 học sinh, trong đó 25% là học sinh giỏi. Hỏi có bao nhiêu học sinh giỏi?",
+        options: ["10 học sinh", "25 học sinh", "15 học sinh", "30 học sinh"]
+    },
+    {
+        id: 5,
+        question: "Số thập phân 0,75 viết dưới dạng phân số tối giản là?",
+        options: ["3/4", "75/100", "7/5", "4/3"]
+    }
 ];
 
 // --- 2. UTILITIES ---
@@ -61,6 +89,8 @@ const Styles = {
     global: `
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap'); 
+        @import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
+
         :root, body, #root { width: 100%; margin: 0; padding: 0; background-color: #ffffff; font-family: "Montserrat", sans-serif; overflow-x: hidden; scroll-behavior: auto !important; }
         html.lenis { height: auto; } 
         .lenis.lenis-smooth { scroll-behavior: auto; } 
@@ -102,7 +132,6 @@ const InteractiveButton = ({ primary = true, children, onClick, style, className
     );
 };
 
-// [RESTORED] Original MenuCard with Hover Effect and Arrow
 const MenuCard = ({ item, onClick }) => {
   return (
     <motion.div initial="rest" whileHover="hover" animate="rest" onClick={onClick} style={{ position: 'relative', height: '450px', borderRadius: '30px', overflow: 'hidden', cursor: 'pointer', background: '#000', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
@@ -157,69 +186,34 @@ const ScrollRevealText = ({ text }) => {
   );
 };
 
-// [UPDATED] COUNTER PRELOADER - Sử dụng màu xanh Styles.colors.loading
-const CounterPreloader = ({ onComplete }) => {
-    const [count, setCount] = useState(0);
+const SpinningLeafLoader = ({ onComplete }) => {
     const [isFinished, setIsFinished] = useState(false);
 
     useEffect(() => {
-        const duration = 2000; 
-        const interval = 20;
-        const steps = duration / interval;
-        const increment = 100 / steps;
-
-        let current = 0;
-        const timer = setInterval(() => {
-            current += increment;
-            if (current >= 100) {
-                current = 100;
-                clearInterval(timer);
-                setIsFinished(true); 
-                setTimeout(onComplete, 900); 
-            }
-            setCount(Math.floor(current));
-        }, interval);
-
-        return () => clearInterval(timer);
+        const timer = setTimeout(() => {
+            setIsFinished(true);
+            setTimeout(onComplete, 800); 
+        }, 2000); 
+        return () => clearTimeout(timer);
     }, [onComplete]);
 
     return (
         <motion.div
-            animate={isFinished ? { y: "-100%" } : { y: 0 }}
-            transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }}
+            initial={{ opacity: 1 }}
+            animate={isFinished ? { opacity: 0 } : { opacity: 1 }}
+            transition={{ duration: 0.6 }}
             style={{
                 position: 'fixed', inset: 0, zIndex: 99999,
-                background: '#1d1d1f',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                color: '#ffffff'
+                background: '#121212', 
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}
         >
-            {/* Flexbox căn chỉnh số và % */}
-            <div style={{ display: 'flex', alignItems: 'flex-start', lineHeight: 0.8 }}>
-                <motion.h1 
-                    style={{ 
-                        fontSize: 'clamp(80px, 15vw, 150px)', fontWeight: '900', 
-                        margin: 0, letterSpacing: '-0.05em',
-                        fontVariantNumeric: 'tabular-nums',
-                        fontFamily: 'Montserrat, sans-serif'
-                    }}
-                >
-                    {count}
-                </motion.h1>
-                <span style={{ 
-                    fontSize: 'clamp(20px, 4vw, 40px)', fontWeight: '700', 
-                    marginTop: '10px', // Căn chỉnh vị trí dấu %
-                    color: Styles.colors.loading // MÀU XANH
-                }}>%</span>
-            </div>
-            
-            {/* Thanh loading bar */}
-            <motion.div 
-                initial={{ width: 0 }} 
-                animate={{ width: isFinished ? 300 : (count / 100) * 300 }} 
-                transition={{ ease: "linear", duration: 0.1 }} 
-                style={{ height: '4px', background: Styles.colors.loading, marginTop: '20px', borderRadius: '2px' }} // MÀU XANH
-            />
+            <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1.5, ease: "linear", repeat: Infinity }}
+            >
+                <Leaf size={64} color={Styles.colors.loading} fill={Styles.colors.loading} />
+            </motion.div>
         </motion.div>
     );
 };
@@ -323,7 +317,6 @@ const AnimatedCounter = ({ from, to, duration = 2 }) => {
     return <span ref={nodeRef}>{from}</span>;
 };
 
-// [RESTORED] PRAGUE STYLE IMPACT DASHBOARD
 const ImpactDashboard = () => {
     const totalViews = 12500; 
     const papersSaved = totalViews * 5;
@@ -340,7 +333,7 @@ const ImpactDashboard = () => {
 
     return (
         <div style={{ maxWidth: '1200px', margin: '80px auto 40px', padding: '0 40px' }}>
-            {/* TITLE SECTION - FIXED FLOAT OUT */}
+            {/* TITLE SECTION */}
             <div style={{ textAlign: 'center', marginBottom: '40px' }}>
                 <motion.h2 
                     initial={{ opacity: 0, y: 30 }} 
@@ -423,9 +416,328 @@ const ImpactDashboard = () => {
     );
 };
 
-// --- 6. SECTIONS ---
+const ExamModal = ({ isOpen, onClose }) => {
+    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+    const [answers, setAnswers] = useState({});
+    const [isFinished, setIsFinished] = useState(false);
+    const [direction, setDirection] = useState(0); 
 
-const Navbar = ({ view, setView, setIsModalOpen, onNavigate, showToast }) => {
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        }
+    }, [isOpen]);
+
+    useEffect(() => {
+        if (isOpen) {
+            setCurrentQuestionIndex(0);
+            setAnswers({});
+            setIsFinished(false);
+            setDirection(0);
+        }
+    }, [isOpen]);
+
+    const handleSelectAnswer = (optionIndex) => {
+        setAnswers(prev => ({
+            ...prev,
+            [currentQuestionIndex]: optionIndex
+        }));
+    };
+
+    const handleNext = () => {
+        if (currentQuestionIndex < MOCK_EXAM_QUESTIONS.length - 1) {
+            setDirection(1);
+            setCurrentQuestionIndex(prev => prev + 1);
+        } else {
+            setIsFinished(true);
+        }
+    };
+
+    const handlePrev = () => {
+        if (currentQuestionIndex > 0) {
+            setDirection(-1);
+            setCurrentQuestionIndex(prev => prev - 1);
+        }
+    };
+
+    if (!isOpen) return null;
+
+    const currentQ = MOCK_EXAM_QUESTIONS[currentQuestionIndex];
+    const currentSelectedAnswer = answers[currentQuestionIndex];
+
+    const slideVariants = {
+        enter: (direction) => ({
+            x: direction > 0 ? 400 : -400,
+            opacity: 0,
+            scale: 0.9,
+            filter: 'blur(10px)'
+        }),
+        center: {
+            zIndex: 1,
+            x: 0,
+            opacity: 1,
+            scale: 1,
+            filter: 'blur(0px)'
+        },
+        exit: (direction) => ({
+            zIndex: 0,
+            x: direction < 0 ? 400 : -400,
+            opacity: 0,
+            scale: 0.9,
+            filter: 'blur(10px)'
+        })
+    };
+
+    return (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+            <motion.div 
+                initial={{ opacity: 0 }} 
+                animate={{ opacity: 1 }} 
+                exit={{ opacity: 0 }} 
+                onClick={onClose} 
+                style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }} 
+            />
+            
+            <motion.div 
+                initial={{ opacity: 0, scale: 0.9, y: 20 }} 
+                animate={{ opacity: 1, scale: 1, y: 0 }} 
+                exit={{ opacity: 0, scale: 0.9, y: 20 }} 
+                style={{ 
+                    position: 'relative', width: '100%', maxWidth: '700px', height: '600px', 
+                    background: '#f8fafc', borderRadius: '40px', overflow: 'hidden', 
+                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', 
+                    display: 'flex', flexDirection: 'column'
+                }}
+            >
+                {/* Header */}
+                <div style={{ padding: '20px 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'transparent', zIndex: 10 }}>
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                        {MOCK_EXAM_QUESTIONS.map((_, idx) => (
+                            <div key={idx} style={{ 
+                                width: '30px', height: '4px', borderRadius: '2px', 
+                                backgroundColor: idx <= currentQuestionIndex ? (isFinished ? '#34C759' : Styles.colors.loading) : '#e2e8f0',
+                                transition: 'all 0.3s'
+                            }} />
+                        ))}
+                    </div>
+                    <button onClick={onClose} style={{ width: '40px', height: '40px', background: 'white', border: 'none', cursor: 'pointer', padding: '0', borderRadius: '50%', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <X size={20} color="#1d1d1f" />
+                    </button>
+                </div>
+
+                {/* Body - Slider Content */}
+                <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', paddingBottom: '20px' }}>
+                    <AnimatePresence initial={false} custom={direction} mode="popLayout">
+                        {!isFinished ? (
+                            <motion.div
+                                key={currentQ.id}
+                                custom={direction}
+                                variants={slideVariants}
+                                initial="enter"
+                                animate="center"
+                                exit="exit"
+                                transition={{
+                                    x: { type: "spring", stiffness: 300, damping: 30 },
+                                    opacity: { duration: 0.2 }
+                                }}
+                                style={{ 
+                                    position: 'absolute', width: '80%', background: '#fff', 
+                                    borderRadius: '32px', padding: '30px', 
+                                    boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+                                    display: 'flex', flexDirection: 'column', gap: '20px',
+                                    maxHeight: '100%', overflowY: 'auto',
+                                    overscrollBehavior: 'contain'
+                                }}
+                            >
+                                <div style={{ fontSize: '13px', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                    {currentQuestionIndex + 1} / {MOCK_EXAM_QUESTIONS.length}
+                                </div>
+                                <h2 style={{ fontSize: '20px', fontWeight: '700', color: '#1d1d1f', margin: 0, lineHeight: 1.3 }}>
+                                    {currentQ.question}
+                                </h2>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px', paddingBottom: '10px' }}>
+                                    {currentQ.options.map((opt, idx) => {
+                                        const isSelected = currentSelectedAnswer === idx;
+                                        return (
+                                            <motion.div
+                                                key={idx}
+                                                onClick={() => handleSelectAnswer(idx)}
+                                                whileHover={{ scale: 1.02 }}
+                                                whileTap={{ scale: 0.98 }}
+                                                style={{
+                                                    padding: '16px 24px',
+                                                    borderRadius: '16px',
+                                                    background: isSelected ? '#f0fdfa' : '#f8fafc',
+                                                    border: isSelected ? `2px solid ${Styles.colors.loading}` : '1px solid transparent',
+                                                    color: isSelected ? Styles.colors.loading : '#475569',
+                                                    fontSize: '15px',
+                                                    fontWeight: '600',
+                                                    cursor: 'pointer',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                                    transition: 'all 0.2s'
+                                                }}
+                                            >
+                                                {opt}
+                                                {isSelected && <CheckCircle2 size={20} color={Styles.colors.loading} />}
+                                            </motion.div>
+                                        );
+                                    })}
+                                </div>
+                            </motion.div>
+                        ) : (
+                            <motion.div
+                                key="result"
+                                initial={{ scale: 0.8, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                style={{ textAlign: 'center', padding: '40px', background: 'white', borderRadius: '32px', boxShadow: '0 10px 40px rgba(0,0,0,0.08)' }}
+                            >
+                                <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: '#dcfce7', color: '#16a34a', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto' }}>
+                                    <Check size={50} strokeWidth={4} />
+                                </div>
+                                <h2 style={{ fontSize: '32px', fontWeight: '800', color: '#1d1d1f', marginBottom: '12px' }}>Hoàn thành!</h2>
+                                <p style={{ color: '#64748b', fontSize: '18px', marginBottom: '30px' }}>Bạn đã trả lời hết 5 câu hỏi.</p>
+                                <InteractiveButton onClick={onClose} primary={true} style={{ width: '100%', justifyContent: 'center', background: '#16a34a' }}>Đóng</InteractiveButton>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+
+                {/* Footer Controls */}
+                {!isFinished && (
+                    <div style={{ padding: '30px', display: 'flex', justifyContent: 'center', gap: '16px' }}>
+                        {currentQuestionIndex > 0 && (
+                            <motion.button 
+                                onClick={handlePrev}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                style={{ 
+                                    padding: '16px 24px', borderRadius: '100px', border: 'none',
+                                    background: '#f1f5f9', color: '#1d1d1f', fontSize: '16px', fontWeight: '700',
+                                    cursor: 'pointer',
+                                    display: 'flex', alignItems: 'center', gap: '10px',
+                                    boxShadow: '0 5px 15px rgba(0,0,0,0.05)'
+                                }}
+                            >
+                                <ChevronLeft size={20} /> Quay lại
+                            </motion.button>
+                        )}
+                        <motion.button 
+                            onClick={handleNext} 
+                            disabled={currentSelectedAnswer === undefined}
+                            animate={{ 
+                                scale: currentSelectedAnswer !== undefined ? 1 : 0.9,
+                                opacity: currentSelectedAnswer !== undefined ? 1 : 0.5,
+                                y: currentSelectedAnswer !== undefined ? 0 : 10
+                            }}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            style={{ 
+                                padding: '16px 40px', borderRadius: '100px', border: 'none',
+                                background: Styles.colors.loading, color: 'white', fontSize: '16px', fontWeight: '700',
+                                cursor: currentSelectedAnswer !== undefined ? 'pointer' : 'not-allowed',
+                                display: 'flex', alignItems: 'center', gap: '10px',
+                                boxShadow: '0 10px 20px rgba(0,0,0,0.1)'
+                            }}
+                        >
+                            {currentQuestionIndex === MOCK_EXAM_QUESTIONS.length - 1 ? "Hoàn thành" : "Tiếp tục"} <ArrowRight size={20} />
+                        </motion.button>
+                    </div>
+                )}
+            </motion.div>
+        </div>
+    );
+};
+
+const FolderUpload = ({ onFileSelect }) => {
+    return (
+        <div style={{ position: 'relative', width: '100%', height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <motion.div
+                whileHover="hover"
+                initial="rest"
+                className="relative"
+                style={{ width: 120, height: 90, position: 'relative', cursor: 'pointer' }}
+            >
+                <input 
+                    type="file" 
+                    onChange={onFileSelect} 
+                    accept=".pdf"
+                    style={{ position: 'absolute', inset: -50, opacity: 0, zIndex: 100, cursor: 'pointer' }} 
+                />
+
+                <div style={{ 
+                    position: 'absolute', width: '100%', height: '100%', 
+                    background: Styles.colors.loading, 
+                    borderRadius: '12px',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                }} />
+                
+                <div style={{ 
+                    position: 'absolute', top: -12, left: 0, 
+                    width: '40%', height: 12, 
+                    background: Styles.colors.loading, 
+                    borderRadius: '8px 8px 0 0' 
+                }} />
+
+                <motion.div
+                    variants={{ rest: { y: 0 }, hover: { y: -15, rotate: -5 } }}
+                    style={{ 
+                        position: 'absolute', bottom: 10, left: 10, right: 10, height: '80%', 
+                        background: 'white', borderRadius: '4px',
+                        boxShadow: '0 10px 20px rgba(0,0,0,0.15)', 
+                        zIndex: 2
+                    }}
+                />
+                
+                <motion.div
+                    variants={{ rest: { y: 0 }, hover: { y: -25, rotate: 5 } }}
+                    style={{ 
+                        position: 'absolute', bottom: 10, left: 10, right: 10, height: '80%', 
+                        background: 'white', borderRadius: '4px',
+                        boxShadow: '0 10px 20px rgba(0,0,0,0.15)', 
+                        zIndex: 3,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center'
+                    }}
+                >
+                    <div style={{ width: '60%', height: '4px', background: '#F3F4F6', borderRadius: '2px' }} />
+                </motion.div>
+
+                <motion.div
+                    variants={{ rest: { rotateX: 0, y: 0 }, hover: { rotateX: -15, y: 5 } }}
+                    style={{ 
+                        position: 'absolute', bottom: 0, left: 0, width: '100%', height: '85%', 
+                        background: Styles.colors.loading, 
+                        borderRadius: '0 0 12px 12px',
+                        zIndex: 10,
+                        transformOrigin: 'bottom',
+                        perspective: 1000,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center'
+                    }}
+                >
+                    <UploadCloud color="white" size={32} />
+                </motion.div>
+                
+                <motion.div
+                    variants={{ rest: { opacity: 0 }, hover: { opacity: 0.2 } }}
+                    style={{ 
+                        position: 'absolute', bottom: 0, left: 0, width: '100%', height: '85%', 
+                        background: 'linear-gradient(to bottom, rgba(255,255,255,0.5), transparent)', 
+                        borderRadius: '0 0 12px 12px',
+                        zIndex: 11,
+                        pointerEvents: 'none'
+                    }}
+                />
+            </motion.div>
+        </div>
+    )
+}
+
+const Navbar = ({ view, setView, setIsModalOpen, onNavigate, showToast, setIsExamOpen }) => {
     const isHome = view === 'home';
     return (
         <nav style={{ position: 'absolute', top: isHome ? '30px' : '20px', left: '50%', transform: 'translateX(-50%)', width: isHome ? 'calc(100% - 60px)' : '100%', maxWidth: '1200px', background: isHome ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.8)', backdropFilter: 'blur(12px)', border: isHome ? '1px solid rgba(255,255,255,0.3)' : '1px solid rgba(0,0,0,0.1)', borderRadius: '100px', padding: '8px 20px', boxSizing: 'border-box', display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 100, color: isHome ? 'white' : '#1d1d1f' }}>
@@ -435,11 +747,9 @@ const Navbar = ({ view, setView, setIsModalOpen, onNavigate, showToast }) => {
                 <NavButton onClick={() => onNavigate('all')} isActive={view === 'all'} isDarkBg={isHome}>Tài liệu</NavButton>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingRight: '4px' }}>
-                {/* Nút Tạo Đề Thi Mới */}
-                <InteractiveButton onClick={() => showToast("Tính năng đang phát triển!")} primary={false} isDarkBg={isHome} isNav={true} isUpload={true} style={{ width: '44px', height: '44px', padding: 0, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <InteractiveButton onClick={() => setIsExamOpen(true)} primary={false} isDarkBg={isHome} isNav={true} isUpload={true} style={{ width: '44px', height: '44px', padding: 0, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <FilePenLine size={20} />
                 </InteractiveButton>
-                {/* Nút Upload */}
                 <InteractiveButton onClick={() => setIsModalOpen(true)} primary={false} isDarkBg={isHome} isNav={true} isUpload={true} style={{ width: '44px', height: '44px', padding: 0, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <UploadCloud size={20} />
                 </InteractiveButton>
@@ -510,7 +820,6 @@ const SearchSection = ({ searchTerm, setSearchTerm, suggestions, onSelectSuggest
     );
 };
 
-// [UPDATED] FEEDBACK SECTION - VIDEO STYLE + SOCIAL LINKS
 const FeedbackSection = ({ onSend }) => {
     const [value, setValue] = useState("");
 
@@ -543,7 +852,6 @@ const FeedbackSection = ({ onSend }) => {
                 </div>
             </div>
             
-            {/* Social Links with Hover Effects */}
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '30px', background: 'rgba(0,0,0,0.2)', backdropFilter: 'blur(10px)', display: 'flex', justifyContent: 'center', gap: '20px', zIndex: 3 }}>
                 {socialLinks.map((item, i) => (
                     <motion.a 
@@ -587,13 +895,7 @@ const UploadModal = ({ isOpen, onClose, formData, setFormData, onFileSelect, onR
                  <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#1d1d1f' }}><X size={20}/></button>
              </div>
              {!formData.file ? (
-                 <div style={{ border: '2px dashed #ddd', padding: '40px 20px', borderRadius: '16px', textAlign: 'center', cursor: 'pointer', background: '#fafafa' }}>
-                     <input type="file" id="pdf-upload" accept=".pdf" style={{ display: 'none' }} onChange={onFileSelect} />
-                     <label htmlFor="pdf-upload" style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-                         <UploadCloud size={32} color="#2E7D32" />
-                         <div><span style={{ color: '#1d1d1f', fontSize: '16px', fontWeight: '700' }}>Chọn file PDF</span></div>
-                     </label>
-                 </div>
+                 <FolderUpload onFileSelect={onFileSelect} />
              ) : (
                  <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                      <div style={{ background: '#F5F5F7', padding: '12px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -630,6 +932,7 @@ export default function App() {
   const [view, setView] = useState('home');
   const [activeTab, setActiveTab] = useState('All');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isExamOpen, setIsExamOpen] = useState(false); 
   const { scrollY } = useScroll();
   const [documents, setDocuments] = useState([]);
   const [uploading, setUploading] = useState(false);
@@ -642,7 +945,6 @@ export default function App() {
 
   // --- Lenis Scroll ---
   useEffect(() => {
-    // Only load Lenis if not already present
     if (!window.Lenis) {
         const script = document.createElement('script');
         script.src = "https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js";
@@ -673,13 +975,13 @@ export default function App() {
       const savedDocs = localStorage.getItem('hoclieuso_docs');
       if (savedDocs) { setDocuments(JSON.parse(savedDocs)); } else { setDocuments(INITIAL_DOCS); }
       
-      // Preload images for better UX
+      // Preload images
       Object.values(CONFIG.DASHBOARD_IMGS).forEach(src => {
           const img = new Image();
           img.src = src;
       });
 
-      const timer = setTimeout(() => setIsLoading(false), 2000); // Intro load
+      const timer = setTimeout(() => setIsLoading(false), 2000); 
       return () => clearTimeout(timer);
   }, []);
 
@@ -736,10 +1038,10 @@ export default function App() {
   return (
     <>
       <style>{Styles.global}</style>
-      <Navbar view={view} setView={setView} setIsModalOpen={setIsModalOpen} onNavigate={handleNavigation} showToast={showToast} />
+      <Navbar view={view} setView={setView} setIsModalOpen={setIsModalOpen} onNavigate={handleNavigation} showToast={showToast} setIsExamOpen={setIsExamOpen} />
 
       <AnimatePresence>
-          {isLoading && <CounterPreloader onComplete={() => setIsLoading(false)} />}
+          {isLoading && <SpinningLeafLoader onComplete={() => setIsLoading(false)} />}
           {toastMessage && <Toast message={toastMessage} />}
           {viewingDoc && <DocViewer doc={viewingDoc} onClose={() => setViewingDoc(null)} />}
       </AnimatePresence>
@@ -757,7 +1059,6 @@ export default function App() {
                             <motion.h2 
                                 initial={{ opacity: 0, y: 30 }} 
                                 whileInView={{ opacity: 1, y: 0 }} 
-                                // [UPDATED] - Wait until fully scrolled out
                                 viewport={{ once: false, margin: "-150px" }} 
                                 transition={{ duration: 0.5, ease: "easeOut" }} 
                                 style={{ fontSize: 'clamp(32px, 4vw, 48px)', fontWeight: '800', lineHeight: 1, margin: 0, color: '#1d1d1f' }}
@@ -767,17 +1068,14 @@ export default function App() {
                             <motion.div 
                                 initial={{ opacity: 0, y: 30 }} 
                                 whileInView={{ opacity: 1, y: 0 }} 
-                                // [UPDATED]
                                 viewport={{ once: false, amount: 0.2 }} 
                                 transition={{ duration: 0.5, delay: 0.3, ease: "easeOut" }}
                             >
                                 <InteractiveButton primary={false} isDarkBg={false} onClick={() => handleNavigation('all')} customBlackWhite={true}>Xem tất cả <ArrowRight size={16}/></InteractiveButton>
                             </motion.div>
                         </div>
-                        {/* Truyền hàm xem tài liệu xuống */}
                         <DocumentGrid documents={documents.slice(0, 4)} onView={(doc) => setViewingDoc(doc)} />
                     </div>
-                    {/* IMPACT DASHBOARD */}
                     <ImpactDashboard />
                     
                     <FeedbackSection onSend={() => showToast("Cảm ơn đóng góp của bạn!")} />
@@ -798,7 +1096,6 @@ export default function App() {
                                 <InteractiveButton key={tab} primary={activeTab === tab} onClick={() => setActiveTab(tab)} style={{ padding: '10px 32px', fontSize: '15px' }} isDarkBg={false}>{tab === 'All' ? 'Tất cả' : `Khóa ${tab}`}</InteractiveButton>
                             ))}
                         </div>
-                        {/* Truyền hàm xem tài liệu xuống */}
                         <DocumentGrid documents={getDisplayDocuments()} onView={(doc) => setViewingDoc(doc)} />
                     </div>
                 </motion.div>
@@ -806,6 +1103,7 @@ export default function App() {
         </AnimatePresence>
       </div>
       <UploadModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} formData={formData} setFormData={setFormData} onFileSelect={handleFileSelect} onRemoveFile={() => setFormData({ title: '', desc: '', year: '', major: '', file: null })} onUpload={handleUpload} uploading={uploading} />
+      <ExamModal isOpen={isExamOpen} onClose={() => setIsExamOpen(false)} />
     </>
   );
 }
