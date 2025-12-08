@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, useScroll, useTransform, AnimatePresence, useMotionValue } from 'framer-motion';
-import { Search, X, ArrowRight, FileText, Instagram, Twitter, Facebook, Mail, Github, UploadCloud, Loader, Trash2, Heart, CheckCircle2, Play, Pause, RotateCcw, Moon, Sun, FilePenLine, TreeDeciduous, Droplets, Wind, Eye, Compass, ChevronRight, ChevronLeft, Check, Leaf } from 'lucide-react';
+import { Search, X, ArrowRight, FileText, Instagram, Twitter, Facebook, Mail, Github, UploadCloud, Loader, Trash2, Heart, CheckCircle2, Play, Pause, RotateCcw, Moon, Sun, FilePenLine, TreeDeciduous, Droplets, Wind, Eye, Compass, ChevronRight, ChevronLeft, Check, Leaf, AlertCircle } from 'lucide-react';
 
 // --- 1. CONFIGURATION & MOCK DATA ---
 const CONFIG = {
+  // [RESTORED] Local image paths
   COVERS: ["./img/cover1.jpg", "./img/cover2.jpg", "./img/cover3.jpg", "./img/cover4.jpg"],
   FEEDBACK_BG: "./img/feedback-bg.jpg",
   HERO_BG: "./img/hero-bg.jpg",
@@ -25,31 +26,37 @@ const INITIAL_DOCS = [
   { id: 8, title: "Pháp luật đại cương", desc: "Câu hỏi trắc nghiệm có đáp án.", year: "K50", major: "Luật", type: "Trắc nghiệm", cover: CONFIG.COVERS[3], fileUrl: "#" },
 ];
 
+// GRADE 5 MATH QUESTIONS
 const MOCK_EXAM_QUESTIONS = [
     {
         id: 1,
         question: "Kết quả của phép tính: 3/4 + 1/2 là bao nhiêu?",
-        options: ["5/4", "4/6", "1/2", "7/4"]
+        options: ["5/4", "4/6", "1/2", "7/4"],
+        correctAnswer: 0 
     },
     {
         id: 2,
         question: "Một hình chữ nhật có chiều dài 12cm và chiều rộng 8cm. Diện tích là?",
-        options: ["96 cm²", "40 cm²", "20 cm²", "84 cm²"]
+        options: ["40 cm²", "96 cm²", "20 cm²", "84 cm²"],
+        correctAnswer: 1 
     },
     {
         id: 3,
         question: "Tìm x biết: x × 4 = 12,8",
-        options: ["3,2", "3,6", "4,2", "32"]
+        options: ["3,2", "3,6", "4,2", "32"],
+        correctAnswer: 0 
     },
     {
         id: 4,
         question: "Lớp 5A có 40 học sinh, trong đó 25% là học sinh giỏi. Hỏi có bao nhiêu học sinh giỏi?",
-        options: ["10 học sinh", "25 học sinh", "15 học sinh", "30 học sinh"]
+        options: ["25 học sinh", "15 học sinh", "10 học sinh", "30 học sinh"],
+        correctAnswer: 2 
     },
     {
         id: 5,
         question: "Số thập phân 0,75 viết dưới dạng phân số tối giản là?",
-        options: ["3/4", "75/100", "7/5", "4/3"]
+        options: ["75/100", "7/5", "4/3", "3/4"],
+        correctAnswer: 3 
     }
 ];
 
@@ -83,6 +90,7 @@ const Styles = {
         orange: '#f97316', 
         loading: '#007E6E', 
         green: '#34C759', 
+        red: '#EF4444',
         gray: '#e0e0e0', 
         lightGray: '#f5f5f7' 
     },
@@ -317,6 +325,7 @@ const AnimatedCounter = ({ from, to, duration = 2 }) => {
     return <span ref={nodeRef}>{from}</span>;
 };
 
+// --- SECTION: IMPACT DASHBOARD ---
 const ImpactDashboard = () => {
     const totalViews = 12500; 
     const papersSaved = totalViews * 5;
@@ -326,14 +335,38 @@ const ImpactDashboard = () => {
     const [hoveredCard, setHoveredCard] = useState(1);
 
     const cards = [
-        { id: 1, label: "Papers Saved", sub: "Số giấy tiết kiệm", value: papersSaved, icon: <FileText size={16} color="white" />, image: CONFIG.DASHBOARD_IMGS.PAPER, color: "#4CAF50" },
-        { id: 2, label: "Water Saved", sub: "Lít nước bảo vệ", value: waterSaved, icon: <Droplets size={16} color="white" />, image: CONFIG.DASHBOARD_IMGS.WATER, color: "#2196F3" },
-        { id: 3, label: "CO2 Reduced", sub: "Kg khí thải giảm", value: co2Reduced, unit: "kg", icon: <Wind size={16} color="white" />, image: CONFIG.DASHBOARD_IMGS.CO2, color: "#FF9800" }
+        { 
+            id: 1, 
+            label: "Papers Saved", 
+            sub: "Chuyển đổi số giúp hạn chế khai thác gỗ, giữ lại lá phổi xanh vô giá cho Trái Đất.", 
+            value: papersSaved, 
+            icon: <FileText size={16} color="white" />, 
+            image: CONFIG.DASHBOARD_IMGS.PAPER, 
+            color: "#4CAF50" 
+        },
+        { 
+            id: 2, 
+            label: "Water Saved", 
+            sub: "Tiết kiệm nguồn nước sạch quý báu vốn bị tiêu tốn khổng lồ trong công nghiệp sản xuất giấy.", 
+            value: waterSaved, 
+            icon: <Droplets size={16} color="white" />, 
+            image: CONFIG.DASHBOARD_IMGS.WATER, 
+            color: "#2196F3" 
+        },
+        { 
+            id: 3, 
+            label: "CO2 Reduced", 
+            sub: "Cắt giảm khí thải từ quy trình in ấn và vận chuyển, chung tay đẩy lùi biến đổi khí hậu.", 
+            value: co2Reduced, 
+            unit: "kg", 
+            icon: <Wind size={16} color="white" />, 
+            image: CONFIG.DASHBOARD_IMGS.CO2, 
+            color: "#FF9800" 
+        }
     ];
 
     return (
         <div style={{ maxWidth: '1200px', margin: '80px auto 40px', padding: '0 40px' }}>
-            {/* TITLE SECTION */}
             <div style={{ textAlign: 'center', marginBottom: '40px' }}>
                 <motion.h2 
                     initial={{ opacity: 0, y: 30 }} 
@@ -356,7 +389,6 @@ const ImpactDashboard = () => {
                 </motion.p>
             </div>
 
-            {/* CARDS FLEX CONTAINER */}
             <div style={{ display: 'flex', gap: '20px', height: '400px' }}>
                 {cards.map((card) => {
                     const isActive = hoveredCard === card.id;
@@ -384,13 +416,7 @@ const ImpactDashboard = () => {
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                     <div style={{ width: '100%', paddingRight: '10px' }}>
                                         <motion.h3 layout="position" style={{ color: 'white', fontSize: isActive ? '32px' : '24px', fontWeight: '800', margin: '0 0 8px 0', lineHeight: 1.1 }}>{card.label}</motion.h3>
-                                        <AnimatePresence>
-                                            {isActive && (
-                                                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
-                                                    <motion.p layout="position" style={{ color: 'rgba(255,255,255,0.8)', fontSize: '14px', margin: 0 }}>{card.sub}</motion.p>
-                                                </motion.div>
-                                            )}
-                                        </AnimatePresence>
+                                        <motion.p layout="position" style={{ color: 'rgba(255,255,255,0.8)', fontSize: '14px', margin: 0 }}>{card.sub}</motion.p>
                                     </div>
                                     <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'black', boxShadow: '0 4px 10px rgba(0,0,0,0.2)', flexShrink: 0 }}>
                                         <ArrowRight size={20} />
@@ -416,11 +442,13 @@ const ImpactDashboard = () => {
     );
 };
 
+// --- SECTION: EXAM MODAL ---
 const ExamModal = ({ isOpen, onClose }) => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [answers, setAnswers] = useState({});
     const [isFinished, setIsFinished] = useState(false);
     const [direction, setDirection] = useState(0); 
+    const [mode, setMode] = useState('quiz'); 
 
     useEffect(() => {
         if (isOpen) {
@@ -439,10 +467,12 @@ const ExamModal = ({ isOpen, onClose }) => {
             setAnswers({});
             setIsFinished(false);
             setDirection(0);
+            setMode('quiz');
         }
     }, [isOpen]);
 
     const handleSelectAnswer = (optionIndex) => {
+        if (mode === 'review') return; 
         setAnswers(prev => ({
             ...prev,
             [currentQuestionIndex]: optionIndex
@@ -454,6 +484,7 @@ const ExamModal = ({ isOpen, onClose }) => {
             setDirection(1);
             setCurrentQuestionIndex(prev => prev + 1);
         } else {
+            setMode('score');
             setIsFinished(true);
         }
     };
@@ -465,10 +496,27 @@ const ExamModal = ({ isOpen, onClose }) => {
         }
     };
 
+    const calculateScore = () => {
+        let correctCount = 0;
+        MOCK_EXAM_QUESTIONS.forEach((q, index) => {
+            if (answers[index] === q.correctAnswer) {
+                correctCount++;
+            }
+        });
+        return correctCount;
+    };
+
+    const handleReview = () => {
+        setMode('review');
+        setCurrentQuestionIndex(0);
+        setDirection(0);
+    };
+
     if (!isOpen) return null;
 
     const currentQ = MOCK_EXAM_QUESTIONS[currentQuestionIndex];
     const currentSelectedAnswer = answers[currentQuestionIndex];
+    const score = calculateScore();
 
     const slideVariants = {
         enter: (direction) => ({
@@ -504,23 +552,24 @@ const ExamModal = ({ isOpen, onClose }) => {
             />
             
             <motion.div 
+                layout 
                 initial={{ opacity: 0, scale: 0.9, y: 20 }} 
                 animate={{ opacity: 1, scale: 1, y: 0 }} 
                 exit={{ opacity: 0, scale: 0.9, y: 20 }} 
+                transition={{ type: "spring", stiffness: 120, damping: 20 }}
                 style={{ 
-                    position: 'relative', width: '100%', maxWidth: '700px', height: '600px', 
+                    position: 'relative', width: '100%', maxWidth: '1200px', height: '85vh',
                     background: '#f8fafc', borderRadius: '40px', overflow: 'hidden', 
                     boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', 
                     display: 'flex', flexDirection: 'column'
                 }}
             >
-                {/* Header */}
                 <div style={{ padding: '20px 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'transparent', zIndex: 10 }}>
                     <div style={{ display: 'flex', gap: '4px' }}>
-                        {MOCK_EXAM_QUESTIONS.map((_, idx) => (
+                         {mode !== 'score' && MOCK_EXAM_QUESTIONS.map((_, idx) => (
                             <div key={idx} style={{ 
                                 width: '30px', height: '4px', borderRadius: '2px', 
-                                backgroundColor: idx <= currentQuestionIndex ? (isFinished ? '#34C759' : Styles.colors.loading) : '#e2e8f0',
+                                backgroundColor: idx <= currentQuestionIndex ? (mode === 'review' ? '#64748b' : Styles.colors.loading) : '#e2e8f0',
                                 transition: 'all 0.3s'
                             }} />
                         ))}
@@ -530,11 +579,11 @@ const ExamModal = ({ isOpen, onClose }) => {
                     </button>
                 </div>
 
-                {/* Body - Slider Content */}
                 <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', paddingBottom: '20px' }}>
                     <AnimatePresence initial={false} custom={direction} mode="popLayout">
-                        {!isFinished ? (
+                        {mode !== 'score' ? (
                             <motion.div
+                                layout
                                 key={currentQ.id}
                                 custom={direction}
                                 variants={slideVariants}
@@ -554,37 +603,69 @@ const ExamModal = ({ isOpen, onClose }) => {
                                     overscrollBehavior: 'contain'
                                 }}
                             >
-                                <div style={{ fontSize: '13px', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                                    {currentQuestionIndex + 1} / {MOCK_EXAM_QUESTIONS.length}
-                                </div>
-                                <h2 style={{ fontSize: '20px', fontWeight: '700', color: '#1d1d1f', margin: 0, lineHeight: 1.3 }}>
+                                <motion.div layout="position" style={{ fontSize: '13px', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                    {mode === 'review' ? 'Xem lại: ' : ''}Câu hỏi {currentQuestionIndex + 1} / {MOCK_EXAM_QUESTIONS.length}
+                                </motion.div>
+                                <motion.h2 layout="position" style={{ fontSize: '20px', fontWeight: '700', color: '#1d1d1f', margin: 0, lineHeight: 1.3 }}>
                                     {currentQ.question}
-                                </h2>
+                                </motion.h2>
 
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px', paddingBottom: '10px' }}>
                                     {currentQ.options.map((opt, idx) => {
-                                        const isSelected = currentSelectedAnswer === idx;
+                                        let isSelected = currentSelectedAnswer === idx;
+                                        let borderColor = 'transparent';
+                                        let bgColor = '#f8fafc';
+                                        let textColor = '#475569';
+                                        let Icon = null;
+
+                                        if (mode === 'quiz') {
+                                            if (isSelected) {
+                                                borderColor = Styles.colors.loading;
+                                                bgColor = '#f0fdfa';
+                                                textColor = Styles.colors.loading;
+                                                Icon = <CheckCircle2 size={20} color={Styles.colors.loading} />;
+                                            }
+                                        } else if (mode === 'review') {
+                                            if (idx === currentQ.correctAnswer) {
+                                                borderColor = Styles.colors.green;
+                                                bgColor = '#f0fdf4';
+                                                textColor = Styles.colors.green;
+                                                Icon = <Check size={20} color={Styles.colors.green} />;
+                                            } else if (isSelected && idx !== currentQ.correctAnswer) {
+                                                borderColor = Styles.colors.red;
+                                                bgColor = '#fef2f2';
+                                                textColor = Styles.colors.red;
+                                                Icon = <X size={20} color={Styles.colors.red} />;
+                                            } else if (isSelected) {
+                                                borderColor = Styles.colors.green;
+                                                bgColor = '#f0fdf4';
+                                                textColor = Styles.colors.green;
+                                                Icon = <Check size={20} color={Styles.colors.green} />;
+                                            }
+                                        }
+
                                         return (
                                             <motion.div
+                                                layout
                                                 key={idx}
                                                 onClick={() => handleSelectAnswer(idx)}
-                                                whileHover={{ scale: 1.02 }}
-                                                whileTap={{ scale: 0.98 }}
+                                                whileHover={mode === 'quiz' ? { scale: 1.02 } : {}}
+                                                whileTap={mode === 'quiz' ? { scale: 0.98 } : {}}
                                                 style={{
                                                     padding: '16px 24px',
                                                     borderRadius: '16px',
-                                                    background: isSelected ? '#f0fdfa' : '#f8fafc',
-                                                    border: isSelected ? `2px solid ${Styles.colors.loading}` : '1px solid transparent',
-                                                    color: isSelected ? Styles.colors.loading : '#475569',
+                                                    background: bgColor,
+                                                    border: `2px solid ${borderColor}`,
+                                                    color: textColor,
                                                     fontSize: '15px',
                                                     fontWeight: '600',
-                                                    cursor: 'pointer',
+                                                    cursor: mode === 'quiz' ? 'pointer' : 'default',
                                                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                                                     transition: 'all 0.2s'
                                                 }}
                                             >
                                                 {opt}
-                                                {isSelected && <CheckCircle2 size={20} color={Styles.colors.loading} />}
+                                                {Icon}
                                             </motion.div>
                                         );
                                     })}
@@ -592,6 +673,7 @@ const ExamModal = ({ isOpen, onClose }) => {
                             </motion.div>
                         ) : (
                             <motion.div
+                                layout
                                 key="result"
                                 initial={{ scale: 0.8, opacity: 0 }}
                                 animate={{ scale: 1, opacity: 1 }}
@@ -601,59 +683,76 @@ const ExamModal = ({ isOpen, onClose }) => {
                                     <Check size={50} strokeWidth={4} />
                                 </div>
                                 <h2 style={{ fontSize: '32px', fontWeight: '800', color: '#1d1d1f', marginBottom: '12px' }}>Hoàn thành!</h2>
-                                <p style={{ color: '#64748b', fontSize: '18px', marginBottom: '30px' }}>Bạn đã trả lời hết 5 câu hỏi.</p>
-                                <InteractiveButton onClick={onClose} primary={true} style={{ width: '100%', justifyContent: 'center', background: '#16a34a' }}>Đóng</InteractiveButton>
+                                <p style={{ color: '#64748b', fontSize: '18px', marginBottom: '8px' }}>
+                                    Số câu đúng: <span style={{ fontWeight: 'bold', color: '#16a34a' }}>{score}/{MOCK_EXAM_QUESTIONS.length}</span>
+                                </p>
+                                <p style={{ color: '#64748b', fontSize: '18px', marginBottom: '30px' }}>
+                                    Điểm số: <span style={{ fontWeight: 'bold', color: '#16a34a' }}>{(score / MOCK_EXAM_QUESTIONS.length) * 10}</span>
+                                </p>
+                                <div style={{ display: 'flex', gap: '10px' }}>
+                                    <InteractiveButton onClick={handleReview} primary={false} style={{ width: '100%', justifyContent: 'center', background: '#f1f5f9', color: '#1d1d1f' }}>Xem lại</InteractiveButton>
+                                    <InteractiveButton onClick={onClose} primary={true} style={{ width: '100%', justifyContent: 'center', background: '#16a34a' }}>Đóng</InteractiveButton>
+                                </div>
                             </motion.div>
                         )}
                     </AnimatePresence>
                 </div>
 
-                {/* Footer Controls */}
-                {!isFinished && (
-                    <div style={{ padding: '30px', display: 'flex', justifyContent: 'center', gap: '16px' }}>
-                        {currentQuestionIndex > 0 && (
+                <div style={{ padding: '20px 30px', background: 'transparent', zIndex: 10, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {mode !== 'score' && (
+                         <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
+                            {currentQuestionIndex > 0 && (
+                                <motion.button 
+                                    onClick={handlePrev}
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    style={{ 
+                                        padding: '16px 24px', borderRadius: '100px', border: 'none',
+                                        background: '#f1f5f9', color: '#1d1d1f', fontSize: '16px', fontWeight: '700',
+                                        cursor: 'pointer',
+                                        display: 'flex', alignItems: 'center', gap: '10px',
+                                        boxShadow: '0 5px 15px rgba(0,0,0,0.05)'
+                                    }}
+                                >
+                                    <ChevronLeft size={20} /> Quay lại
+                                </motion.button>
+                            )}
                             <motion.button 
-                                onClick={handlePrev}
+                                onClick={handleNext} 
+                                disabled={mode === 'quiz' && currentSelectedAnswer === undefined}
+                                animate={{ 
+                                    scale: (mode === 'review' || currentSelectedAnswer !== undefined) ? 1 : 0.9,
+                                    opacity: (mode === 'review' || currentSelectedAnswer !== undefined) ? 1 : 0.5,
+                                    y: (mode === 'review' || currentSelectedAnswer !== undefined) ? 0 : 10
+                                }}
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 style={{ 
-                                    padding: '16px 24px', borderRadius: '100px', border: 'none',
-                                    background: '#f1f5f9', color: '#1d1d1f', fontSize: '16px', fontWeight: '700',
-                                    cursor: 'pointer',
+                                    padding: '16px 40px', borderRadius: '100px', border: 'none',
+                                    background: Styles.colors.loading, color: 'white', fontSize: '16px', fontWeight: '700',
+                                    cursor: (mode === 'review' || currentSelectedAnswer !== undefined) ? 'pointer' : 'not-allowed',
                                     display: 'flex', alignItems: 'center', gap: '10px',
-                                    boxShadow: '0 5px 15px rgba(0,0,0,0.05)'
+                                    boxShadow: '0 10px 20px rgba(0,0,0,0.1)'
                                 }}
                             >
-                                <ChevronLeft size={20} /> Quay lại
+                                {currentQuestionIndex === MOCK_EXAM_QUESTIONS.length - 1 ? (mode === 'review' ? "Đóng" : "Nộp bài") : "Tiếp tục"} <ArrowRight size={20} />
                             </motion.button>
-                        )}
-                        <motion.button 
-                            onClick={handleNext} 
-                            disabled={currentSelectedAnswer === undefined}
-                            animate={{ 
-                                scale: currentSelectedAnswer !== undefined ? 1 : 0.9,
-                                opacity: currentSelectedAnswer !== undefined ? 1 : 0.5,
-                                y: currentSelectedAnswer !== undefined ? 0 : 10
-                            }}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            style={{ 
-                                padding: '16px 40px', borderRadius: '100px', border: 'none',
-                                background: Styles.colors.loading, color: 'white', fontSize: '16px', fontWeight: '700',
-                                cursor: currentSelectedAnswer !== undefined ? 'pointer' : 'not-allowed',
-                                display: 'flex', alignItems: 'center', gap: '10px',
-                                boxShadow: '0 10px 20px rgba(0,0,0,0.1)'
-                            }}
-                        >
-                            {currentQuestionIndex === MOCK_EXAM_QUESTIONS.length - 1 ? "Hoàn thành" : "Tiếp tục"} <ArrowRight size={20} />
-                        </motion.button>
+                        </div>
+                    )}
+                    
+                    <div style={{ textAlign: 'center', marginTop: '10px' }}>
+                        <p style={{ fontSize: '11px', color: '#94a3b8', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                            <AlertCircle size={12} /> Đây là đề thi mẫu, mô phỏng cho chức năng tạo lập đề thi.
+                        </p>
                     </div>
-                )}
+                </div>
+
             </motion.div>
         </div>
     );
 };
 
+// --- SECTION: ANIMATED FOLDER UPLOAD ---
 const FolderUpload = ({ onFileSelect }) => {
     return (
         <div style={{ position: 'relative', width: '100%', height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -736,6 +835,8 @@ const FolderUpload = ({ onFileSelect }) => {
         </div>
     )
 }
+
+// --- 6. SECTIONS ---
 
 const Navbar = ({ view, setView, setIsModalOpen, onNavigate, showToast, setIsExamOpen }) => {
     const isHome = view === 'home';
