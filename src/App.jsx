@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, useScroll, useTransform, AnimatePresence, useMotionValue } from 'framer-motion';
-import { Search, X, ArrowRight, FileText, Instagram, Twitter, Facebook, Mail, Github, UploadCloud, Loader, Trash2, Heart, CheckCircle2, Play, Pause, RotateCcw, Moon, Sun, FilePenLine, TreeDeciduous, Droplets, Wind, Eye, Compass, ChevronRight, ChevronLeft, Check, Leaf, AlertCircle } from 'lucide-react';
+import { Search, X, ArrowRight, FileText, Instagram, Twitter, Facebook, Mail, Github, UploadCloud, Loader, Trash2, Heart, CheckCircle2, Play, Pause, RotateCcw, Moon, Sun, FilePenLine, TreeDeciduous, Droplets, Wind, Eye, Compass, ChevronRight, ChevronLeft, Check, Leaf, AlertCircle, BookOpen } from 'lucide-react';
 
 // --- 1. CONFIGURATION & MOCK DATA ---
 const CONFIG = {
@@ -99,7 +99,7 @@ const Styles = {
         @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap'); 
         @import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
 
-        :root, body, #root { width: 100%; margin: 0; padding: 0; background-color: #ffffff; font-family: "Montserrat", sans-serif; overflow-x: hidden; scroll-behavior: auto !important; }
+        :root, body, #root { width: 100%; margin: 0; padding: 0; backgroundColor: #ffffff; font-family: "Montserrat", sans-serif; overflow-x: hidden; scroll-behavior: auto !important; }
         html.lenis { height: auto; } 
         .lenis.lenis-smooth { scroll-behavior: auto; } 
         .lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; } 
@@ -109,12 +109,34 @@ const Styles = {
         @media (max-width: 768px) { .menu-grid { grid-template-columns: 1fr; padding: 20px; } }
         ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: #f1f1f1; } ::-webkit-scrollbar-thumb { background: #bbb; border-radius: 10px; }
         .suggestion-item:hover { background-color: #f5f5f7; cursor: pointer; }
+
+        /* Custom Loader CSS */
+        .loader {
+          width: 80px;
+          height: 70px;
+          border: 5px solid #007E6E; /* Modified to match theme */
+          padding: 0 8px;
+          box-sizing: border-box;
+          background:
+            linear-gradient(#fff 0 0) 0    0/8px 20px,
+            linear-gradient(#fff 0 0) 100% 0/8px 20px,
+            radial-gradient(farthest-side,#fff 90%,#0000) 0 5px/8px 8px content-box,
+            #007E6E; /* Modified to match theme */
+          background-repeat: no-repeat; 
+          animation: l3 2s infinite linear;
+          margin: 0 auto 20px auto;
+        }
+        @keyframes l3{
+          25% {background-position: 0 0   ,100% 100%,100% calc(100% - 5px)}
+          50% {background-position: 0 100%,100% 100%,0    calc(100% - 5px)}
+          75% {background-position: 0 100%,100%    0,100% 5px}
+        }
     `,
-    searchStyleFixed: { width: '100%', padding: '18px 140px 18px 50px', borderRadius: '50px', background: '#fff', fontSize: '15px', outline: 'none', boxSizing: 'border-box', border: '1px solid #e0e0e0', color: '#1d1d1f' },
+    searchStyleFixed: { width: '100%', padding: '18px 140px 18px 50px', borderRadius: '50px', backgroundColor: '#fff', fontSize: '15px', outline: 'none', boxSizing: 'border-box', border: '1px solid #e0e0e0', color: '#1d1d1f' },
     suggestionBox: { position: 'absolute', top: '100%', left: '20px', right: '20px', backgroundColor: 'white', borderRadius: '20px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', zIndex: 100, overflow: 'hidden', marginTop: '10px', border: '1px solid #f0f0f0' },
     suggestionItem: { padding: '12px 20px', borderBottom: '1px solid #f5f5f7', display: 'flex', alignItems: 'center', gap: '10px' },
-    input: { width: '100%', padding: '12px', borderRadius: '10px', background: '#f5f5f7', border: 'none', fontSize: '14px', outline: 'none', boxSizing: 'border-box', color: '#1d1d1f', fontWeight: '500' },
-    glassTag: { fontSize: '11px', fontWeight: '700', background: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: '10px', color: '#fff', backdropFilter: 'blur(5px)' }
+    input: { width: '100%', padding: '12px', borderRadius: '10px', backgroundColor: '#f5f5f7', border: 'none', fontSize: '14px', outline: 'none', boxSizing: 'border-box', color: '#1d1d1f', fontWeight: '500' },
+    glassTag: { fontSize: '11px', fontWeight: '700', backgroundColor: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: '10px', color: '#fff', backdropFilter: 'blur(5px)' }
 };
 
 // --- 4. UI COMPONENTS ---
@@ -142,7 +164,7 @@ const InteractiveButton = ({ primary = true, children, onClick, style, className
 
 const MenuCard = ({ item, onClick }) => {
   return (
-    <motion.div initial="rest" whileHover="hover" animate="rest" onClick={onClick} style={{ position: 'relative', height: '450px', borderRadius: '30px', overflow: 'hidden', cursor: 'pointer', background: '#000', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
+    <motion.div initial="rest" whileHover="hover" animate="rest" onClick={onClick} style={{ position: 'relative', height: '450px', borderRadius: '30px', overflow: 'hidden', cursor: 'pointer', backgroundColor: '#000', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
       <motion.div variants={{ rest: { scale: 1 }, hover: { scale: 1.1 } }} transition={{ duration: 0.8, ease: "easeInOut" }} style={{ position: 'absolute', inset: 0, backgroundImage: `url(${item.cover})`, backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 0 }} />
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.6) 100%)', zIndex: 1 }} />
       <motion.div variants={{ rest: { backgroundColor: "rgba(255,255,255,0)", color: "#ffffff", scale: 1 }, hover: { backgroundColor: "#ffffff", color: "#000000", scale: 1.1 } }} transition={{ duration: 0.3 }} style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 3, width: '48px', height: '48px', borderRadius: '50%', border: '1px solid #ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}> <ArrowRight size={24} /> </motion.div>
@@ -212,7 +234,7 @@ const SpinningLeafLoader = ({ onComplete }) => {
             transition={{ duration: 0.6 }}
             style={{
                 position: 'fixed', inset: 0, zIndex: 99999,
-                background: '#121212', 
+                backgroundColor: '#121212', 
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}
         >
@@ -242,11 +264,11 @@ const PomodoroHeaderWidget = () => {
     const formatTime = (seconds) => { const mins = Math.floor(seconds / 60); const secs = seconds % 60; return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`; };
     const themeColor = mode === 'work' ? Styles.colors.orange : Styles.colors.green;
     return (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '4px 10px', background: '#f5f5f7', borderRadius: '30px', border: '1px solid #e0e0e0', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '4px 10px', backgroundColor: '#f5f5f7', borderRadius: '30px', border: '1px solid #e0e0e0', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
             <div style={{ fontSize: '14px', fontWeight: '700', color: themeColor, minWidth: '45px', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{formatTime(timeLeft)}</div>
             <div style={{ display: 'flex', gap: '6px' }}>
-                <button onClick={toggleTimer} style={{ background: themeColor, border: 'none', borderRadius: '12px', padding: '4px 12px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'white', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{isActive ? "PAUSE" : "START"}</button>
-                <button onClick={resetTimer} style={{ background: '#fff', border: '1px solid #ddd', borderRadius: '12px', padding: '4px 10px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#666', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase' }}>RESET</button>
+                <button onClick={toggleTimer} style={{ backgroundColor: themeColor, border: 'none', borderRadius: '12px', padding: '4px 12px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'white', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{isActive ? "PAUSE" : "START"}</button>
+                <button onClick={resetTimer} style={{ backgroundColor: '#fff', border: '1px solid #ddd', borderRadius: '12px', padding: '4px 10px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#666', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase' }}>RESET</button>
             </div>
             <span style={{ fontSize: '10px', fontWeight: '600', color: '#999', textTransform: 'uppercase', letterSpacing: '0.5px', marginLeft: '4px' }}>{mode === 'work' ? 'FOCUS' : 'BREAK'}</span>
         </div>
@@ -276,7 +298,7 @@ const DocViewer = ({ doc, onClose }) => {
     const borderColor = isNightMode ? '#333' : '#eee';
     return (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }} />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }} />
             <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} style={{ position: 'relative', width: '100%', maxWidth: '1000px', height: '90vh', background: bgColor, borderRadius: '24px', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', transition: 'background-color 0.3s ease' }}>
                 <div style={{ padding: '12px 24px', borderBottom: `1px solid ${borderColor}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: headerBg, transition: 'background-color 0.3s ease' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1, overflow: 'hidden' }}>
@@ -301,7 +323,7 @@ const DocViewer = ({ doc, onClose }) => {
 };
 
 const Toast = ({ message }) => (
-    <motion.div initial={{ opacity: 0, y: 50, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 20, scale: 0.9 }} transition={{ type: "spring", stiffness: 400, damping: 25 }} style={{ position: 'fixed', bottom: '40px', left: '50%', x: '-50%', background: 'rgba(255, 255, 255, 0.95)', backdropFilter: 'blur(12px)', padding: '12px 24px', borderRadius: '100px', boxShadow: '0 10px 40px rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', gap: '10px', zIndex: 9999, border: '1px solid rgba(0,0,0,0.05)', whiteSpace: 'nowrap' }}>
+    <motion.div initial={{ opacity: 0, y: 50, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 20, scale: 0.9 }} transition={{ type: "spring", stiffness: 400, damping: 25 }} style={{ position: 'fixed', bottom: '40px', left: '50%', x: '-50%', backgroundColor: 'rgba(255, 255, 255, 0.95)', backdropFilter: 'blur(12px)', padding: '12px 24px', borderRadius: '100px', boxShadow: '0 10px 40px rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', gap: '10px', zIndex: 9999, border: '1px solid rgba(0,0,0,0.05)', whiteSpace: 'nowrap' }}>
         <div style={{ width: '22px', height: '22px', background: '#34C759', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CheckCircle2 size={14} color="white" strokeWidth={3} /></div>
         <span style={{ fontSize: '14px', fontWeight: '600', color: '#1d1d1f' }}>{message}</span>
     </motion.div>
@@ -371,7 +393,7 @@ const ImpactDashboard = () => {
                 <motion.h2 
                     initial={{ opacity: 0, y: 30 }} 
                     whileInView={{ opacity: 1, y: 0 }} 
-                    viewport={{ once: false, margin: "-150px" }} 
+                    viewport={{ once: false, margin: "-50px" }} 
                     transition={{ duration: 0.5, ease: "easeOut" }} 
                     style={{ fontSize: 'clamp(36px, 5vw, 56px)', fontWeight: '900', lineHeight: 1, margin: '0 0 16px 0', color: '#1d1d1f', letterSpacing: '-1px' }}
                 >
@@ -381,7 +403,7 @@ const ImpactDashboard = () => {
                 <motion.p 
                      initial={{ opacity: 0, y: 20 }} 
                      whileInView={{ opacity: 1, y: 0 }} 
-                     viewport={{ once: false, margin: "-150px" }}
+                     viewport={{ once: false, margin: "-50px" }}
                      transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
                      style={{ fontSize: '18px', color: '#666', maxWidth: '600px', margin: '0 auto' }}
                 >
@@ -418,7 +440,7 @@ const ImpactDashboard = () => {
                                         <motion.h3 layout="position" style={{ color: 'white', fontSize: isActive ? '32px' : '24px', fontWeight: '800', margin: '0 0 8px 0', lineHeight: 1.1 }}>{card.label}</motion.h3>
                                         <motion.p layout="position" style={{ color: 'rgba(255,255,255,0.8)', fontSize: '14px', margin: 0 }}>{card.sub}</motion.p>
                                     </div>
-                                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'black', boxShadow: '0 4px 10px rgba(0,0,0,0.2)', flexShrink: 0 }}>
+                                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'black', boxShadow: '0 4px 10px rgba(0,0,0,0.2)', flexShrink: 0 }}>
                                         <ArrowRight size={20} />
                                     </div>
                                 </div>
@@ -448,7 +470,14 @@ const ExamModal = ({ isOpen, onClose }) => {
     const [answers, setAnswers] = useState({});
     const [isFinished, setIsFinished] = useState(false);
     const [direction, setDirection] = useState(0); 
-    const [mode, setMode] = useState('quiz'); 
+    const [mode, setMode] = useState('setup'); 
+    const [selectedCohort, setSelectedCohort] = useState('');
+    const [selectedSubject, setSelectedSubject] = useState('');
+
+    const subjects = [
+        "Giải tích 1", "Triết học", "Vật lý đại cương", "Tin học đại cương", 
+        "Pháp luật", "Kinh tế vi mô", "Tiếng Anh", "Xác suất thống kê"
+    ];
 
     useEffect(() => {
         if (isOpen) {
@@ -467,7 +496,9 @@ const ExamModal = ({ isOpen, onClose }) => {
             setAnswers({});
             setIsFinished(false);
             setDirection(0);
-            setMode('quiz');
+            setMode('setup'); 
+            setSelectedCohort('');
+            setSelectedSubject('');
         }
     }, [isOpen]);
 
@@ -512,6 +543,13 @@ const ExamModal = ({ isOpen, onClose }) => {
         setDirection(0);
     };
 
+    const handleStartExam = () => {
+        setMode('generating');
+        setTimeout(() => {
+            setMode('quiz');
+        }, 2000); 
+    };
+
     if (!isOpen) return null;
 
     const currentQ = MOCK_EXAM_QUESTIONS[currentQuestionIndex];
@@ -548,7 +586,7 @@ const ExamModal = ({ isOpen, onClose }) => {
                 animate={{ opacity: 1 }} 
                 exit={{ opacity: 0 }} 
                 onClick={onClose} 
-                style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }} 
+                style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }} 
             />
             
             <motion.div 
@@ -559,14 +597,14 @@ const ExamModal = ({ isOpen, onClose }) => {
                 transition={{ type: "spring", stiffness: 120, damping: 20 }}
                 style={{ 
                     position: 'relative', width: '100%', maxWidth: '1200px', height: '85vh',
-                    background: '#f8fafc', borderRadius: '40px', overflow: 'hidden', 
+                    backgroundColor: '#f8fafc', borderRadius: '40px', overflow: 'hidden', 
                     boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', 
                     display: 'flex', flexDirection: 'column'
                 }}
             >
-                <div style={{ padding: '20px 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'transparent', zIndex: 10 }}>
+                <div style={{ padding: '20px 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'transparent', zIndex: 10 }}>
                     <div style={{ display: 'flex', gap: '4px' }}>
-                         {mode !== 'score' && MOCK_EXAM_QUESTIONS.map((_, idx) => (
+                         {(mode === 'quiz' || mode === 'review') && MOCK_EXAM_QUESTIONS.map((_, idx) => (
                             <div key={idx} style={{ 
                                 width: '30px', height: '4px', borderRadius: '2px', 
                                 backgroundColor: idx <= currentQuestionIndex ? (mode === 'review' ? '#64748b' : Styles.colors.loading) : '#e2e8f0',
@@ -574,14 +612,99 @@ const ExamModal = ({ isOpen, onClose }) => {
                             }} />
                         ))}
                     </div>
-                    <button onClick={onClose} style={{ width: '40px', height: '40px', background: 'white', border: 'none', cursor: 'pointer', padding: '0', borderRadius: '50%', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <button onClick={onClose} style={{ width: '40px', height: '40px', backgroundColor: 'white', border: 'none', cursor: 'pointer', padding: '0', borderRadius: '50%', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <X size={20} color="#1d1d1f" />
                     </button>
                 </div>
 
                 <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', paddingBottom: '20px' }}>
-                    <AnimatePresence initial={false} custom={direction} mode="popLayout">
-                        {mode !== 'score' ? (
+                    <AnimatePresence initial={false} custom={direction} mode="wait">
+                        
+                        {mode === 'setup' && (
+                             <motion.div
+                                key="setup"
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20 }}
+                                style={{ width: '80%', maxWidth: '600px', textAlign: 'center' }}
+                            >
+                                <h2 style={{ fontSize: '32px', fontWeight: '800', color: '#1d1d1f', marginBottom: '30px' }}>Thiết lập đề thi</h2>
+                                
+                                <div style={{ marginBottom: '30px', textAlign: 'left' }}>
+                                    <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#64748b', marginBottom: '10px' }}>Chọn khóa</label>
+                                    <div style={{ display: 'flex', gap: '10px' }}>
+                                        {['K49', 'K50', 'K51'].map(k => (
+                                            <button 
+                                                key={k} 
+                                                onClick={() => setSelectedCohort(k)}
+                                                style={{ 
+                                                    flex: 1, padding: '12px', borderRadius: '12px', 
+                                                    border: selectedCohort === k ? `2px solid ${Styles.colors.loading}` : '1px solid #e2e8f0', 
+                                                    backgroundColor: selectedCohort === k ? '#f0fdfa' : 'white', 
+                                                    color: selectedCohort === k ? Styles.colors.loading : '#1d1d1f',
+                                                    fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s'
+                                                }}
+                                            >
+                                                {k}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div style={{ marginBottom: '40px', textAlign: 'left' }}>
+                                    <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#64748b', marginBottom: '10px' }}>Chọn môn học</label>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                        {subjects.map(sub => (
+                                            <button 
+                                                key={sub}
+                                                onClick={() => setSelectedSubject(sub)}
+                                                style={{ 
+                                                    padding: '12px', borderRadius: '12px', 
+                                                    border: selectedSubject === sub ? `2px solid ${Styles.colors.loading}` : '1px solid #e2e8f0', 
+                                                    backgroundColor: selectedSubject === sub ? '#f0fdfa' : 'white', 
+                                                    color: selectedSubject === sub ? Styles.colors.loading : '#1d1d1f',
+                                                    fontWeight: '500', fontSize: '14px', cursor: 'pointer', transition: 'all 0.2s', textAlign: 'left'
+                                                }}
+                                            >
+                                                {sub}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <motion.div
+                                    animate={{ 
+                                        opacity: (!selectedCohort || !selectedSubject) ? 0.5 : 1,
+                                        y: (!selectedCohort || !selectedSubject) ? 10 : 0 
+                                    }}
+                                >
+                                    <InteractiveButton 
+                                        onClick={handleStartExam} 
+                                        disabled={!selectedCohort || !selectedSubject}
+                                        primary={true} 
+                                        style={{ width: '100%', justifyContent: 'center', backgroundColor: (!selectedCohort || !selectedSubject) ? '#cbd5e1' : Styles.colors.loading, border: 'none' }}
+                                    >
+                                        Tạo đề ngay
+                                    </InteractiveButton>
+                                </motion.div>
+                            </motion.div>
+                        )}
+
+                        {mode === 'generating' && (
+                            <motion.div
+                                key="generating"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                style={{ textAlign: 'center' }}
+                            >
+                                <div className="loader"></div>
+                                <h3 style={{ fontSize: '20px', fontWeight: '600', color: '#1d1d1f' }}>Đang tạo đề thi...</h3>
+                                <p style={{ color: '#64748b' }}>Đang tổng hợp câu hỏi từ ngân hàng dữ liệu...</p>
+                            </motion.div>
+                        )}
+
+                        {(mode === 'quiz' || mode === 'review') && (
                             <motion.div
                                 layout
                                 key={currentQ.id}
@@ -595,7 +718,7 @@ const ExamModal = ({ isOpen, onClose }) => {
                                     opacity: { duration: 0.2 }
                                 }}
                                 style={{ 
-                                    position: 'absolute', width: '80%', background: '#fff', 
+                                    position: 'absolute', width: '80%', backgroundColor: '#fff', 
                                     borderRadius: '32px', padding: '30px', 
                                     boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
                                     display: 'flex', flexDirection: 'column', gap: '20px',
@@ -654,7 +777,7 @@ const ExamModal = ({ isOpen, onClose }) => {
                                                 style={{
                                                     padding: '16px 24px',
                                                     borderRadius: '16px',
-                                                    background: bgColor,
+                                                    backgroundColor: bgColor,
                                                     border: `2px solid ${borderColor}`,
                                                     color: textColor,
                                                     fontSize: '15px',
@@ -671,15 +794,17 @@ const ExamModal = ({ isOpen, onClose }) => {
                                     })}
                                 </div>
                             </motion.div>
-                        ) : (
+                        )}
+
+                        {mode === 'score' && (
                             <motion.div
                                 layout
                                 key="result"
                                 initial={{ scale: 0.8, opacity: 0 }}
                                 animate={{ scale: 1, opacity: 1 }}
-                                style={{ textAlign: 'center', padding: '40px', background: 'white', borderRadius: '32px', boxShadow: '0 10px 40px rgba(0,0,0,0.08)' }}
+                                style={{ textAlign: 'center', padding: '40px', backgroundColor: 'white', borderRadius: '32px', boxShadow: '0 10px 40px rgba(0,0,0,0.08)' }}
                             >
-                                <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: '#dcfce7', color: '#16a34a', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto' }}>
+                                <div style={{ width: '100px', height: '100px', borderRadius: '50%', backgroundColor: '#dcfce7', color: '#16a34a', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto' }}>
                                     <Check size={50} strokeWidth={4} />
                                 </div>
                                 <h2 style={{ fontSize: '32px', fontWeight: '800', color: '#1d1d1f', marginBottom: '12px' }}>Hoàn thành!</h2>
@@ -690,16 +815,17 @@ const ExamModal = ({ isOpen, onClose }) => {
                                     Điểm số: <span style={{ fontWeight: 'bold', color: '#16a34a' }}>{(score / MOCK_EXAM_QUESTIONS.length) * 10}</span>
                                 </p>
                                 <div style={{ display: 'flex', gap: '10px' }}>
-                                    <InteractiveButton onClick={handleReview} primary={false} style={{ width: '100%', justifyContent: 'center', background: '#f1f5f9', color: '#1d1d1f' }}>Xem lại</InteractiveButton>
-                                    <InteractiveButton onClick={onClose} primary={true} style={{ width: '100%', justifyContent: 'center', background: '#16a34a' }}>Đóng</InteractiveButton>
+                                    <InteractiveButton onClick={handleReview} primary={false} style={{ width: '100%', justifyContent: 'center', backgroundColor: '#f1f5f9', color: '#1d1d1f' }}>Xem lại</InteractiveButton>
+                                    <InteractiveButton onClick={onClose} primary={true} style={{ width: '100%', justifyContent: 'center', backgroundColor: '#16a34a' }}>Đóng</InteractiveButton>
                                 </div>
                             </motion.div>
                         )}
                     </AnimatePresence>
                 </div>
 
-                <div style={{ padding: '20px 30px', background: 'transparent', zIndex: 10, display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    {mode !== 'score' && (
+                {/* Footer Controls */}
+                <div style={{ padding: '20px 30px', backgroundColor: 'transparent', zIndex: 10, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {(mode === 'quiz' || mode === 'review') && (
                          <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
                             {currentQuestionIndex > 0 && (
                                 <motion.button 
@@ -708,7 +834,7 @@ const ExamModal = ({ isOpen, onClose }) => {
                                     whileTap={{ scale: 0.95 }}
                                     style={{ 
                                         padding: '16px 24px', borderRadius: '100px', border: 'none',
-                                        background: '#f1f5f9', color: '#1d1d1f', fontSize: '16px', fontWeight: '700',
+                                        backgroundColor: '#f1f5f9', color: '#1d1d1f', fontSize: '16px', fontWeight: '700',
                                         cursor: 'pointer',
                                         display: 'flex', alignItems: 'center', gap: '10px',
                                         boxShadow: '0 5px 15px rgba(0,0,0,0.05)'
@@ -729,7 +855,7 @@ const ExamModal = ({ isOpen, onClose }) => {
                                 whileTap={{ scale: 0.95 }}
                                 style={{ 
                                     padding: '16px 40px', borderRadius: '100px', border: 'none',
-                                    background: Styles.colors.loading, color: 'white', fontSize: '16px', fontWeight: '700',
+                                    backgroundColor: Styles.colors.loading, color: 'white', fontSize: '16px', fontWeight: '700',
                                     cursor: (mode === 'review' || currentSelectedAnswer !== undefined) ? 'pointer' : 'not-allowed',
                                     display: 'flex', alignItems: 'center', gap: '10px',
                                     boxShadow: '0 10px 20px rgba(0,0,0,0.1)'
@@ -771,7 +897,7 @@ const FolderUpload = ({ onFileSelect }) => {
 
                 <div style={{ 
                     position: 'absolute', width: '100%', height: '100%', 
-                    background: Styles.colors.loading, 
+                    backgroundColor: Styles.colors.loading, 
                     borderRadius: '12px',
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                 }} />
@@ -779,7 +905,7 @@ const FolderUpload = ({ onFileSelect }) => {
                 <div style={{ 
                     position: 'absolute', top: -12, left: 0, 
                     width: '40%', height: 12, 
-                    background: Styles.colors.loading, 
+                    backgroundColor: Styles.colors.loading, 
                     borderRadius: '8px 8px 0 0' 
                 }} />
 
@@ -787,7 +913,7 @@ const FolderUpload = ({ onFileSelect }) => {
                     variants={{ rest: { y: 0 }, hover: { y: -15, rotate: -5 } }}
                     style={{ 
                         position: 'absolute', bottom: 10, left: 10, right: 10, height: '80%', 
-                        background: 'white', borderRadius: '4px',
+                        backgroundColor: 'white', borderRadius: '4px',
                         boxShadow: '0 10px 20px rgba(0,0,0,0.15)', 
                         zIndex: 2
                     }}
@@ -797,20 +923,20 @@ const FolderUpload = ({ onFileSelect }) => {
                     variants={{ rest: { y: 0 }, hover: { y: -25, rotate: 5 } }}
                     style={{ 
                         position: 'absolute', bottom: 10, left: 10, right: 10, height: '80%', 
-                        background: 'white', borderRadius: '4px',
+                        backgroundColor: 'white', borderRadius: '4px',
                         boxShadow: '0 10px 20px rgba(0,0,0,0.15)', 
                         zIndex: 3,
                         display: 'flex', alignItems: 'center', justifyContent: 'center'
                     }}
                 >
-                    <div style={{ width: '60%', height: '4px', background: '#F3F4F6', borderRadius: '2px' }} />
+                    <div style={{ width: '60%', height: '4px', backgroundColor: '#F3F4F6', borderRadius: '2px' }} />
                 </motion.div>
 
                 <motion.div
                     variants={{ rest: { rotateX: 0, y: 0 }, hover: { rotateX: -15, y: 5 } }}
                     style={{ 
                         position: 'absolute', bottom: 0, left: 0, width: '100%', height: '85%', 
-                        background: Styles.colors.loading, 
+                        backgroundColor: Styles.colors.loading, 
                         borderRadius: '0 0 12px 12px',
                         zIndex: 10,
                         transformOrigin: 'bottom',
@@ -841,7 +967,7 @@ const FolderUpload = ({ onFileSelect }) => {
 const Navbar = ({ view, setView, setIsModalOpen, onNavigate, showToast, setIsExamOpen }) => {
     const isHome = view === 'home';
     return (
-        <nav style={{ position: 'absolute', top: isHome ? '30px' : '20px', left: '50%', transform: 'translateX(-50%)', width: isHome ? 'calc(100% - 60px)' : '100%', maxWidth: '1200px', background: isHome ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.8)', backdropFilter: 'blur(12px)', border: isHome ? '1px solid rgba(255,255,255,0.3)' : '1px solid rgba(0,0,0,0.1)', borderRadius: '100px', padding: '8px 20px', boxSizing: 'border-box', display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 100, color: isHome ? 'white' : '#1d1d1f' }}>
+        <nav style={{ position: 'absolute', top: isHome ? '30px' : '20px', left: '50%', transform: 'translateX(-50%)', width: isHome ? 'calc(100% - 60px)' : '100%', maxWidth: '1200px', backgroundColor: isHome ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.8)', backdropFilter: 'blur(12px)', border: isHome ? '1px solid rgba(255,255,255,0.3)' : '1px solid rgba(0,0,0,0.1)', borderRadius: '100px', padding: '8px 20px', boxSizing: 'border-box', display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 100, color: isHome ? 'white' : '#1d1d1f' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800', fontSize: '18px', cursor: 'pointer', paddingLeft: '10px' }} onClick={() => onNavigate('home')}>HocLieuSo</div>
             <div style={{ display: 'flex', gap: '4px' }}>
                 <NavButton onClick={() => onNavigate('home')} isActive={view === 'home'} isDarkBg={isHome}>Trang chủ</NavButton>
@@ -867,9 +993,9 @@ const HeroSection = ({ scrollY }) => {
     return (
         <div style={{ position: 'relative', margin: '10px', height: '95vh', borderRadius: '40px', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
             <motion.div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${CONFIG.HERO_BG})`, backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 0 }} />
-            <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1 }} />
+            <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1 }} />
             <motion.header style={{ position: 'relative', zIndex: 10, textAlign: 'center', color: 'white', opacity: heroOpacity }}>
-                <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} style={{ marginBottom: '20px', display: 'inline-block', background: 'rgba(255,255,255,0.2)', color: '#fff', padding: '8px 20px', borderRadius: '30px', fontWeight: '600', fontSize: '13px', backdropFilter: 'blur(5px)' }}>KHO TÀI LIỆU SINH VIÊN</motion.div>
+                <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} style={{ marginBottom: '20px', display: 'inline-block', backgroundColor: 'rgba(255,255,255,0.2)', color: '#fff', padding: '8px 20px', borderRadius: '30px', fontWeight: '600', fontSize: '13px', backdropFilter: 'blur(5px)' }}>KHO TÀI LIỆU SINH VIÊN</motion.div>
                 <div style={{ overflow: 'visible' }}>
                     <motion.h1 initial={{ x: -100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 1.2, ease: "easeOut" }} style={{ x: floatLeft, fontSize: 'clamp(50px, 9vw, 100px)', fontWeight: '800', color: '#ffffff', margin: 0, lineHeight: 1 }}>Less Paper</motion.h1>
                     <motion.h1 initial={{ x: 100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 1.2, delay: 0.2, ease: "easeOut" }} style={{ x: floatRight, fontSize: 'clamp(50px, 9vw, 100px)', fontWeight: '800', color: '#ffffff', margin: 0, lineHeight: 1 }}>More Knowledge.</motion.h1>
@@ -939,10 +1065,10 @@ const FeedbackSection = ({ onSend }) => {
     return (
         <div style={{ marginTop: '40px', marginBottom: '0px', width: 'calc(100% - 40px)', height: '500px', borderRadius: '40px', overflow: 'hidden', position: 'relative', margin: '40px auto 0px auto', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${CONFIG.FEEDBACK_BG})`, backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 0 }} />
-            <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1 }} />
+            <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1 }} />
             <div style={{ position: 'relative', zIndex: 2, width: '90%', maxWidth: '500px', textAlign: 'center', color: '#fff', marginBottom: '40px' }}>
                 <h2 style={{ fontSize: '40px', fontWeight: '800', marginBottom: '20px' }}>Đóng góp ý kiến</h2>
-                <div style={{ display: 'flex', gap: '5px', background: 'rgba(255,255,255,0.9)', padding: '6px', borderRadius: '50px' }}>
+                <div style={{ display: 'flex', gap: '5px', backgroundColor: 'rgba(255,255,255,0.9)', padding: '6px', borderRadius: '50px' }}>
                     <input 
                         placeholder="Bạn nghĩ gì..." 
                         style={{ flex: 1, background: 'transparent', border: 'none', padding: '12px 20px', fontSize: '15px', color: '#000', outline: 'none' }}
@@ -953,7 +1079,7 @@ const FeedbackSection = ({ onSend }) => {
                 </div>
             </div>
             
-            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '30px', background: 'rgba(0,0,0,0.2)', backdropFilter: 'blur(10px)', display: 'flex', justifyContent: 'center', gap: '20px', zIndex: 3 }}>
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '30px', backgroundColor: 'rgba(0,0,0,0.2)', backdropFilter: 'blur(10px)', display: 'flex', justifyContent: 'center', gap: '20px', zIndex: 3 }}>
                 {socialLinks.map((item, i) => (
                     <motion.a 
                         key={i}
@@ -989,8 +1115,8 @@ const Footer = () => (
 const UploadModal = ({ isOpen, onClose, formData, setFormData, onFileSelect, onRemoveFile, onUpload, uploading }) => {
     if (!isOpen) return null;
     return (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200 }}>
-           <div style={{ background: '#fff', padding: '30px', borderRadius: '24px', width: '90%', maxWidth: '450px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.1)' }}>
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200 }}>
+           <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '24px', width: '90%', maxWidth: '450px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.1)' }}>
              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', alignItems: 'center' }}>
                  <h2 style={{ margin: 0, fontSize: '20px', color: '#1d1d1f' }}>Đóng góp tài liệu</h2>
                  <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#1d1d1f' }}><X size={20}/></button>
@@ -999,7 +1125,7 @@ const UploadModal = ({ isOpen, onClose, formData, setFormData, onFileSelect, onR
                  <FolderUpload onFileSelect={onFileSelect} />
              ) : (
                  <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                     <div style={{ background: '#F5F5F7', padding: '12px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                     <div style={{ backgroundColor: '#F5F5F7', padding: '12px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}><FileText color="#E53935" size={20}/><div style={{ overflow: 'hidden' }}><div style={{ fontWeight: '600', fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px', color: '#1d1d1f' }}>{formData.file.name}</div></div></div>
                          <button onClick={onRemoveFile} style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}><Trash2 size={18} color="#FF4D4F"/></button>
                      </div>
@@ -1008,7 +1134,7 @@ const UploadModal = ({ isOpen, onClose, formData, setFormData, onFileSelect, onR
                         <div style={{ fontSize: '14px', fontWeight: '600', color: '#1d1d1f', marginBottom: '8px' }}>Chọn khóa:</div>
                         <div style={{ display: 'flex', gap: '10px' }}>
                             {['K49', 'K50', 'K51'].map(k => (
-                                <button key={k} onClick={() => setFormData({...formData, year: k})} style={{ flex: 1, padding: '10px', borderRadius: '10px', border: formData.year === k ? `1px solid ${Styles.colors.primary}` : '1px solid #e0e0e0', background: formData.year === k ? Styles.colors.primary : 'transparent', color: formData.year === k ? '#fff' : '#1d1d1f', cursor: 'pointer', fontWeight: '600', fontSize: '14px', transition: 'all 0.2s' }}>{k}</button>
+                                <button key={k} onClick={() => setFormData({...formData, year: k})} style={{ flex: 1, padding: '10px', borderRadius: '10px', border: formData.year === k ? `1px solid ${Styles.colors.primary}` : '1px solid #e0e0e0', backgroundColor: formData.year === k ? Styles.colors.primary : 'transparent', color: formData.year === k ? '#fff' : '#1d1d1f', cursor: 'pointer', fontWeight: '600', fontSize: '14px', transition: 'all 0.2s' }}>{k}</button>
                             ))}
                         </div>
                      </div>
@@ -1160,7 +1286,7 @@ export default function App() {
                             <motion.h2 
                                 initial={{ opacity: 0, y: 30 }} 
                                 whileInView={{ opacity: 1, y: 0 }} 
-                                viewport={{ once: false, margin: "-150px" }} 
+                                viewport={{ once: false, margin: "-50px" }} 
                                 transition={{ duration: 0.5, ease: "easeOut" }} 
                                 style={{ fontSize: 'clamp(32px, 4vw, 48px)', fontWeight: '800', lineHeight: 1, margin: 0, color: '#1d1d1f' }}
                             >
@@ -1188,7 +1314,17 @@ export default function App() {
                 <motion.div key="all" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} style={{ paddingTop: '100px', minHeight: '100vh', color: '#1d1d1f', position: 'relative', zIndex: 10 }}>
                     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px' }}>
                         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-                            <TextPressure text="KHO TÀI LIỆU" />
+                            <h1 style={{ 
+                                fontSize: 'clamp(30px, 5vw, 60px)', 
+                                fontWeight: '900', 
+                                color: '#1d1d1f', 
+                                textTransform: 'uppercase', 
+                                lineHeight: 1,
+                                textAlign: 'center',
+                                margin: '0 0 20px 0'
+                            }}>
+                                KHO TÀI LIỆU
+                            </h1>
                             <p style={{ fontSize: '16px', color: '#666', maxWidth: '600px', margin: '0 auto', lineHeight: 1.6 }}>Truy cập không giới hạn vào kho tàng tri thức.</p>
                         </div>
                         <SearchSection searchTerm={searchTerm} setSearchTerm={setSearchTerm} suggestions={suggestions} onSelectSuggestion={(doc) => setSearchTerm(doc.title)} />
