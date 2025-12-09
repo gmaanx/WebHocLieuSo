@@ -150,7 +150,7 @@ const MenuCard = ({ item, onClick }) => {
     <motion.div initial="rest" whileHover="hover" animate="rest" onClick={onClick} style={{ position: 'relative', height: '450px', borderRadius: '30px', overflow: 'hidden', cursor: 'pointer', backgroundColor: '#000', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
       <motion.div variants={{ rest: { scale: 1 }, hover: { scale: 1.1 } }} transition={{ duration: 0.8, ease: "easeInOut" }} style={{ position: 'absolute', inset: 0, backgroundImage: `url(${item.cover})`, backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 0 }} />
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.6) 100%)', zIndex: 1 }} />
-      <motion.div variants={{ rest: { backgroundColor: "rgba(255,255,255,0)", color: "#ffffff", scale: 1 }, hover: { backgroundColor: "#ffffff", color: "#000000", scale: 1.1 } }} transition={{ duration: 0.3 }} style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 3, width: '48px', height: '48px', borderRadius: '50%', border: '1px solid #ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}> <ArrowRight size={24} /> </motion.div>
+      <motion.div variants={{ rest: { backgroundColor: "rgba(255,255,255,0)", color: "#ffffff", scale: 1 }, hover: { backgroundColor: "rgba(255,255,255,0.2)", backdropFilter: "blur(16px)" } }} transition={{ duration: 0.3 }} style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 3, width: '48px', height: '48px', borderRadius: '50%', border: '1px solid #ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}> <ArrowRight size={24} /> </motion.div>
       <div style={{ position: 'absolute', bottom: '20px', left: '20px', right: '20px', zIndex: 3 }}>
           <motion.div variants={{ rest: { backgroundColor: "rgba(255,255,255,0)", backdropFilter: "blur(0px)" }, hover: { backgroundColor: "rgba(255,255,255,0.2)", backdropFilter: "blur(16px)" } }} transition={{ duration: 0.5 }} style={{ borderRadius: '24px', padding: '24px', border: '1px solid rgba(255,255,255,0)', overflow: 'hidden' }}>
               <motion.h3 layout style={{ color: 'white', fontSize: '32px', margin: 0, fontWeight: '800', lineHeight: 1, textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>{item.title}</motion.h3>
@@ -695,7 +695,17 @@ const ExamModal = ({ isOpen, onClose }) => {
                     </button>
                 </div>
 
-                <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', paddingBottom: '20px' }}>
+                <div style={{ 
+                    flex: 1, 
+                    position: 'relative', 
+                    overflowY: (mode === 'setup' || mode === 'score') ? 'auto' : 'hidden',
+                    overflowX: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: (mode === 'setup' || mode === 'score') ? 'flex-start' : 'center',
+                    paddingBottom: '20px' 
+                }}>
                     <AnimatePresence initial={false} custom={direction} mode="wait">
                         
                         {mode === 'setup' && (
@@ -704,7 +714,7 @@ const ExamModal = ({ isOpen, onClose }) => {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -20 }}
-                                style={{ width: '80%', maxWidth: '600px', textAlign: 'center' }}
+                                style={{ width: '80%', maxWidth: '600px', textAlign: 'center', margin: '40px auto' }}
                             >
                                 <h2 style={{ fontSize: '32px', fontWeight: '800', color: '#1d1d1f', marginBottom: '30px' }}>Thiết lập đề thi</h2>
                                 
@@ -801,7 +811,8 @@ const ExamModal = ({ isOpen, onClose }) => {
                                     boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
                                     display: 'flex', flexDirection: 'column', gap: '20px',
                                     maxHeight: '100%', overflowY: 'auto',
-                                    overscrollBehavior: 'contain'
+                                    overscrollBehavior: 'contain',
+                                    top: '50%', left: '50%', x: '-50%', y: '-50%' // Căn giữa tuyệt đối
                                 }}
                             >
                                 <motion.div layout="position" style={{ fontSize: '13px', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>
@@ -880,7 +891,7 @@ const ExamModal = ({ isOpen, onClose }) => {
                                 key="result"
                                 initial={{ scale: 0.8, opacity: 0 }}
                                 animate={{ scale: 1, opacity: 1 }}
-                                style={{ textAlign: 'center', padding: '40px', backgroundColor: 'white', borderRadius: '32px', boxShadow: '0 10px 40px rgba(0,0,0,0.08)' }}
+                                style={{ textAlign: 'center', padding: '40px', backgroundColor: 'white', borderRadius: '32px', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', margin: 'auto' }}
                             >
                                 <div style={{ width: '100px', height: '100px', borderRadius: '50%', backgroundColor: '#dcfce7', color: '#16a34a', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto' }}>
                                     <Check size={50} strokeWidth={4} />
@@ -1193,7 +1204,25 @@ const Footer = () => (
     </div>
 );
 
-const UploadModal = ({ isOpen, onClose, formData, setFormData, onFileSelect, onRemoveFile, onUpload, uploading }) => {
+const UploadModal = ({ isOpen, onClose, formData, setFormData, onFileSelect, onRemoveFile, onUpload, uploading, documents }) => {
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [filteredSuggestions, setFilteredSuggestions] = useState([]);
+
+    useEffect(() => {
+        if (documents && formData.major) {
+            const subjects = new Set();
+            documents.forEach(d => {
+                subjects.add(d.title);
+                subjects.add(d.major);
+            });
+            const term = Utils.removeTones(formData.major.toLowerCase());
+            const filtered = Array.from(subjects).filter(s => Utils.removeTones(s.toLowerCase()).includes(term));
+            setFilteredSuggestions(filtered);
+        } else {
+            setFilteredSuggestions([]);
+        }
+    }, [formData.major, documents]);
+
     if (!isOpen) return null;
     return (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200 }}>
@@ -1219,7 +1248,31 @@ const UploadModal = ({ isOpen, onClose, formData, setFormData, onFileSelect, onR
                             ))}
                         </div>
                      </div>
-                     <input style={Styles.input} placeholder="Môn (VD: CNTT)" value={formData.major} onChange={e => setFormData({...formData, major: e.target.value})} />
+                     
+                     <div style={{ position: 'relative' }}>
+                        <input 
+                            style={Styles.input} 
+                            placeholder="Môn (VD: CNTT, Giải tích 1...)" 
+                            value={formData.major} 
+                            onChange={e => setFormData({...formData, major: e.target.value})} 
+                            onFocus={() => setShowSuggestions(true)}
+                            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                        />
+                        {showSuggestions && filteredSuggestions.length > 0 && (
+                            <div style={{ ...Styles.suggestionBox, maxHeight: '200px', overflowY: 'auto' }}>
+                                {filteredSuggestions.map((s, i) => (
+                                    <div 
+                                        key={i} 
+                                        style={{ ...Styles.suggestionItem, cursor: 'pointer' }}
+                                        onMouseDown={() => setFormData({...formData, major: s})} // Use onMouseDown to trigger before blur
+                                    >
+                                        {s}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                     </div>
+
                      <input style={Styles.input} placeholder="Ghi chú thêm..." value={formData.desc} onChange={e => setFormData({...formData, desc: e.target.value})} />
                      <InteractiveButton primary={true} onClick={onUpload} disabled={uploading} isDarkBg={false} style={{marginTop: '10px'}}>{uploading ? <Loader className="animate-spin" size={16}/> : "Tải lên ngay"}</InteractiveButton>
                  </div>
@@ -1416,7 +1469,7 @@ export default function App() {
             )}
         </AnimatePresence>
       </div>
-      <UploadModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} formData={formData} setFormData={setFormData} onFileSelect={handleFileSelect} onRemoveFile={() => setFormData({ title: '', desc: '', year: '', major: '', file: null })} onUpload={handleUpload} uploading={uploading} />
+      <UploadModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} formData={formData} setFormData={setFormData} onFileSelect={handleFileSelect} onRemoveFile={() => setFormData({ title: '', desc: '', year: '', major: '', file: null })} onUpload={handleUpload} uploading={uploading} documents={documents} />
       <ExamModal isOpen={isExamOpen} onClose={() => setIsExamOpen(false)} />
     </>
   );
