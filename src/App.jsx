@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, useScroll, useTransform, AnimatePresence, useMotionValue } from 'framer-motion';
-import { Search, X, ArrowRight, FileText, Instagram, Twitter, Facebook, Mail, Github, UploadCloud, Loader, Trash2, Heart, CheckCircle2, Play, Pause, RotateCcw, Moon, Sun, FilePenLine, TreeDeciduous, Droplets, Wind, Eye, Compass, ChevronRight, ChevronLeft, Check, Leaf, AlertCircle, BookOpen } from 'lucide-react';
+import { motion, useScroll, useTransform, AnimatePresence, useMotionValue, useInView } from 'framer-motion';
+import { Search, X, ArrowRight, FileText, Instagram, Twitter, Facebook, Mail, Github, UploadCloud, Loader, Trash2, Heart, CheckCircle2, Play, Pause, RotateCcw, Moon, Sun, FilePenLine, TreeDeciduous, Droplets, Wind, Eye, Compass, ChevronRight, ChevronLeft, Check, Leaf, AlertCircle, BookOpen, Gift } from 'lucide-react';
 
-// --- 1. CONFIGURATION & MOCK DATA ---
+// ==========================================
+// 1. CONFIGURATION & DATA
+// ==========================================
 const CONFIG = {
-  // [RESTORED] Local image paths
   COVERS: ["./img/cover1.jpg", "./img/cover2.jpg", "./img/cover3.jpg", "./img/cover4.jpg"],
   FEEDBACK_BG: "./img/feedback-bg.jpg",
   HERO_BG: "./img/hero-bg.jpg",
@@ -26,41 +27,14 @@ const INITIAL_DOCS = [
   { id: 8, title: "Pháp luật đại cương", desc: "Câu hỏi trắc nghiệm có đáp án.", year: "K50", major: "Luật", type: "Trắc nghiệm", cover: CONFIG.COVERS[3], fileUrl: "#" },
 ];
 
-// GRADE 5 MATH QUESTIONS
 const MOCK_EXAM_QUESTIONS = [
-    {
-        id: 1,
-        question: "Kết quả của phép tính: 3/4 + 1/2 là bao nhiêu?",
-        options: ["5/4", "4/6", "1/2", "7/4"],
-        correctAnswer: 0 
-    },
-    {
-        id: 2,
-        question: "Một hình chữ nhật có chiều dài 12cm và chiều rộng 8cm. Diện tích là?",
-        options: ["40 cm²", "96 cm²", "20 cm²", "84 cm²"],
-        correctAnswer: 1 
-    },
-    {
-        id: 3,
-        question: "Tìm x biết: x × 4 = 12,8",
-        options: ["3,2", "3,6", "4,2", "32"],
-        correctAnswer: 0 
-    },
-    {
-        id: 4,
-        question: "Lớp 5A có 40 học sinh, trong đó 25% là học sinh giỏi. Hỏi có bao nhiêu học sinh giỏi?",
-        options: ["25 học sinh", "15 học sinh", "10 học sinh", "30 học sinh"],
-        correctAnswer: 2 
-    },
-    {
-        id: 5,
-        question: "Số thập phân 0,75 viết dưới dạng phân số tối giản là?",
-        options: ["75/100", "7/5", "4/3", "3/4"],
-        correctAnswer: 3 
-    }
+    { id: 1, question: "Câu hỏi 1", options: ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"], correctAnswer: 0 },
+    { id: 2, question: "Câu hỏi 2", options: ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"], correctAnswer: 0 },
+    { id: 3, question: "Câu hỏi 3", options: ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"], correctAnswer: 0 },
+    { id: 4, question: "Câu hỏi 4", options: ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"], correctAnswer: 0 },
+    { id: 5, question: "Câu hỏi 5", options: ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"], correctAnswer: 0 }
 ];
 
-// --- 2. UTILITIES ---
 const Utils = {
   removeTones: (str) => str.normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D").toLowerCase(),
   calcScore: (doc, searchTerm) => {
@@ -82,7 +56,6 @@ const Utils = {
   getRandomCover: () => CONFIG.COVERS[Math.floor(Math.random() * CONFIG.COVERS.length)]
 };
 
-// --- 3. STYLES ---
 const Styles = {
     colors: { 
         primary: '#1d1d1f', 
@@ -90,7 +63,7 @@ const Styles = {
         orange: '#f97316', 
         loading: '#007E6E', 
         green: '#34C759', 
-        red: '#EF4444',
+        red: '#EF4444', 
         gray: '#e0e0e0', 
         lightGray: '#f5f5f7' 
     },
@@ -99,7 +72,7 @@ const Styles = {
         @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap'); 
         @import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
 
-        :root, body, #root { width: 100%; margin: 0; padding: 0; backgroundColor: #ffffff; font-family: "Montserrat", sans-serif; overflow-x: hidden; scroll-behavior: auto !important; }
+        :root, body, #root { width: 100%; margin: 0; padding: 0; background-color: #ffffff; font-family: "Montserrat", sans-serif; overflow-x: hidden; scroll-behavior: auto !important; }
         html.lenis { height: auto; } 
         .lenis.lenis-smooth { scroll-behavior: auto; } 
         .lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; } 
@@ -110,26 +83,15 @@ const Styles = {
         ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: #f1f1f1; } ::-webkit-scrollbar-thumb { background: #bbb; border-radius: 10px; }
         .suggestion-item:hover { background-color: #f5f5f7; cursor: pointer; }
 
-        /* Custom Loader CSS */
         .loader {
-          width: 80px;
-          height: 70px;
-          border: 5px solid #007E6E; /* Modified to match theme */
-          padding: 0 8px;
-          box-sizing: border-box;
-          background:
-            linear-gradient(#fff 0 0) 0    0/8px 20px,
-            linear-gradient(#fff 0 0) 100% 0/8px 20px,
-            radial-gradient(farthest-side,#fff 90%,#0000) 0 5px/8px 8px content-box,
-            #007E6E; /* Modified to match theme */
-          background-repeat: no-repeat; 
-          animation: l3 2s infinite linear;
-          margin: 0 auto 20px auto;
+          width: 80px; height: 70px; border: 5px solid #007E6E; padding: 0 8px; box-sizing: border-box;
+          background: linear-gradient(#fff 0 0) 0 0/8px 20px, linear-gradient(#fff 0 0) 100% 0/8px 20px, radial-gradient(farthest-side,#fff 90%,#0000) 0 5px/8px 8px content-box, #007E6E;
+          background-repeat: no-repeat; animation: l3 2s infinite linear; margin: 0 auto 20px auto;
         }
         @keyframes l3{
-          25% {background-position: 0 0   ,100% 100%,100% calc(100% - 5px)}
-          50% {background-position: 0 100%,100% 100%,0    calc(100% - 5px)}
-          75% {background-position: 0 100%,100%    0,100% 5px}
+          25% {background-position: 0 0, 100% 100%, 100% calc(100% - 5px)}
+          50% {background-position: 0 100%, 100% 100%, 0 calc(100% - 5px)}
+          75% {background-position: 0 100%, 100% 0, 100% 5px}
         }
     `,
     searchStyleFixed: { width: '100%', padding: '18px 140px 18px 50px', borderRadius: '50px', backgroundColor: '#fff', fontSize: '15px', outline: 'none', boxSizing: 'border-box', border: '1px solid #e0e0e0', color: '#1d1d1f' },
@@ -139,7 +101,10 @@ const Styles = {
     glassTag: { fontSize: '11px', fontWeight: '700', backgroundColor: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: '10px', color: '#fff', backdropFilter: 'blur(5px)' }
 };
 
-// --- 4. UI COMPONENTS ---
+// ==========================================
+// 2. UI COMPONENTS & WIDGETS
+// ==========================================
+
 const NavButton = ({ children, onClick, isActive, isDarkBg }) => {
   const activeBg = isDarkBg ? Styles.colors.white : Styles.colors.primary;
   const activeColor = isDarkBg ? Styles.colors.primary : Styles.colors.white;
@@ -150,15 +115,16 @@ const NavButton = ({ children, onClick, isActive, isDarkBg }) => {
 };
 
 const InteractiveButton = ({ primary = true, children, onClick, style, className, disabled, icon, isDarkBg = false, customBlackWhite = false, isNav = false, isUpload = false }) => {
-    let bgInitial, textInitial, borderInitial, bgHover, textHover, borderHover;
+    let bgInitial, textInitial, borderInitial, bgHover, textHover;
     if (isUpload) {
-        if (isDarkBg) { bgInitial = "transparent"; borderInitial = "#ffffff"; textInitial = Styles.colors.orange; bgHover = Styles.colors.orange; borderHover = "#ffffff"; textHover = "#ffffff"; }
-        else { bgInitial = "transparent"; borderInitial = "#1d1d1f"; textInitial = Styles.colors.orange; bgHover = Styles.colors.orange; borderHover = "#1d1d1f"; textHover = "#ffffff"; }
-    } else if (isNav && isDarkBg) { bgInitial = "transparent"; textInitial = "#ffffff"; borderInitial = "#ffffff"; bgHover = "#ffffff"; textHover = "#1d1d1f"; borderHover = "transparent"; }
-    else if (customBlackWhite) { bgInitial = "#1d1d1f"; textInitial = "#ffffff"; borderInitial = "#1d1d1f"; bgHover = "#ffffff"; textHover = "#1d1d1f"; borderHover = "#1d1d1f"; }
-    else { bgInitial = primary ? (isDarkBg ? "#ffffff" : "#1d1d1f") : "transparent"; textInitial = primary ? (isDarkBg ? "#1d1d1f" : "#ffffff") : (isDarkBg ? "#ffffff" : "#1d1d1f"); borderInitial = primary ? "transparent" : (isDarkBg ? "#ffffff" : "#1d1d1f"); bgHover = primary ? (isDarkBg ? "#e0e0e0" : "#333") : (isDarkBg ? "#ffffff" : "#1d1d1f"); textHover = primary ? (isDarkBg ? "#1d1d1f" : "#ffffff") : (isDarkBg ? "#1d1d1f" : "#ffffff"); borderInitial = primary ? "transparent" : (isDarkBg ? "#ffffff" : "#1d1d1f"); }
+        if (isDarkBg) { bgInitial = "transparent"; borderInitial = "#ffffff"; textInitial = Styles.colors.orange; bgHover = Styles.colors.orange; textHover = "#ffffff"; }
+        else { bgInitial = "transparent"; borderInitial = "#1d1d1f"; textInitial = Styles.colors.orange; bgHover = Styles.colors.orange; textHover = "#ffffff"; }
+    } else if (isNav && isDarkBg) { bgInitial = "transparent"; textInitial = "#ffffff"; borderInitial = "#ffffff"; bgHover = "#ffffff"; textHover = "#1d1d1f"; }
+    else if (customBlackWhite) { bgInitial = "#1d1d1f"; textInitial = "#ffffff"; borderInitial = "#1d1d1f"; bgHover = "#ffffff"; textHover = "#1d1d1f"; }
+    else { bgInitial = primary ? (isDarkBg ? "#ffffff" : "#1d1d1f") : "transparent"; textInitial = primary ? (isDarkBg ? "#1d1d1f" : "#ffffff") : (isDarkBg ? "#ffffff" : "#1d1d1f"); borderInitial = primary ? "transparent" : (isDarkBg ? "#ffffff" : "#1d1d1f"); bgHover = primary ? (isDarkBg ? "#e0e0e0" : "#333") : (isDarkBg ? "#ffffff" : "#1d1d1f"); textHover = primary ? (isDarkBg ? "#1d1d1f" : "#ffffff") : (isDarkBg ? "#1d1d1f" : "#ffffff"); }
+    
     return (
-        <motion.button onClick={onClick} disabled={disabled} initial={false} animate={{ backgroundColor: bgInitial, color: textInitial, border: `1px solid ${borderInitial}`, opacity: disabled ? 0.7 : 1 }} whileHover={!disabled ? { backgroundColor: bgHover, color: textHover, borderColor: borderHover || (primary ? "transparent" : borderInitial), scale: 1.05 } : {}} whileTap={!disabled ? { scale: 0.95 } : {}} transition={{ duration: 0.2 }} style={{ padding: '12px 28px', borderRadius: '50px', fontWeight: '700', fontSize: '14px', cursor: disabled ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', ...style }} className={className}>{children} {icon && icon}</motion.button>
+        <motion.button onClick={onClick} disabled={disabled} initial={false} animate={{ backgroundColor: bgInitial, color: textInitial, border: `1px solid ${borderInitial}`, opacity: disabled ? 0.7 : 1 }} whileHover={!disabled ? { backgroundColor: bgHover, color: textHover, borderColor: (primary ? "transparent" : borderInitial), scale: 1.05 } : {}} whileTap={!disabled ? { scale: 0.95 } : {}} transition={{ duration: 0.2 }} style={{ padding: '12px 28px', borderRadius: '50px', fontWeight: '700', fontSize: '14px', cursor: disabled ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', ...style }} className={className}>{children} {icon && icon}</motion.button>
     );
 };
 
@@ -248,7 +214,36 @@ const SpinningLeafLoader = ({ onComplete }) => {
     );
 };
 
-// --- 5. WIDGETS & SPECIAL COMPONENTS ---
+const PointsWidget = ({ points }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.8, duration: 0.5 }}
+      style={{
+        position: 'absolute',
+        bottom: '40px',
+        left: '40px',
+        zIndex: 20,
+        backgroundColor: 'rgba(0, 0, 0, 0.4)', // Dark Glass
+        backdropFilter: 'blur(20px)',
+        padding: '24px',
+        borderRadius: '24px',
+        border: '1px solid rgba(255, 255, 255, 0.2)', // White border
+        color: 'white',
+        maxWidth: '280px',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)'
+      }}
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+         <div style={{ fontSize: '32px', fontWeight: '800', lineHeight: 1.1, color: 'white' }}>{points} Điểm</div>
+         <p style={{ margin: 0, fontSize: '13px', lineHeight: 1.4, opacity: 0.8 }}>
+           Được sử dụng để quy đổi thành các phần thưởng hoặc lợi ích đặc biệt.
+         </p>
+      </div>
+    </motion.div>
+  )
+}
 
 const PomodoroHeaderWidget = () => {
     const WORK_TIME = 30; const BREAK_TIME = 30; 
@@ -299,10 +294,10 @@ const DocViewer = ({ doc, onClose }) => {
     return (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }} />
-            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} style={{ position: 'relative', width: '100%', maxWidth: '1000px', height: '90vh', background: bgColor, borderRadius: '24px', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', transition: 'background-color 0.3s ease' }}>
-                <div style={{ padding: '12px 24px', borderBottom: `1px solid ${borderColor}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: headerBg, transition: 'background-color 0.3s ease' }}>
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} style={{ position: 'relative', width: '100%', maxWidth: '1000px', height: '90vh', backgroundColor: bgColor, borderRadius: '24px', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', transition: 'background-color 0.3s ease' }}>
+                <div style={{ padding: '12px 24px', borderBottom: `1px solid ${borderColor}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: headerBg, transition: 'background-color 0.3s ease' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1, overflow: 'hidden' }}>
-                        <div style={{ padding: '8px', borderRadius: '8px', background: isNightMode ? '#333' : '#f5f5f7', flexShrink: 0, transition: 'background-color 0.3s ease' }}><FileText size={20} color={textColor}/></div>
+                        <div style={{ padding: '8px', borderRadius: '8px', backgroundColor: isNightMode ? '#333' : '#f5f5f7', flexShrink: 0, transition: 'background-color 0.3s ease' }}><FileText size={20} color={textColor}/></div>
                         <div style={{ minWidth: 0, flex: 1 }}>
                             <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: textColor, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', transition: 'color 0.3s ease' }}>{doc.title}</h3>
                             <p style={{ margin: 0, fontSize: '12px', color: subTextColor, transition: 'color 0.3s ease' }}>{doc.year} • {doc.major}</p>
@@ -311,11 +306,11 @@ const DocViewer = ({ doc, onClose }) => {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                         <PomodoroHeaderWidget />
                         <ThemeSwitchFixed isNightMode={isNightMode} toggle={() => setIsNightMode(!isNightMode)} />
-                        <button onClick={onClose} style={{ padding: '8px', borderRadius: '50%', border: 'none', background: isNightMode ? '#333' : '#f5f5f7', cursor: 'pointer', color: textColor, flexShrink: 0, transition: 'all 0.3s ease' }}><X size={20}/></button>
+                        <button onClick={onClose} style={{ padding: '8px', borderRadius: '50%', border: 'none', backgroundColor: isNightMode ? '#333' : '#f5f5f7', cursor: 'pointer', color: textColor, flexShrink: 0, transition: 'all 0.3s ease' }}><X size={20}/></button>
                     </div>
                 </div>
-                <div style={{ flex: 1, background: isNightMode ? '#121212' : '#f9fafb', position: 'relative', filter: contentFilter, transition: 'all 0.3s ease' }}>
-                    {doc.fileUrl && doc.fileUrl !== "#" ? (<iframe src={doc.fileUrl} style={{ width: '100%', height: '100%', border: 'none' }} title="Document Viewer" />) : (<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#999', gap: '16px' }}><div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FileText size={32} color="#ccc" /></div><p style={{ fontSize: '15px' }}>Đây là dữ liệu mẫu, chưa có file đính kèm.</p></div>)}
+                <div style={{ flex: 1, backgroundColor: isNightMode ? '#121212' : '#f9fafb', position: 'relative', filter: contentFilter, transition: 'all 0.3s ease' }}>
+                    {doc.fileUrl && doc.fileUrl !== "#" ? (<iframe src={doc.fileUrl} style={{ width: '100%', height: '100%', border: 'none' }} title="Document Viewer" />) : (<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#999', gap: '16px' }}><div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FileText size={32} color="#ccc" /></div><p style={{ fontSize: '15px' }}>Đây là dữ liệu mẫu, chưa có file đính kèm.</p></div>)}
                 </div>
             </motion.div>
         </div>
@@ -324,14 +319,17 @@ const DocViewer = ({ doc, onClose }) => {
 
 const Toast = ({ message }) => (
     <motion.div initial={{ opacity: 0, y: 50, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 20, scale: 0.9 }} transition={{ type: "spring", stiffness: 400, damping: 25 }} style={{ position: 'fixed', bottom: '40px', left: '50%', x: '-50%', backgroundColor: 'rgba(255, 255, 255, 0.95)', backdropFilter: 'blur(12px)', padding: '12px 24px', borderRadius: '100px', boxShadow: '0 10px 40px rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', gap: '10px', zIndex: 9999, border: '1px solid rgba(0,0,0,0.05)', whiteSpace: 'nowrap' }}>
-        <div style={{ width: '22px', height: '22px', background: '#34C759', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CheckCircle2 size={14} color="white" strokeWidth={3} /></div>
+        <div style={{ width: '22px', height: '22px', backgroundColor: '#34C759', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CheckCircle2 size={14} color="white" strokeWidth={3} /></div>
         <span style={{ fontSize: '14px', fontWeight: '600', color: '#1d1d1f' }}>{message}</span>
     </motion.div>
 );
 
 const AnimatedCounter = ({ from, to, duration = 2 }) => {
     const nodeRef = useRef();
+    const isInView = useInView(nodeRef, { once: true });
+    
     useEffect(() => {
+      if (!isInView) return;
       const node = nodeRef.current;
       let startTime;
       const step = (timestamp) => {
@@ -343,11 +341,14 @@ const AnimatedCounter = ({ from, to, duration = 2 }) => {
           if (progress < 1) { requestAnimationFrame(step); }
       };
       requestAnimationFrame(step);
-    }, [from, to, duration]);
+    }, [from, to, duration, isInView]);
     return <span ref={nodeRef}>{from}</span>;
 };
 
-// --- SECTION: IMPACT DASHBOARD ---
+// ==========================================
+// 3. COMPLEX SECTIONS & MODALS
+// ==========================================
+
 const ImpactDashboard = () => {
     const totalViews = 12500; 
     const papersSaved = totalViews * 5;
@@ -393,7 +394,7 @@ const ImpactDashboard = () => {
                 <motion.h2 
                     initial={{ opacity: 0, y: 30 }} 
                     whileInView={{ opacity: 1, y: 0 }} 
-                    viewport={{ once: false, margin: "-50px" }} 
+                    viewport={{ once: true, margin: "-50px" }} 
                     transition={{ duration: 0.5, ease: "easeOut" }} 
                     style={{ fontSize: 'clamp(36px, 5vw, 56px)', fontWeight: '900', lineHeight: 1, margin: '0 0 16px 0', color: '#1d1d1f', letterSpacing: '-1px' }}
                 >
@@ -403,7 +404,7 @@ const ImpactDashboard = () => {
                 <motion.p 
                      initial={{ opacity: 0, y: 20 }} 
                      whileInView={{ opacity: 1, y: 0 }} 
-                     viewport={{ once: false, margin: "-50px" }}
+                     viewport={{ once: true, margin: "-50px" }}
                      transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
                      style={{ fontSize: '18px', color: '#666', maxWidth: '600px', margin: '0 auto' }}
                 >
@@ -985,7 +986,7 @@ const Navbar = ({ view, setView, setIsModalOpen, onNavigate, showToast, setIsExa
     );
 };
 
-const HeroSection = ({ scrollY }) => {
+const HeroSection = ({ scrollY, points }) => {
     const heroOpacity = useTransform(scrollY, [0, 400], [1, 0]);
     const floatLeft = useTransform(scrollY, [0, 400], [0, -100]);
     const floatRight = useTransform(scrollY, [0, 400], [0, 100]);
@@ -997,10 +998,13 @@ const HeroSection = ({ scrollY }) => {
             <motion.header style={{ position: 'relative', zIndex: 10, textAlign: 'center', color: 'white', opacity: heroOpacity }}>
                 <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} style={{ marginBottom: '20px', display: 'inline-block', backgroundColor: 'rgba(255,255,255,0.2)', color: '#fff', padding: '8px 20px', borderRadius: '30px', fontWeight: '600', fontSize: '13px', backdropFilter: 'blur(5px)' }}>KHO TÀI LIỆU SINH VIÊN</motion.div>
                 <div style={{ overflow: 'visible' }}>
-                    <motion.h1 initial={{ x: -100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 1.2, ease: "easeOut" }} style={{ x: floatLeft, fontSize: 'clamp(50px, 9vw, 100px)', fontWeight: '800', color: '#ffffff', margin: 0, lineHeight: 1 }}>Less Paper</motion.h1>
+                    <motion.h1 initial={{ x: -100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 1.2, ease: "easeOut" }} style={{ x: floatLeft, fontSize: 'clamp(40px, 7vw, 80px)', fontWeight: '800', color: '#ffffff', margin: 0, lineHeight: 1 }}>Less Paper</motion.h1>
                     <motion.h1 initial={{ x: 100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 1.2, delay: 0.2, ease: "easeOut" }} style={{ x: floatRight, fontSize: 'clamp(50px, 9vw, 100px)', fontWeight: '800', color: '#ffffff', margin: 0, lineHeight: 1 }}>More Knowledge.</motion.h1>
                 </div>
             </motion.header>
+
+            {/* NEW POINTS WIDGET INSIDE HERO */}
+            <PointsWidget points={points} />
         </div>
     );
 };
@@ -1169,6 +1173,7 @@ export default function App() {
   const [toastMessage, setToastMessage] = useState(null);
   const [viewingDoc, setViewingDoc] = useState(null); 
   const [isLoading, setIsLoading] = useState(true);
+  const [points, setPoints] = useState(100);
 
   // --- Lenis Scroll ---
   useEffect(() => {
@@ -1245,15 +1250,23 @@ export default function App() {
   const handleUpload = () => {
       if (!formData.file || !formData.title || !formData.year || !formData.major) return showToast("Vui lòng nhập đủ thông tin!");
       setUploading(true);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-          const newDoc = { id: Date.now(), title: formData.title, desc: formData.desc || "Tài liệu sinh viên", year: formData.year, major: formData.major, type: "PDF", fileUrl: e.target.result, cover: Utils.getRandomCover(), createdAt: new Date().toISOString() };
-          const updatedDocs = [newDoc, ...documents];
-          setDocuments(updatedDocs); localStorage.setItem('hoclieuso_docs', JSON.stringify(updatedDocs));
-          setUploading(false); setIsModalOpen(false); setFormData({ title: '', desc: '', year: '', major: '', file: null });
-          showToast("Upload thành công!");
-      };
-      reader.readAsDataURL(formData.file);
+      
+      // Simulate network request
+      setTimeout(() => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+              const newDoc = { id: Date.now(), title: formData.title, desc: formData.desc || "Tài liệu sinh viên", year: formData.year, major: formData.major, type: "PDF", fileUrl: e.target.result, cover: Utils.getRandomCover(), createdAt: new Date().toISOString() };
+              const updatedDocs = [newDoc, ...documents];
+              setDocuments(updatedDocs); 
+              localStorage.setItem('hoclieuso_docs', JSON.stringify(updatedDocs));
+              setUploading(false); 
+              setIsModalOpen(false); 
+              setFormData({ title: '', desc: '', year: '', major: '', file: null });
+              showToast("Upload thành công! +1 Điểm thưởng");
+              setPoints(prev => prev + 1);
+          };
+          reader.readAsDataURL(formData.file);
+      }, 1500); // 1.5s delay for loading effect
   };
 
   const handleFileSelect = (e) => {
@@ -1277,7 +1290,7 @@ export default function App() {
         <AnimatePresence mode="wait">
             {view === 'home' && (
                 <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
-                    <HeroSection scrollY={scrollY} />
+                    <HeroSection scrollY={scrollY} points={points} />
                     <div style={{ marginTop: '80px' }}>
                         <div style={{ marginBottom: '80px' }}>
                             <ScrollRevealText text="Giảm thời gian tìm kiếm, tăng hiệu quả học tập. Tất cả tài liệu và đề thi được sắp xếp thông minh để bạn tiếp cận đúng thứ mình cần chỉ trong vài giây." />
@@ -1314,17 +1327,7 @@ export default function App() {
                 <motion.div key="all" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} style={{ paddingTop: '100px', minHeight: '100vh', color: '#1d1d1f', position: 'relative', zIndex: 10 }}>
                     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px' }}>
                         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-                            <h1 style={{ 
-                                fontSize: 'clamp(30px, 5vw, 60px)', 
-                                fontWeight: '900', 
-                                color: '#1d1d1f', 
-                                textTransform: 'uppercase', 
-                                lineHeight: 1,
-                                textAlign: 'center',
-                                margin: '0 0 20px 0'
-                            }}>
-                                KHO TÀI LIỆU
-                            </h1>
+                            <TextPressure text="KHO TÀI LIỆU" />
                             <p style={{ fontSize: '16px', color: '#666', maxWidth: '600px', margin: '0 auto', lineHeight: 1.6 }}>Truy cập không giới hạn vào kho tàng tri thức.</p>
                         </div>
                         <SearchSection searchTerm={searchTerm} setSearchTerm={setSearchTerm} suggestions={suggestions} onSelectSuggestion={(doc) => setSearchTerm(doc.title)} />
