@@ -810,13 +810,13 @@ const ExamModal = ({ isOpen, onClose }) => {
                                     opacity: { duration: 0.2 }
                                 }}
                                 style={{ 
-                                    position: 'absolute', width: '80%', backgroundColor: '#fff', 
+                                    width: '80%', backgroundColor: '#fff', 
                                     borderRadius: '32px', padding: '30px', 
                                     boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
                                     display: 'flex', flexDirection: 'column', gap: '20px',
                                     maxHeight: '100%', overflowY: 'auto',
                                     overscrollBehavior: 'contain',
-                                    top: '50%', left: '50%', x: '-50%', y: '-50%' // Căn giữa tuyệt đối
+                                    margin: 'auto' // Đảm bảo căn giữa trong flex container
                                 }}
                             >
                                 <motion.div layout="position" style={{ fontSize: '13px', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>
@@ -1156,7 +1156,7 @@ const FeedbackSection = ({ onSend }) => {
         { icon: <Instagram size={20} />, url: "https://www.instagram.com/21sep.05/" },
         { icon: <Facebook size={20} />, url: "https://www.facebook.com/gmpty2109/" },
         { icon: <Github size={20} />, url: "https://github.com/gmaanx" },
-        { icon: <FilePenLine size={20} />, url: "https://docs.google.com/forms/d/e/1FAIpQLSc1BbDc9aNBQtEvXNbc1fcriQEjcCCRPxptXL3F7rI0TympBA/viewform?usp=send_form" } 
+        { icon: <FilePenLine size={20} />, url: "https://docs.google.com/forms/d/e/1FAIpQLSc1BbDc9aNBQtEvXNbc1fcriQEjcCCRPxptXL3F7rI0TympBA/viewform" } 
     ];
 
     return (
