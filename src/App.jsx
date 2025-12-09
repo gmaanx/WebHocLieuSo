@@ -263,7 +263,7 @@ const PointsWidget = ({ points }) => {
 }
 
 const PomodoroHeaderWidget = () => {
-    const WORK_TIME = 30; const BREAK_TIME = 30; 
+    const WORK_TIME = 1500; const BREAK_TIME = 150; 
     const [timeLeft, setTimeLeft] = useState(WORK_TIME); const [isActive, setIsActive] = useState(false); const [mode, setMode] = useState('work'); 
     useEffect(() => {
         let interval = null;
@@ -695,17 +695,21 @@ const ExamModal = ({ isOpen, onClose }) => {
                     </button>
                 </div>
 
-                <div style={{ 
-                    flex: 1, 
-                    position: 'relative', 
-                    overflowY: (mode === 'setup' || mode === 'score') ? 'auto' : 'hidden',
-                    overflowX: 'hidden',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: (mode === 'setup' || mode === 'score') ? 'flex-start' : 'center',
-                    paddingBottom: '20px' 
-                }}>
+                <div 
+                    data-lenis-prevent
+                    style={{ 
+                        flex: 1, 
+                        position: 'relative', 
+                        overflowY: (mode === 'setup' || mode === 'score') ? 'auto' : 'hidden',
+                        overflowX: 'hidden',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: (mode === 'setup' || mode === 'score') ? 'flex-start' : 'center',
+                        paddingBottom: '20px',
+                        overscrollBehavior: 'contain'
+                    }}
+                >
                     <AnimatePresence initial={false} custom={direction} mode="wait">
                         
                         {mode === 'setup' && (
@@ -1151,7 +1155,8 @@ const FeedbackSection = ({ onSend }) => {
     const socialLinks = [
         { icon: <Instagram size={20} />, url: "https://www.instagram.com/21sep.05/" },
         { icon: <Facebook size={20} />, url: "https://www.facebook.com/gmpty2109/" },
-        { icon: <Github size={20} />, url: "https://github.com/gmaanx" }
+        { icon: <Github size={20} />, url: "https://github.com/gmaanx" },
+        { icon: <FilePenLine size={20} />, url: "https://docs.google.com/forms/d/e/1FAIpQLSc1BbDc9aNBQtEvXNbc1fcriQEjcCCRPxptXL3F7rI0TympBA/viewform?usp=send_form" } 
     ];
 
     return (
