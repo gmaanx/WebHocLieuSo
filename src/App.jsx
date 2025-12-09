@@ -438,7 +438,8 @@ const ImpactDashboard = () => {
                             <div style={{ position: 'absolute', inset: 0, zIndex: 2, padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                     <div style={{ width: '100%', paddingRight: '10px' }}>
-                                        <motion.h3 layout="position" style={{ color: 'white', fontSize: isActive ? '32px' : '24px', fontWeight: '800', margin: '0 0 8px 0', lineHeight: 1.1 }}>{card.label}</motion.h3>
+                                        {/* Đã xóa thay đổi fontSize, giữ cố định 24px */}
+                                        <motion.h3 layout="position" style={{ color: 'white', fontSize: '24px', fontWeight: '800', margin: '0 0 8px 0', lineHeight: 1.1 }}>{card.label}</motion.h3>
                                         <motion.p layout="position" style={{ color: 'rgba(255,255,255,0.8)', fontSize: '14px', margin: 0 }}>{card.sub}</motion.p>
                                     </div>
                                     <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'black', boxShadow: '0 4px 10px rgba(0,0,0,0.2)', flexShrink: 0 }}>
@@ -451,8 +452,9 @@ const ImpactDashboard = () => {
                                         {card.icon}
                                         {isActive && <motion.span initial={{opacity:0}} animate={{opacity:1}} style={{ color: 'white', fontSize: '13px', fontWeight: '600', whiteSpace:'nowrap' }}>Live Data</motion.span>}
                                     </div>
-                                     <motion.div layout="position" style={{ fontSize: isActive ? '48px' : '32px', fontWeight: '800', color: 'white', lineHeight: 1, textAlign: 'right' }}>
-                                        {card.id === 3 ? card.value : <AnimatedCounter from={0} to={card.value} />} 
+                                     {/* Đã xóa thay đổi fontSize, giữ cố định 40px và xóa AnimatedCounter như yêu cầu trước */}
+                                     <motion.div layout="position" style={{ fontSize: '40px', fontWeight: '800', color: 'white', lineHeight: 1, textAlign: 'right' }}>
+                                        {card.value}
                                         {card.unit && <span style={{ fontSize: '20px', marginLeft: '4px' }}>{card.unit}</span>}
                                     </motion.div>
                                 </div>
