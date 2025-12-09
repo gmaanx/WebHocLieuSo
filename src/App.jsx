@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, useScroll, useTransform, AnimatePresence, useMotionValue, useInView } from 'framer-motion';
-import { Search, X, ArrowRight, FileText, Instagram, Twitter, Facebook, Mail, Github, UploadCloud, Loader, Trash2, Heart, CheckCircle2, Play, Pause, RotateCcw, Moon, Sun, FilePenLine, TreeDeciduous, Droplets, Wind, Eye, Compass, ChevronRight, ChevronLeft, Check, Leaf, AlertCircle, BookOpen, Gift } from 'lucide-react';
+import { Search, X, ArrowRight, FileText, Instagram, Twitter, Facebook, Mail, Github, UploadCloud, Loader, Trash2, Heart, CheckCircle2, Play, Pause, RotateCcw, Moon, Sun, FilePenLine, TreeDeciduous, Droplets, Wind, Eye, Compass, ChevronRight, ChevronLeft, ChevronDown, Check, Leaf, AlertCircle, BookOpen, Gift } from 'lucide-react';
 
 // ==========================================
 // 1. CONFIGURATION & DATA
@@ -104,6 +104,23 @@ const Styles = {
 // ==========================================
 // 2. UI COMPONENTS & WIDGETS
 // ==========================================
+
+const ScrollFloat = ({ children, style, className, as = "div", delay = 0, ...props }) => {
+    const Component = motion[as] || motion.div;
+    return (
+        <Component 
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, margin: "-50px" }}
+            transition={{ duration: 1, delay: delay, ease: "easeOut" }}
+            style={style}
+            className={className}
+            {...props}
+        >
+            {children}
+        </Component>
+    );
+};
 
 const NavButton = ({ children, onClick, isActive, isDarkBg }) => {
   const activeBg = isDarkBg ? Styles.colors.white : Styles.colors.primary;
@@ -391,25 +408,19 @@ const ImpactDashboard = () => {
     return (
         <div style={{ maxWidth: '1200px', margin: '80px auto 40px', padding: '0 40px' }}>
             <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-                <motion.h2 
-                    initial={{ opacity: 0, y: 30 }} 
-                    whileInView={{ opacity: 1, y: 0 }} 
-                    viewport={{ once: true, margin: "-50px" }} 
-                    transition={{ duration: 0.5, ease: "easeOut" }} 
+                <ScrollFloat 
+                    as="h2"
                     style={{ fontSize: 'clamp(36px, 5vw, 56px)', fontWeight: '900', lineHeight: 1, margin: '0 0 16px 0', color: '#1d1d1f', letterSpacing: '-1px' }}
                 >
                     "Tác Động Xanh"
-                </motion.h2>
+                </ScrollFloat>
                 
-                <motion.p 
-                     initial={{ opacity: 0, y: 20 }} 
-                     whileInView={{ opacity: 1, y: 0 }} 
-                     viewport={{ once: true, margin: "-50px" }}
-                     transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
+                <ScrollFloat 
+                     as="p"
                      style={{ fontSize: '18px', color: '#666', maxWidth: '600px', margin: '0 auto' }}
                 >
                     Mỗi lượt xem tài liệu hay tạo đề thi không chỉ giúp học tập hiệu quả hơn mà còn góp phần bảo vệ môi trường.
-                </motion.p>
+                </ScrollFloat>
             </div>
 
             <div style={{ display: 'flex', gap: '20px', height: '400px' }}>
@@ -466,6 +477,70 @@ const ImpactDashboard = () => {
         </div>
     );
 };
+
+// --- NEW SECTION: FAQ ---
+const FAQSection = () => {
+    const [activeIndex, setActiveIndex] = useState(null);
+
+    const FAQS = [
+        { q: "Tài liệu được kiểm duyệt như thế nào?", a: "Trong thời gian tới, hệ thống sẽ bổ sung cơ chế kiểm duyệt chặt chẽ hơn để đảm bảo tính chính xác, học thuật và chất lượng của toàn bộ nội dung." },
+        { q: "Tài khoản người dùng hoạt động thế nào?", a: "Tính năng tài khoản hiện vẫn đang trong giai đoạn phát triển. Trong tương lai, người dùng sẽ có hồ sơ cá nhân, lịch sử đóng góp, quyền quản lý điểm và nhiều tiện ích bổ sung khác phục vụ học tập và cộng đồng." },
+        { q: "Nền tảng có miễn phí không?", a: "Hiện tại, mọi tính năng đều hoàn toàn miễn phí. Trong tương lai, nền tảng có thể bổ sung các gói đặc quyền nâng cao, nhưng cốt lõi truy cập tài liệu và chia sẻ tri thức sẽ luôn được duy trì ở mức phi lợi nhuận cho sinh viên." },
+        { q: "Điểm dùng để làm gì?", a: "Điểm là đơn vị giá trị trong hệ thống, được sử dụng để mở khóa các đặc quyền và đổi lấy những lợi ích khác khi nền tảng mở rộng trong tương lai." },
+    ];
+
+    return (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '50px 20px' }}>
+            <div style={{ width: '100%', maxWidth: '800px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    {FAQS.map((item, i) => (
+                        <motion.div 
+                            key={i}
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: false, margin: "-50px" }}
+                            transition={{ duration: 1, delay: i * 0.1 }}
+                            style={{ 
+                                borderRadius: '32px', 
+                                overflow: 'hidden', 
+                                cursor: 'pointer',
+                                backgroundColor: 'white',
+                                border: '1px solid #1d1d1f',
+                                color: '#1d1d1f'
+                            }}
+                        >
+                            <div 
+                                onClick={() => setActiveIndex(activeIndex === i ? null : i)}
+                                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px 32px' }}
+                            >
+                                <h3 style={{ fontSize: '1.1rem', fontWeight: 600, margin: 0, color: '#1d1d1f' }}>{item.q}</h3>
+                                <div style={{ width: '44px', height: '44px', borderRadius: '50%', backgroundColor: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(0,0,0,0.1)', flexShrink: 0 }}>
+                                    <motion.div animate={{ rotate: activeIndex === i ? 180 : 0 }} transition={{ duration: 0.3 }}>
+                                        <ChevronDown size={20} color="#1d1d1f"/>
+                                    </motion.div>
+                                </div>
+                            </div>
+                            <AnimatePresence>
+                                {activeIndex === i && (
+                                    <motion.div 
+                                        initial={{ height: 0, opacity: 0 }} 
+                                        animate={{ height: 'auto', opacity: 1 }} 
+                                        exit={{ height: 0, opacity: 0 }}
+                                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                                    >
+                                        <div style={{ padding: '0 32px 32px 32px' }}>
+                                            <p style={{ margin: 0, color: '#666', lineHeight: 1.6, fontSize: '1rem' }}>{item.a}</p>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </motion.div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    )
+}
 
 // --- SECTION: EXAM MODAL ---
 const ExamModal = ({ isOpen, onClose }) => {
@@ -1298,27 +1373,24 @@ export default function App() {
                             <ScrollRevealText text="Giảm thời gian tìm kiếm, tăng hiệu quả học tập. Tất cả tài liệu và đề thi được sắp xếp thông minh để bạn tiếp cận đúng thứ mình cần chỉ trong vài giây." />
                         </div>
                         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px', display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '30px' }}>
-                            <motion.h2 
-                                initial={{ opacity: 0, y: 30 }} 
-                                whileInView={{ opacity: 1, y: 0 }} 
-                                viewport={{ once: false, margin: "-50px" }} 
-                                transition={{ duration: 0.5, ease: "easeOut" }} 
+                            <ScrollFloat 
+                                as="h2"
                                 style={{ fontSize: 'clamp(32px, 4vw, 48px)', fontWeight: '800', lineHeight: 1, margin: 0, color: '#1d1d1f' }}
                             >
                                 "Tài Liệu Mới"
-                            </motion.h2>
-                            <motion.div 
-                                initial={{ opacity: 0, y: 30 }} 
-                                whileInView={{ opacity: 1, y: 0 }} 
-                                viewport={{ once: false, amount: 0.2 }} 
-                                transition={{ duration: 0.5, delay: 0.3, ease: "easeOut" }}
+                            </ScrollFloat>
+                            <ScrollFloat 
+                                as="div"
+                                delay={0.5}
                             >
                                 <InteractiveButton primary={false} isDarkBg={false} onClick={() => handleNavigation('all')} customBlackWhite={true}>Xem tất cả <ArrowRight size={16}/></InteractiveButton>
-                            </motion.div>
+                            </ScrollFloat>
                         </div>
                         <DocumentGrid documents={documents.slice(0, 4)} onView={(doc) => setViewingDoc(doc)} />
                     </div>
                     <ImpactDashboard />
+
+                    <FAQSection />
                     
                     <FeedbackSection onSend={() => showToast("Cảm ơn đóng góp của bạn!")} />
                     <Footer />
