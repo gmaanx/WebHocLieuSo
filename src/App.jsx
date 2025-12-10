@@ -1153,7 +1153,7 @@ const FeedbackSection = ({ onSend }) => {
     };
 
     const socialLinks = [
-        { icon: <Instagram size={20} />, url: "https://www.instagram.com/21sep.05/" },
+        { icon: <Instagram size={20} />, url: "https://www.instagram.com/21sep.pty/" },
         { icon: <Facebook size={20} />, url: "https://www.facebook.com/gmpty2109/" },
         { icon: <Github size={20} />, url: "https://github.com/gmaanx" },
         { icon: <FilePenLine size={20} />, url: "https://docs.google.com/forms/d/e/1FAIpQLSc1BbDc9aNBQtEvXNbc1fcriQEjcCCRPxptXL3F7rI0TympBA/viewform" } 
