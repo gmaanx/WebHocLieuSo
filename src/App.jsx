@@ -1,10 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, useScroll, useTransform, AnimatePresence, useMotionValue, useInView } from 'framer-motion';
-import { Search, X, ArrowRight, FileText, Instagram, Twitter, Facebook, Mail, Github, UploadCloud, Loader, Trash2, Heart, CheckCircle2, Play, Pause, RotateCcw, Moon, Sun, FilePenLine, TreeDeciduous, Droplets, Wind, Eye, Compass, ChevronRight, ChevronLeft, ChevronDown, Check, Leaf, AlertCircle, BookOpen, Gift } from 'lucide-react';
+import { 
+    Search, X, ArrowRight, FileText, Instagram, Twitter, Facebook, Mail, Github, 
+    UploadCloud, Loader, Trash2, Heart, CheckCircle2, Play, Pause, RotateCcw, 
+    Moon, Sun, FilePenLine, TreeDeciduous, Droplets, Wind, Eye, Compass, 
+    ChevronRight, ChevronLeft, ChevronDown, Check, Leaf, AlertCircle, BookOpen, Gift 
+} from 'lucide-react';
 
-// ==========================================
-// 1. CONFIGURATION & DATA
-// ==========================================
+/**
+ * ============================================================================
+ * 1. CONFIGURATION & MOCK DATA
+ * Chứa các hằng số, đường dẫn ảnh và dữ liệu mẫu khởi tạo.
+ * ============================================================================
+ */
 const CONFIG = {
   COVERS: ["./img/cover1.jpg", "./img/cover2.jpg", "./img/cover3.jpg", "./img/cover4.jpg"],
   FEEDBACK_BG: "./img/feedback-bg.jpg",
@@ -35,27 +43,47 @@ const MOCK_EXAM_QUESTIONS = [
     { id: 5, question: "Câu hỏi 5", options: ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"], correctAnswer: 0 }
 ];
 
+/**
+ * ============================================================================
+ * 2. UTILITIES & ALGORITHMS
+ * Các hàm hỗ trợ xử lý logic: tìm kiếm, tính điểm, random.
+ * ============================================================================
+ */
 const Utils = {
+  // Loại bỏ dấu tiếng Việt để tìm kiếm không dấu
   removeTones: (str) => str.normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D").toLowerCase(),
+  
+  // Thuật toán tính điểm khớp từ khóa cho chức năng tìm kiếm
+  // Ưu tiên khớp tiêu đề (100đ), khớp mô tả (20đ), khớp từng từ khóa (10đ/2đ)
   calcScore: (doc, searchTerm) => {
     const term = Utils.removeTones(searchTerm.trim());
     const title = Utils.removeTones(doc.title);
     const desc = Utils.removeTones(doc.desc);
     const keywords = term.split(/\s+/); 
     let score = 0;
+    
     if (title.includes(term)) score += 100;
     if (desc.includes(term)) score += 20;
+    
     let matchedTokens = 0;
     keywords.forEach(word => {
         if (title.includes(word)) { score += 10; matchedTokens++; }
         else if (desc.includes(word)) { score += 2; matchedTokens++; }
     });
+    
     if (matchedTokens === keywords.length && keywords.length > 1) score += 15;
     return score;
   },
+
   getRandomCover: () => CONFIG.COVERS[Math.floor(Math.random() * CONFIG.COVERS.length)]
 };
 
+/**
+ * ============================================================================
+ * 3. STYLES & GLOBAL CSS
+ * Định nghĩa màu sắc, global CSS injection và các style object tái sử dụng.
+ * ============================================================================
+ */
 const Styles = {
     colors: { 
         primary: '#1d1d1f', 
@@ -101,10 +129,14 @@ const Styles = {
     glassTag: { fontSize: '11px', fontWeight: '700', backgroundColor: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: '10px', color: '#fff', backdropFilter: 'blur(5px)' }
 };
 
-// ==========================================
-// 2. UI COMPONENTS & WIDGETS
-// ==========================================
+/**
+ * ============================================================================
+ * 4. PRIMITIVE UI COMPONENTS
+ * Các thành phần giao diện cơ bản: Buttons, ScrollWrapper, Text Effects.
+ * ============================================================================
+ */
 
+// Wrapper cho hiệu ứng trồi lên khi cuộn trang
 const ScrollFloat = ({ children, style, className, as = "div", delay = 0, ...props }) => {
     const Component = motion[as] || motion.div;
     return (
@@ -122,29 +154,67 @@ const ScrollFloat = ({ children, style, className, as = "div", delay = 0, ...pro
     );
 };
 
+// Button điều hướng trên Navbar
 const NavButton = ({ children, onClick, isActive, isDarkBg }) => {
   const activeBg = isDarkBg ? Styles.colors.white : Styles.colors.primary;
   const activeColor = isDarkBg ? Styles.colors.primary : Styles.colors.white;
   const initialBorder = isDarkBg ? `1px solid ${Styles.colors.white}` : `1px solid rgba(0,0,0,0.1)`;
   return (
-    <motion.button onClick={onClick} animate={{ backgroundColor: isActive ? activeBg : "transparent", color: isActive ? activeColor : (isDarkBg ? Styles.colors.white : Styles.colors.primary), border: isActive ? "1px solid transparent" : initialBorder }} whileHover={{ backgroundColor: activeBg, color: activeColor, border: "1px solid transparent", scale: 1.05 }} whileTap={{ scale: 0.95 }} transition={{ duration: 0.2 }} style={{ padding: '8px 20px', borderRadius: '30px', fontWeight: '600', fontSize: '14px', cursor: 'pointer', margin: '0 4px' }}>{children}</motion.button>
+    <motion.button 
+        onClick={onClick} 
+        animate={{ 
+            backgroundColor: isActive ? activeBg : "transparent", 
+            color: isActive ? activeColor : (isDarkBg ? Styles.colors.white : Styles.colors.primary), 
+            border: isActive ? "1px solid transparent" : initialBorder 
+        }} 
+        whileHover={{ backgroundColor: activeBg, color: activeColor, border: "1px solid transparent", scale: 1.05 }} 
+        whileTap={{ scale: 0.95 }} 
+        transition={{ duration: 0.2 }} 
+        style={{ padding: '8px 20px', borderRadius: '30px', fontWeight: '600', fontSize: '14px', cursor: 'pointer', margin: '0 4px' }}
+    >
+        {children}
+    </motion.button>
   );
 };
 
+// Button tương tác chính (Primary/Secondary) với hỗ trợ theme
 const InteractiveButton = ({ primary = true, children, onClick, style, className, disabled, icon, isDarkBg = false, customBlackWhite = false, isNav = false, isUpload = false }) => {
     let bgInitial, textInitial, borderInitial, bgHover, textHover;
+    
+    // Logic xác định màu sắc dựa trên props
     if (isUpload) {
         if (isDarkBg) { bgInitial = "transparent"; borderInitial = "#ffffff"; textInitial = Styles.colors.orange; bgHover = Styles.colors.orange; textHover = "#ffffff"; }
         else { bgInitial = "transparent"; borderInitial = "#1d1d1f"; textInitial = Styles.colors.orange; bgHover = Styles.colors.orange; textHover = "#ffffff"; }
-    } else if (isNav && isDarkBg) { bgInitial = "transparent"; textInitial = "#ffffff"; borderInitial = "#ffffff"; bgHover = "#ffffff"; textHover = "#1d1d1f"; }
-    else if (customBlackWhite) { bgInitial = "#1d1d1f"; textInitial = "#ffffff"; borderInitial = "#1d1d1f"; bgHover = "#ffffff"; textHover = "#1d1d1f"; }
-    else { bgInitial = primary ? (isDarkBg ? "#ffffff" : "#1d1d1f") : "transparent"; textInitial = primary ? (isDarkBg ? "#1d1d1f" : "#ffffff") : (isDarkBg ? "#ffffff" : "#1d1d1f"); borderInitial = primary ? "transparent" : (isDarkBg ? "#ffffff" : "#1d1d1f"); bgHover = primary ? (isDarkBg ? "#e0e0e0" : "#333") : (isDarkBg ? "#ffffff" : "#1d1d1f"); textHover = primary ? (isDarkBg ? "#1d1d1f" : "#ffffff") : (isDarkBg ? "#1d1d1f" : "#ffffff"); }
+    } else if (isNav && isDarkBg) { 
+        bgInitial = "transparent"; textInitial = "#ffffff"; borderInitial = "#ffffff"; bgHover = "#ffffff"; textHover = "#1d1d1f"; 
+    } else if (customBlackWhite) { 
+        bgInitial = "#1d1d1f"; textInitial = "#ffffff"; borderInitial = "#1d1d1f"; bgHover = "#ffffff"; textHover = "#1d1d1f"; 
+    } else { 
+        bgInitial = primary ? (isDarkBg ? "#ffffff" : "#1d1d1f") : "transparent"; 
+        textInitial = primary ? (isDarkBg ? "#1d1d1f" : "#ffffff") : (isDarkBg ? "#ffffff" : "#1d1d1f"); 
+        borderInitial = primary ? "transparent" : (isDarkBg ? "#ffffff" : "#1d1d1f"); 
+        bgHover = primary ? (isDarkBg ? "#e0e0e0" : "#333") : (isDarkBg ? "#ffffff" : "#1d1d1f"); 
+        textHover = primary ? (isDarkBg ? "#1d1d1f" : "#ffffff") : (isDarkBg ? "#1d1d1f" : "#ffffff"); 
+    }
     
     return (
-        <motion.button onClick={onClick} disabled={disabled} initial={false} animate={{ backgroundColor: bgInitial, color: textInitial, border: `1px solid ${borderInitial}`, opacity: disabled ? 0.7 : 1 }} whileHover={!disabled ? { backgroundColor: bgHover, color: textHover, borderColor: (primary ? "transparent" : borderInitial), scale: 1.05 } : {}} whileTap={!disabled ? { scale: 0.95 } : {}} transition={{ duration: 0.2 }} style={{ padding: '12px 28px', borderRadius: '50px', fontWeight: '700', fontSize: '14px', cursor: disabled ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', ...style }} className={className}>{children} {icon && icon}</motion.button>
+        <motion.button 
+            onClick={onClick} 
+            disabled={disabled} 
+            initial={false} 
+            animate={{ backgroundColor: bgInitial, color: textInitial, border: `1px solid ${borderInitial}`, opacity: disabled ? 0.7 : 1 }} 
+            whileHover={!disabled ? { backgroundColor: bgHover, color: textHover, borderColor: (primary ? "transparent" : borderInitial), scale: 1.05 } : {}} 
+            whileTap={!disabled ? { scale: 0.95 } : {}} 
+            transition={{ duration: 0.2 }} 
+            style={{ padding: '12px 28px', borderRadius: '50px', fontWeight: '700', fontSize: '14px', cursor: disabled ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', ...style }} 
+            className={className}
+        >
+            {children} {icon && icon}
+        </motion.button>
     );
 };
 
+// Card hiển thị tài liệu
 const MenuCard = ({ item, onClick }) => {
   return (
     <motion.div initial="rest" whileHover="hover" animate="rest" onClick={onClick} style={{ position: 'relative', height: '450px', borderRadius: '30px', overflow: 'hidden', cursor: 'pointer', backgroundColor: '#000', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
@@ -164,17 +234,24 @@ const MenuCard = ({ item, onClick }) => {
   );
 };
 
+/**
+ * ============================================================================
+ * 5. TEXT EFFECTS & ANIMATIONS
+ * Các hiệu ứng chữ tương tác.
+ * ============================================================================
+ */
+
+// Ký tự đơn lẻ phản ứng với chuột
 const PressureChar = ({ char, mouseX }) => {
     const ref = useRef(null);
-    const [width, setWidth] = useState(0);
-    const [x, setX] = useState(0);
-    useEffect(() => { if (ref.current) { setWidth(ref.current.offsetWidth); setX(ref.current.offsetLeft); } }, []);
+    useEffect(() => { if (ref.current) { } }, []); // Giữ ref để tính toán vị trí
     const distance = useTransform(mouseX, (val) => { const bounds = ref.current?.getBoundingClientRect() ?? { x: 0, width: 0 }; return val - bounds.x - bounds.width / 2; });
     const scaleY = useTransform(distance, [-200, 0, 200], [1, 0.8, 1]);
     const scaleX = useTransform(distance, [-200, 0, 200], [1, 1.1, 1]);
     return <motion.span ref={ref} style={{ display: 'inline-block', scaleY, scaleX, originY: "center", marginRight: char === ' ' ? '10px' : '0px' }}>{char}</motion.span>;
 };
 
+// Dòng chữ phản ứng co giãn khi di chuột
 const TextPressure = ({ text }) => {
     const mouseX = useMotionValue(0);
     return (
@@ -184,6 +261,7 @@ const TextPressure = ({ text }) => {
     );
 };
 
+// Hiệu ứng chữ hiện dần khi scroll tới
 const ScrollRevealText = ({ text }) => {
   const container = useRef(null);
   const { scrollYProgress } = useScroll({ target: container, offset: ["start 0.9", "end 0.6"] });
@@ -199,9 +277,15 @@ const ScrollRevealText = ({ text }) => {
   );
 };
 
+/**
+ * ============================================================================
+ * 6. WIDGETS & TOOLS
+ * Các tiện ích nhỏ: Loader, Điểm số, Pomodoro Timer, Darkmode Switch.
+ * ============================================================================
+ */
+
 const SpinningLeafLoader = ({ onComplete }) => {
     const [isFinished, setIsFinished] = useState(false);
-
     useEffect(() => {
         const timer = setTimeout(() => {
             setIsFinished(true);
@@ -211,20 +295,8 @@ const SpinningLeafLoader = ({ onComplete }) => {
     }, [onComplete]);
 
     return (
-        <motion.div
-            initial={{ opacity: 1 }}
-            animate={isFinished ? { opacity: 0 } : { opacity: 1 }}
-            transition={{ duration: 0.6 }}
-            style={{
-                position: 'fixed', inset: 0, zIndex: 99999,
-                backgroundColor: '#121212', 
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}
-        >
-            <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1.5, ease: "linear", repeat: Infinity }}
-            >
+        <motion.div initial={{ opacity: 1 }} animate={isFinished ? { opacity: 0 } : { opacity: 1 }} transition={{ duration: 0.6 }} style={{ position: 'fixed', inset: 0, zIndex: 99999, backgroundColor: '#121212', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <motion.div animate={{ rotate: 360 }} transition={{ duration: 1.5, ease: "linear", repeat: Infinity }}>
                 <Leaf size={64} color={Styles.colors.loading} fill={Styles.colors.loading} />
             </motion.div>
         </motion.div>
@@ -237,26 +309,11 @@ const PointsWidget = ({ points }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.8, duration: 0.5 }}
-      style={{
-        position: 'absolute',
-        bottom: '40px',
-        left: '40px',
-        zIndex: 20,
-        backgroundColor: 'rgba(0, 0, 0, 0.4)', // Dark Glass
-        backdropFilter: 'blur(20px)',
-        padding: '24px',
-        borderRadius: '24px',
-        border: '1px solid rgba(255, 255, 255, 0.2)', // White border
-        color: 'white',
-        maxWidth: '280px',
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)'
-      }}
+      style={{ position: 'absolute', bottom: '40px', left: '40px', zIndex: 20, backgroundColor: 'rgba(0, 0, 0, 0.4)', backdropFilter: 'blur(20px)', padding: '24px', borderRadius: '24px', border: '1px solid rgba(255, 255, 255, 0.2)', color: 'white', maxWidth: '280px', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)' }}
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
          <div style={{ fontSize: '32px', fontWeight: '800', lineHeight: 1.1, color: 'white' }}>{points} Điểm</div>
-         <p style={{ margin: 0, fontSize: '13px', lineHeight: 1.4, opacity: 0.8 }}>
-           Được sử dụng để quy đổi thành các phần thưởng hoặc lợi ích đặc biệt.
-         </p>
+         <p style={{ margin: 0, fontSize: '13px', lineHeight: 1.4, opacity: 0.8 }}>Được sử dụng để quy đổi thành các phần thưởng hoặc lợi ích đặc biệt.</p>
       </div>
     </motion.div>
   )
@@ -264,17 +321,22 @@ const PointsWidget = ({ points }) => {
 
 const PomodoroHeaderWidget = () => {
     const WORK_TIME = 1500; const BREAK_TIME = 150; 
-    const [timeLeft, setTimeLeft] = useState(WORK_TIME); const [isActive, setIsActive] = useState(false); const [mode, setMode] = useState('work'); 
+    const [timeLeft, setTimeLeft] = useState(WORK_TIME); 
+    const [isActive, setIsActive] = useState(false); 
+    const [mode, setMode] = useState('work'); 
+    
     useEffect(() => {
         let interval = null;
         if (isActive && timeLeft > 0) { interval = setInterval(() => setTimeLeft(timeLeft - 1), 1000); } 
         else if (timeLeft === 0) { const nextMode = mode === 'work' ? 'break' : 'work'; setMode(nextMode); setTimeLeft(nextMode === 'work' ? WORK_TIME : BREAK_TIME); setIsActive(false); }
         return () => clearInterval(interval);
     }, [isActive, timeLeft, mode]);
+
     const toggleTimer = () => setIsActive(!isActive);
     const resetTimer = () => { setIsActive(false); setMode('work'); setTimeLeft(WORK_TIME); };
     const formatTime = (seconds) => { const mins = Math.floor(seconds / 60); const secs = seconds % 60; return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`; };
     const themeColor = mode === 'work' ? Styles.colors.orange : Styles.colors.green;
+
     return (
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '4px 10px', backgroundColor: '#f5f5f7', borderRadius: '30px', border: '1px solid #e0e0e0', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
             <div style={{ fontSize: '14px', fontWeight: '700', color: themeColor, minWidth: '45px', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{formatTime(timeLeft)}</div>
@@ -299,15 +361,47 @@ const ThemeSwitchFixed = ({ isNightMode, toggle }) => {
     )
 }
 
+const AnimatedCounter = ({ from, to, duration = 2 }) => {
+    const nodeRef = useRef();
+    const isInView = useInView(nodeRef, { once: true });
+    
+    useEffect(() => {
+      if (!isInView) return;
+      const node = nodeRef.current;
+      let startTime;
+      const step = (timestamp) => {
+          if (!startTime) startTime = timestamp;
+          const progress = Math.min((timestamp - startTime) / (duration * 1000), 1);
+          const easedProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+          const currentValue = Math.floor(from + (to - from) * easedProgress);
+          if (node) { node.textContent = currentValue.toLocaleString(); }
+          if (progress < 1) { requestAnimationFrame(step); }
+      };
+      requestAnimationFrame(step);
+    }, [from, to, duration, isInView]);
+    return <span ref={nodeRef}>{from}</span>;
+};
+
+/**
+ * ============================================================================
+ * 7. MODALS & OVERLAYS
+ * Các cửa sổ nổi: Xem tài liệu, Toast thông báo, Thi trắc nghiệm, Upload.
+ * ============================================================================
+ */
+
+// Modal xem chi tiết tài liệu (hỗ trợ Darkmode riêng)
 const DocViewer = ({ doc, onClose }) => {
     const [isNightMode, setIsNightMode] = useState(false);
     if (!doc) return null;
+    
+    // Cấu hình màu sắc động
     const contentFilter = isNightMode ? 'invert(1) hue-rotate(180deg)' : 'none';
     const bgColor = isNightMode ? '#1a1a1a' : 'white';
     const headerBg = isNightMode ? '#222' : '#fff';
     const textColor = isNightMode ? '#eee' : '#1d1d1f';
     const subTextColor = isNightMode ? '#aaa' : '#666';
     const borderColor = isNightMode ? '#333' : '#eee';
+
     return (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }} />
@@ -341,208 +435,7 @@ const Toast = ({ message }) => (
     </motion.div>
 );
 
-const AnimatedCounter = ({ from, to, duration = 2 }) => {
-    const nodeRef = useRef();
-    const isInView = useInView(nodeRef, { once: true });
-    
-    useEffect(() => {
-      if (!isInView) return;
-      const node = nodeRef.current;
-      let startTime;
-      const step = (timestamp) => {
-          if (!startTime) startTime = timestamp;
-          const progress = Math.min((timestamp - startTime) / (duration * 1000), 1);
-          const easedProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
-          const currentValue = Math.floor(from + (to - from) * easedProgress);
-          if (node) { node.textContent = currentValue.toLocaleString(); }
-          if (progress < 1) { requestAnimationFrame(step); }
-      };
-      requestAnimationFrame(step);
-    }, [from, to, duration, isInView]);
-    return <span ref={nodeRef}>{from}</span>;
-};
-
-// ==========================================
-// 3. COMPLEX SECTIONS & MODALS
-// ==========================================
-
-const ImpactDashboard = () => {
-    const totalViews = 12500; 
-    const papersSaved = totalViews * 5;
-    const waterSaved = Math.floor(papersSaved * 0.01); 
-    const co2Reduced = (papersSaved * 0.005).toFixed(1); 
-
-    const [hoveredCard, setHoveredCard] = useState(1);
-
-    const cards = [
-        { 
-            id: 1, 
-            label: "Papers Saved", 
-            sub: "Chuyển đổi số giúp hạn chế khai thác gỗ, giữ lại lá phổi xanh vô giá cho Trái Đất.", 
-            value: papersSaved, 
-            icon: <FileText size={16} color="white" />, 
-            image: CONFIG.DASHBOARD_IMGS.PAPER, 
-            color: "#4CAF50" 
-        },
-        { 
-            id: 2, 
-            label: "Water Saved", 
-            sub: "Tiết kiệm nguồn nước sạch quý báu vốn bị tiêu tốn khổng lồ trong công nghiệp sản xuất giấy.", 
-            value: waterSaved, 
-            icon: <Droplets size={16} color="white" />, 
-            image: CONFIG.DASHBOARD_IMGS.WATER, 
-            color: "#2196F3" 
-        },
-        { 
-            id: 3, 
-            label: "CO2 Reduced", 
-            sub: "Cắt giảm khí thải từ quy trình in ấn và vận chuyển, chung tay đẩy lùi biến đổi khí hậu.", 
-            value: co2Reduced, 
-            unit: "kg", 
-            icon: <Wind size={16} color="white" />, 
-            image: CONFIG.DASHBOARD_IMGS.CO2, 
-            color: "#FF9800" 
-        }
-    ];
-
-    return (
-        <div style={{ maxWidth: '1200px', margin: '80px auto 40px', padding: '0 40px' }}>
-            <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-                <ScrollFloat 
-                    as="h2"
-                    style={{ fontSize: 'clamp(36px, 5vw, 56px)', fontWeight: '900', lineHeight: 1, margin: '0 0 16px 0', color: '#1d1d1f', letterSpacing: '-1px' }}
-                >
-                    "Tác Động Xanh"
-                </ScrollFloat>
-                
-                <ScrollFloat 
-                     as="p"
-                     style={{ fontSize: '18px', color: '#666', maxWidth: '600px', margin: '0 auto' }}
-                >
-                    Mỗi lượt xem tài liệu hay tạo đề thi không chỉ giúp học tập hiệu quả hơn mà còn góp phần bảo vệ môi trường.
-                </ScrollFloat>
-            </div>
-
-            <div style={{ display: 'flex', gap: '20px', height: '400px' }}>
-                {cards.map((card) => {
-                    const isActive = hoveredCard === card.id;
-                    return (
-                        <motion.div
-                            key={card.id}
-                            onHoverStart={() => setHoveredCard(card.id)}
-                            layout 
-                            transition={{ type: "spring", stiffness: 120, damping: 20 }}
-                            style={{ 
-                                flex: isActive ? 3 : 1, 
-                                position: 'relative', borderRadius: '32px', overflow: 'hidden', 
-                                cursor: 'pointer', boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
-                                minWidth: '100px' 
-                            }}
-                        >
-                            <motion.div 
-                                animate={{ scale: isActive ? 1.05 : 1 }} 
-                                transition={{ duration: 0.8 }}
-                                style={{ position: 'absolute', inset: 0, backgroundImage: `url(${card.image})`, backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 0 }} 
-                            />
-                            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.4) 100%)', zIndex: 1 }} />
-                            
-                            <div style={{ position: 'absolute', inset: 0, zIndex: 2, padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                    <div style={{ width: '100%', paddingRight: '10px' }}>
-                                        {/* Đã xóa thay đổi fontSize, giữ cố định 24px */}
-                                        <motion.h3 layout="position" style={{ color: 'white', fontSize: '24px', fontWeight: '800', margin: '0 0 8px 0', lineHeight: 1.1 }}>{card.label}</motion.h3>
-                                        <motion.p layout="position" style={{ color: 'rgba(255,255,255,0.8)', fontSize: '14px', margin: 0 }}>{card.sub}</motion.p>
-                                    </div>
-                                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'black', boxShadow: '0 4px 10px rgba(0,0,0,0.2)', flexShrink: 0 }}>
-                                        <ArrowRight size={20} />
-                                    </div>
-                                </div>
-
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                                    <div style={{ backgroundColor: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(8px)', padding: '8px 16px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                                        {card.icon}
-                                        {isActive && <motion.span initial={{opacity:0}} animate={{opacity:1}} style={{ color: 'white', fontSize: '13px', fontWeight: '600', whiteSpace:'nowrap' }}>Live Data</motion.span>}
-                                    </div>
-                                     {/* Đã xóa thay đổi fontSize, giữ cố định 40px và xóa AnimatedCounter như yêu cầu trước */}
-                                     <motion.div layout="position" style={{ fontSize: '40px', fontWeight: '800', color: 'white', lineHeight: 1, textAlign: 'right' }}>
-                                        {card.value}
-                                        {card.unit && <span style={{ fontSize: '20px', marginLeft: '4px' }}>{card.unit}</span>}
-                                    </motion.div>
-                                </div>
-                            </div>
-                        </motion.div>
-                    );
-                })}
-            </div>
-        </div>
-    );
-};
-
-// --- NEW SECTION: FAQ ---
-const FAQSection = () => {
-    const [activeIndex, setActiveIndex] = useState(null);
-
-    const FAQS = [
-        { q: "Tài liệu được kiểm duyệt như thế nào?", a: "Trong thời gian tới, hệ thống sẽ bổ sung cơ chế kiểm duyệt chặt chẽ hơn để đảm bảo tính chính xác, học thuật và chất lượng của toàn bộ nội dung." },
-        { q: "Tài khoản người dùng hoạt động thế nào?", a: "Tính năng tài khoản hiện vẫn đang trong giai đoạn phát triển. Trong tương lai, người dùng sẽ có hồ sơ cá nhân, lịch sử đóng góp, quyền quản lý điểm và nhiều tiện ích bổ sung khác phục vụ học tập và cộng đồng." },
-        { q: "Nền tảng có miễn phí không?", a: "Hiện tại, mọi tính năng đều hoàn toàn miễn phí. Trong tương lai, nền tảng có thể bổ sung các gói đặc quyền nâng cao, nhưng cốt lõi truy cập tài liệu và chia sẻ tri thức sẽ luôn được duy trì ở mức phi lợi nhuận cho sinh viên." },
-        { q: "Điểm dùng để làm gì?", a: "Điểm là đơn vị giá trị trong hệ thống, được sử dụng để mở khóa các đặc quyền và đổi lấy những lợi ích khác khi nền tảng mở rộng trong tương lai." },
-    ];
-
-    return (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '50px 20px' }}>
-            <div style={{ width: '100%', maxWidth: '800px' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    {FAQS.map((item, i) => (
-                        <motion.div 
-                            key={i}
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: false, margin: "-50px" }}
-                            transition={{ duration: 1, delay: i * 0.1 }}
-                            style={{ 
-                                borderRadius: '32px', 
-                                overflow: 'hidden', 
-                                cursor: 'pointer',
-                                backgroundColor: 'white',
-                                border: '1px solid #1d1d1f',
-                                color: '#1d1d1f'
-                            }}
-                        >
-                            <div 
-                                onClick={() => setActiveIndex(activeIndex === i ? null : i)}
-                                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px 32px' }}
-                            >
-                                <h3 style={{ fontSize: '1.1rem', fontWeight: 600, margin: 0, color: '#1d1d1f' }}>{item.q}</h3>
-                                <div style={{ width: '44px', height: '44px', borderRadius: '50%', backgroundColor: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(0,0,0,0.1)', flexShrink: 0 }}>
-                                    <motion.div animate={{ rotate: activeIndex === i ? 180 : 0 }} transition={{ duration: 0.3 }}>
-                                        <ChevronDown size={20} color="#1d1d1f"/>
-                                    </motion.div>
-                                </div>
-                            </div>
-                            <AnimatePresence>
-                                {activeIndex === i && (
-                                    <motion.div 
-                                        initial={{ height: 0, opacity: 0 }} 
-                                        animate={{ height: 'auto', opacity: 1 }} 
-                                        exit={{ height: 0, opacity: 0 }}
-                                        transition={{ duration: 0.3, ease: "easeInOut" }}
-                                    >
-                                        <div style={{ padding: '0 32px 32px 32px' }}>
-                                            <p style={{ margin: 0, color: '#666', lineHeight: 1.6, fontSize: '1rem' }}>{item.a}</p>
-                                        </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </motion.div>
-                    ))}
-                </div>
-            </div>
-        </div>
-    )
-}
-
-// --- SECTION: EXAM MODAL ---
+// Modal Thi trắc nghiệm: Quản lý State Machine (Setup -> Generating -> Quiz -> Score)
 const ExamModal = ({ isOpen, onClose }) => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [answers, setAnswers] = useState({});
@@ -552,80 +445,55 @@ const ExamModal = ({ isOpen, onClose }) => {
     const [selectedCohort, setSelectedCohort] = useState('');
     const [selectedSubject, setSelectedSubject] = useState('');
 
-    const subjects = [
-        "Giải tích 1", "Triết học", "Vật lý đại cương", "Tin học đại cương", 
-        "Pháp luật", "Kinh tế vi mô", "Tiếng Anh", "Xác suất thống kê"
-    ];
+    const subjects = ["Giải tích 1", "Triết học", "Vật lý đại cương", "Tin học đại cương", "Pháp luật", "Kinh tế vi mô", "Tiếng Anh", "Xác suất thống kê"];
 
+    // Khóa cuộn trang khi mở modal
+    useEffect(() => {
+        if (isOpen) document.body.style.overflow = 'hidden';
+        else document.body.style.overflow = 'unset';
+        return () => { document.body.style.overflow = 'unset'; }
+    }, [isOpen]);
+
+    // Reset state khi mở lại modal
     useEffect(() => {
         if (isOpen) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'unset';
-        }
-        return () => {
-            document.body.style.overflow = 'unset';
+            setCurrentQuestionIndex(0); setAnswers({}); setIsFinished(false);
+            setDirection(0); setMode('setup'); setSelectedCohort(''); setSelectedSubject('');
         }
     }, [isOpen]);
 
-    useEffect(() => {
-        if (isOpen) {
-            setCurrentQuestionIndex(0);
-            setAnswers({});
-            setIsFinished(false);
-            setDirection(0);
-            setMode('setup'); 
-            setSelectedCohort('');
-            setSelectedSubject('');
-        }
-    }, [isOpen]);
-
+    // Xử lý chọn đáp án
     const handleSelectAnswer = (optionIndex) => {
         if (mode === 'review') return; 
-        setAnswers(prev => ({
-            ...prev,
-            [currentQuestionIndex]: optionIndex
-        }));
+        setAnswers(prev => ({ ...prev, [currentQuestionIndex]: optionIndex }));
     };
 
+    // Điều hướng câu hỏi
     const handleNext = () => {
         if (currentQuestionIndex < MOCK_EXAM_QUESTIONS.length - 1) {
-            setDirection(1);
-            setCurrentQuestionIndex(prev => prev + 1);
+            setDirection(1); setCurrentQuestionIndex(prev => prev + 1);
         } else {
-            setMode('score');
-            setIsFinished(true);
+            setMode('score'); setIsFinished(true);
         }
     };
 
     const handlePrev = () => {
         if (currentQuestionIndex > 0) {
-            setDirection(-1);
-            setCurrentQuestionIndex(prev => prev - 1);
+            setDirection(-1); setCurrentQuestionIndex(prev => prev - 1);
         }
     };
 
     const calculateScore = () => {
         let correctCount = 0;
         MOCK_EXAM_QUESTIONS.forEach((q, index) => {
-            if (answers[index] === q.correctAnswer) {
-                correctCount++;
-            }
+            if (answers[index] === q.correctAnswer) correctCount++;
         });
         return correctCount;
     };
 
-    const handleReview = () => {
-        setMode('review');
-        setCurrentQuestionIndex(0);
-        setDirection(0);
-    };
-
     const handleStartExam = () => {
         setMode('generating');
-        setTimeout(() => {
-            setMode('quiz');
-        }, 2000); 
+        setTimeout(() => { setMode('quiz'); }, 2000); 
     };
 
     if (!isOpen) return null;
@@ -634,281 +502,93 @@ const ExamModal = ({ isOpen, onClose }) => {
     const currentSelectedAnswer = answers[currentQuestionIndex];
     const score = calculateScore();
 
+    // Animation Variants cho chuyển slide câu hỏi
     const slideVariants = {
-        enter: (direction) => ({
-            x: direction > 0 ? 400 : -400,
-            opacity: 0,
-            scale: 0.9,
-            filter: 'blur(10px)'
-        }),
-        center: {
-            zIndex: 1,
-            x: 0,
-            opacity: 1,
-            scale: 1,
-            filter: 'blur(0px)'
-        },
-        exit: (direction) => ({
-            zIndex: 0,
-            x: direction < 0 ? 400 : -400,
-            opacity: 0,
-            scale: 0.9,
-            filter: 'blur(10px)'
-        })
+        enter: (direction) => ({ x: direction > 0 ? 400 : -400, opacity: 0, scale: 0.9, filter: 'blur(10px)' }),
+        center: { zIndex: 1, x: 0, opacity: 1, scale: 1, filter: 'blur(0px)' },
+        exit: (direction) => ({ zIndex: 0, x: direction < 0 ? 400 : -400, opacity: 0, scale: 0.9, filter: 'blur(10px)' })
     };
 
     return (
         <div style={{ position: 'fixed', inset: 0, zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-            <motion.div 
-                initial={{ opacity: 0 }} 
-                animate={{ opacity: 1 }} 
-                exit={{ opacity: 0 }} 
-                onClick={onClose} 
-                style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }} 
-            />
-            
-            <motion.div 
-                layout 
-                initial={{ opacity: 0, scale: 0.9, y: 20 }} 
-                animate={{ opacity: 1, scale: 1, y: 0 }} 
-                exit={{ opacity: 0, scale: 0.9, y: 20 }} 
-                transition={{ type: "spring", stiffness: 120, damping: 20 }}
-                style={{ 
-                    position: 'relative', width: '100%', maxWidth: '1200px', height: '85vh',
-                    backgroundColor: '#f8fafc', borderRadius: '40px', overflow: 'hidden', 
-                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', 
-                    display: 'flex', flexDirection: 'column'
-                }}
-            >
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }} />
+            <motion.div layout initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }} transition={{ type: "spring", stiffness: 120, damping: 20 }} style={{ position: 'relative', width: '100%', maxWidth: '1200px', height: '85vh', backgroundColor: '#f8fafc', borderRadius: '40px', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', display: 'flex', flexDirection: 'column' }}>
                 <div style={{ padding: '20px 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'transparent', zIndex: 10 }}>
                     <div style={{ display: 'flex', gap: '4px' }}>
                          {(mode === 'quiz' || mode === 'review') && MOCK_EXAM_QUESTIONS.map((_, idx) => (
-                            <div key={idx} style={{ 
-                                width: '30px', height: '4px', borderRadius: '2px', 
-                                backgroundColor: idx <= currentQuestionIndex ? (mode === 'review' ? '#64748b' : Styles.colors.loading) : '#e2e8f0',
-                                transition: 'all 0.3s'
-                            }} />
+                            <div key={idx} style={{ width: '30px', height: '4px', borderRadius: '2px', backgroundColor: idx <= currentQuestionIndex ? (mode === 'review' ? '#64748b' : Styles.colors.loading) : '#e2e8f0', transition: 'all 0.3s' }} />
                         ))}
                     </div>
-                    <button onClick={onClose} style={{ width: '40px', height: '40px', backgroundColor: 'white', border: 'none', cursor: 'pointer', padding: '0', borderRadius: '50%', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <X size={20} color="#1d1d1f" />
-                    </button>
+                    <button onClick={onClose} style={{ width: '40px', height: '40px', backgroundColor: 'white', border: 'none', cursor: 'pointer', padding: '0', borderRadius: '50%', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={20} color="#1d1d1f" /></button>
                 </div>
 
-                <div 
-                    data-lenis-prevent
-                    style={{ 
-                        flex: 1, 
-                        position: 'relative', 
-                        overflowY: (mode === 'setup' || mode === 'score') ? 'auto' : 'hidden',
-                        overflowX: 'hidden',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: (mode === 'setup' || mode === 'score') ? 'flex-start' : 'center',
-                        paddingBottom: '20px',
-                        overscrollBehavior: 'contain'
-                    }}
-                >
+                <div data-lenis-prevent style={{ flex: 1, position: 'relative', overflowY: (mode === 'setup' || mode === 'score') ? 'auto' : 'hidden', overflowX: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: (mode === 'setup' || mode === 'score') ? 'flex-start' : 'center', paddingBottom: '20px', overscrollBehavior: 'contain' }}>
                     <AnimatePresence initial={false} custom={direction} mode="wait">
-                        
+                        {/* SETUP MODE */}
                         {mode === 'setup' && (
-                             <motion.div
-                                key="setup"
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20 }}
-                                style={{ width: '80%', maxWidth: '600px', textAlign: 'center', margin: '40px auto' }}
-                            >
+                             <motion.div key="setup" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} style={{ width: '80%', maxWidth: '600px', textAlign: 'center', margin: '40px auto' }}>
                                 <h2 style={{ fontSize: '32px', fontWeight: '800', color: '#1d1d1f', marginBottom: '30px' }}>Thiết lập đề thi</h2>
-                                
                                 <div style={{ marginBottom: '30px', textAlign: 'left' }}>
                                     <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#64748b', marginBottom: '10px' }}>Chọn khóa</label>
                                     <div style={{ display: 'flex', gap: '10px' }}>
                                         {['K49', 'K50', 'K51'].map(k => (
-                                            <button 
-                                                key={k} 
-                                                onClick={() => setSelectedCohort(k)}
-                                                style={{ 
-                                                    flex: 1, padding: '12px', borderRadius: '12px', 
-                                                    border: selectedCohort === k ? `2px solid ${Styles.colors.loading}` : '1px solid #e2e8f0', 
-                                                    backgroundColor: selectedCohort === k ? '#f0fdfa' : 'white', 
-                                                    color: selectedCohort === k ? Styles.colors.loading : '#1d1d1f',
-                                                    fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s'
-                                                }}
-                                            >
-                                                {k}
-                                            </button>
+                                            <button key={k} onClick={() => setSelectedCohort(k)} style={{ flex: 1, padding: '12px', borderRadius: '12px', border: selectedCohort === k ? `2px solid ${Styles.colors.loading}` : '1px solid #e2e8f0', backgroundColor: selectedCohort === k ? '#f0fdfa' : 'white', color: selectedCohort === k ? Styles.colors.loading : '#1d1d1f', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s' }}>{k}</button>
                                         ))}
                                     </div>
                                 </div>
-
                                 <div style={{ marginBottom: '40px', textAlign: 'left' }}>
                                     <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#64748b', marginBottom: '10px' }}>Chọn môn học</label>
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                                         {subjects.map(sub => (
-                                            <button 
-                                                key={sub}
-                                                onClick={() => setSelectedSubject(sub)}
-                                                style={{ 
-                                                    padding: '12px', borderRadius: '12px', 
-                                                    border: selectedSubject === sub ? `2px solid ${Styles.colors.loading}` : '1px solid #e2e8f0', 
-                                                    backgroundColor: selectedSubject === sub ? '#f0fdfa' : 'white', 
-                                                    color: selectedSubject === sub ? Styles.colors.loading : '#1d1d1f',
-                                                    fontWeight: '500', fontSize: '14px', cursor: 'pointer', transition: 'all 0.2s', textAlign: 'left'
-                                                }}
-                                            >
-                                                {sub}
-                                            </button>
+                                            <button key={sub} onClick={() => setSelectedSubject(sub)} style={{ padding: '12px', borderRadius: '12px', border: selectedSubject === sub ? `2px solid ${Styles.colors.loading}` : '1px solid #e2e8f0', backgroundColor: selectedSubject === sub ? '#f0fdfa' : 'white', color: selectedSubject === sub ? Styles.colors.loading : '#1d1d1f', fontWeight: '500', fontSize: '14px', cursor: 'pointer', transition: 'all 0.2s', textAlign: 'left' }}>{sub}</button>
                                         ))}
                                     </div>
                                 </div>
-
-                                <motion.div
-                                    animate={{ 
-                                        opacity: (!selectedCohort || !selectedSubject) ? 0.5 : 1,
-                                        y: (!selectedCohort || !selectedSubject) ? 10 : 0 
-                                    }}
-                                >
-                                    <InteractiveButton 
-                                        onClick={handleStartExam} 
-                                        disabled={!selectedCohort || !selectedSubject}
-                                        primary={true} 
-                                        style={{ width: '100%', justifyContent: 'center', backgroundColor: (!selectedCohort || !selectedSubject) ? '#cbd5e1' : Styles.colors.loading, border: 'none' }}
-                                    >
-                                        Tạo đề ngay
-                                    </InteractiveButton>
+                                <motion.div animate={{ opacity: (!selectedCohort || !selectedSubject) ? 0.5 : 1, y: (!selectedCohort || !selectedSubject) ? 10 : 0 }}>
+                                    <InteractiveButton onClick={handleStartExam} disabled={!selectedCohort || !selectedSubject} primary={true} style={{ width: '100%', justifyContent: 'center', backgroundColor: (!selectedCohort || !selectedSubject) ? '#cbd5e1' : Styles.colors.loading, border: 'none' }}>Tạo đề ngay</InteractiveButton>
                                 </motion.div>
                             </motion.div>
                         )}
-
+                        {/* GENERATING MODE */}
                         {mode === 'generating' && (
-                            <motion.div
-                                key="generating"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                style={{ textAlign: 'center' }}
-                            >
+                            <motion.div key="generating" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ textAlign: 'center' }}>
                                 <div className="loader"></div>
                                 <h3 style={{ fontSize: '20px', fontWeight: '600', color: '#1d1d1f' }}>Đang tạo đề thi...</h3>
                                 <p style={{ color: '#64748b' }}>Đang tổng hợp câu hỏi từ ngân hàng dữ liệu...</p>
                             </motion.div>
                         )}
-
+                        {/* QUIZ / REVIEW MODE */}
                         {(mode === 'quiz' || mode === 'review') && (
-                            <motion.div
-                                layout
-                                key={currentQ.id}
-                                custom={direction}
-                                variants={slideVariants}
-                                initial="enter"
-                                animate="center"
-                                exit="exit"
-                                transition={{
-                                    x: { type: "spring", stiffness: 300, damping: 30 },
-                                    opacity: { duration: 0.2 }
-                                }}
-                                style={{ 
-                                    width: '80%', backgroundColor: '#fff', 
-                                    borderRadius: '32px', padding: '30px', 
-                                    boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
-                                    display: 'flex', flexDirection: 'column', gap: '20px',
-                                    maxHeight: '100%', overflowY: 'auto',
-                                    overscrollBehavior: 'contain',
-                                    margin: 'auto' // Đảm bảo căn giữa trong flex container
-                                }}
-                            >
-                                <motion.div layout="position" style={{ fontSize: '13px', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                                    {mode === 'review' ? 'Xem lại: ' : ''}Câu hỏi {currentQuestionIndex + 1} / {MOCK_EXAM_QUESTIONS.length}
-                                </motion.div>
-                                <motion.h2 layout="position" style={{ fontSize: '20px', fontWeight: '700', color: '#1d1d1f', margin: 0, lineHeight: 1.3 }}>
-                                    {currentQ.question}
-                                </motion.h2>
-
+                            <motion.div layout key={currentQ.id} custom={direction} variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ x: { type: "spring", stiffness: 300, damping: 30 }, opacity: { duration: 0.2 } }} style={{ width: '80%', backgroundColor: '#fff', borderRadius: '32px', padding: '30px', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', display: 'flex', flexDirection: 'column', gap: '20px', maxHeight: '100%', overflowY: 'auto', overscrollBehavior: 'contain', margin: 'auto' }}>
+                                <motion.div layout="position" style={{ fontSize: '13px', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>{mode === 'review' ? 'Xem lại: ' : ''}Câu hỏi {currentQuestionIndex + 1} / {MOCK_EXAM_QUESTIONS.length}</motion.div>
+                                <motion.h2 layout="position" style={{ fontSize: '20px', fontWeight: '700', color: '#1d1d1f', margin: 0, lineHeight: 1.3 }}>{currentQ.question}</motion.h2>
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px', paddingBottom: '10px' }}>
                                     {currentQ.options.map((opt, idx) => {
                                         let isSelected = currentSelectedAnswer === idx;
-                                        let borderColor = 'transparent';
-                                        let bgColor = '#f8fafc';
-                                        let textColor = '#475569';
-                                        let Icon = null;
-
+                                        let borderColor = 'transparent'; let bgColor = '#f8fafc'; let textColor = '#475569'; let Icon = null;
                                         if (mode === 'quiz') {
-                                            if (isSelected) {
-                                                borderColor = Styles.colors.loading;
-                                                bgColor = '#f0fdfa';
-                                                textColor = Styles.colors.loading;
-                                                Icon = <CheckCircle2 size={20} color={Styles.colors.loading} />;
-                                            }
+                                            if (isSelected) { borderColor = Styles.colors.loading; bgColor = '#f0fdfa'; textColor = Styles.colors.loading; Icon = <CheckCircle2 size={20} color={Styles.colors.loading} />; }
                                         } else if (mode === 'review') {
-                                            if (idx === currentQ.correctAnswer) {
-                                                borderColor = Styles.colors.green;
-                                                bgColor = '#f0fdf4';
-                                                textColor = Styles.colors.green;
-                                                Icon = <Check size={20} color={Styles.colors.green} />;
-                                            } else if (isSelected && idx !== currentQ.correctAnswer) {
-                                                borderColor = Styles.colors.red;
-                                                bgColor = '#fef2f2';
-                                                textColor = Styles.colors.red;
-                                                Icon = <X size={20} color={Styles.colors.red} />;
-                                            } else if (isSelected) {
-                                                borderColor = Styles.colors.green;
-                                                bgColor = '#f0fdf4';
-                                                textColor = Styles.colors.green;
-                                                Icon = <Check size={20} color={Styles.colors.green} />;
-                                            }
+                                            if (idx === currentQ.correctAnswer) { borderColor = Styles.colors.green; bgColor = '#f0fdf4'; textColor = Styles.colors.green; Icon = <Check size={20} color={Styles.colors.green} />; } 
+                                            else if (isSelected && idx !== currentQ.correctAnswer) { borderColor = Styles.colors.red; bgColor = '#fef2f2'; textColor = Styles.colors.red; Icon = <X size={20} color={Styles.colors.red} />; } 
+                                            else if (isSelected) { borderColor = Styles.colors.green; bgColor = '#f0fdf4'; textColor = Styles.colors.green; Icon = <Check size={20} color={Styles.colors.green} />; }
                                         }
-
                                         return (
-                                            <motion.div
-                                                layout
-                                                key={idx}
-                                                onClick={() => handleSelectAnswer(idx)}
-                                                whileHover={mode === 'quiz' ? { scale: 1.02 } : {}}
-                                                whileTap={mode === 'quiz' ? { scale: 0.98 } : {}}
-                                                style={{
-                                                    padding: '16px 24px',
-                                                    borderRadius: '16px',
-                                                    backgroundColor: bgColor,
-                                                    border: `2px solid ${borderColor}`,
-                                                    color: textColor,
-                                                    fontSize: '15px',
-                                                    fontWeight: '600',
-                                                    cursor: mode === 'quiz' ? 'pointer' : 'default',
-                                                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                                    transition: 'all 0.2s'
-                                                }}
-                                            >
-                                                {opt}
-                                                {Icon}
-                                            </motion.div>
+                                            <motion.div layout key={idx} onClick={() => handleSelectAnswer(idx)} whileHover={mode === 'quiz' ? { scale: 1.02 } : {}} whileTap={mode === 'quiz' ? { scale: 0.98 } : {}} style={{ padding: '16px 24px', borderRadius: '16px', backgroundColor: bgColor, border: `2px solid ${borderColor}`, color: textColor, fontSize: '15px', fontWeight: '600', cursor: mode === 'quiz' ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'all 0.2s' }}>{opt}{Icon}</motion.div>
                                         );
                                     })}
                                 </div>
                             </motion.div>
                         )}
-
+                        {/* SCORE MODE */}
                         {mode === 'score' && (
-                            <motion.div
-                                layout
-                                key="result"
-                                initial={{ scale: 0.8, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                style={{ textAlign: 'center', padding: '40px', backgroundColor: 'white', borderRadius: '32px', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', margin: 'auto' }}
-                            >
-                                <div style={{ width: '100px', height: '100px', borderRadius: '50%', backgroundColor: '#dcfce7', color: '#16a34a', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto' }}>
-                                    <Check size={50} strokeWidth={4} />
-                                </div>
+                            <motion.div layout key="result" initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} style={{ textAlign: 'center', padding: '40px', backgroundColor: 'white', borderRadius: '32px', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', margin: 'auto' }}>
+                                <div style={{ width: '100px', height: '100px', borderRadius: '50%', backgroundColor: '#dcfce7', color: '#16a34a', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto' }}><Check size={50} strokeWidth={4} /></div>
                                 <h2 style={{ fontSize: '32px', fontWeight: '800', color: '#1d1d1f', marginBottom: '12px' }}>Hoàn thành!</h2>
-                                <p style={{ color: '#64748b', fontSize: '18px', marginBottom: '8px' }}>
-                                    Số câu đúng: <span style={{ fontWeight: 'bold', color: '#16a34a' }}>{score}/{MOCK_EXAM_QUESTIONS.length}</span>
-                                </p>
-                                <p style={{ color: '#64748b', fontSize: '18px', marginBottom: '30px' }}>
-                                    Điểm số: <span style={{ fontWeight: 'bold', color: '#16a34a' }}>{(score / MOCK_EXAM_QUESTIONS.length) * 10}</span>
-                                </p>
+                                <p style={{ color: '#64748b', fontSize: '18px', marginBottom: '8px' }}>Số câu đúng: <span style={{ fontWeight: 'bold', color: '#16a34a' }}>{score}/{MOCK_EXAM_QUESTIONS.length}</span></p>
+                                <p style={{ color: '#64748b', fontSize: '18px', marginBottom: '30px' }}>Điểm số: <span style={{ fontWeight: 'bold', color: '#16a34a' }}>{(score / MOCK_EXAM_QUESTIONS.length) * 10}</span></p>
                                 <div style={{ display: 'flex', gap: '10px' }}>
-                                    <InteractiveButton onClick={handleReview} primary={false} style={{ width: '100%', justifyContent: 'center', backgroundColor: '#f1f5f9', color: '#1d1d1f' }}>Xem lại</InteractiveButton>
+                                    <InteractiveButton onClick={() => { setMode('review'); setCurrentQuestionIndex(0); setDirection(0); }} primary={false} style={{ width: '100%', justifyContent: 'center', backgroundColor: '#f1f5f9', color: '#1d1d1f' }}>Xem lại</InteractiveButton>
                                     <InteractiveButton onClick={onClose} primary={true} style={{ width: '100%', justifyContent: 'center', backgroundColor: '#16a34a' }}>Đóng</InteractiveButton>
                                 </div>
                             </motion.div>
@@ -916,146 +596,105 @@ const ExamModal = ({ isOpen, onClose }) => {
                     </AnimatePresence>
                 </div>
 
-                {/* Footer Controls */}
                 <div style={{ padding: '20px 30px', backgroundColor: 'transparent', zIndex: 10, display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     {(mode === 'quiz' || mode === 'review') && (
                          <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
                             {currentQuestionIndex > 0 && (
-                                <motion.button 
-                                    onClick={handlePrev}
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    style={{ 
-                                        padding: '16px 24px', borderRadius: '100px', border: 'none',
-                                        backgroundColor: '#f1f5f9', color: '#1d1d1f', fontSize: '16px', fontWeight: '700',
-                                        cursor: 'pointer',
-                                        display: 'flex', alignItems: 'center', gap: '10px',
-                                        boxShadow: '0 5px 15px rgba(0,0,0,0.05)'
-                                    }}
-                                >
-                                    <ChevronLeft size={20} /> Quay lại
-                                </motion.button>
+                                <motion.button onClick={handlePrev} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} style={{ padding: '16px 24px', borderRadius: '100px', border: 'none', backgroundColor: '#f1f5f9', color: '#1d1d1f', fontSize: '16px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', boxShadow: '0 5px 15px rgba(0,0,0,0.05)' }}><ChevronLeft size={20} /> Quay lại</motion.button>
                             )}
-                            <motion.button 
-                                onClick={handleNext} 
-                                disabled={mode === 'quiz' && currentSelectedAnswer === undefined}
-                                animate={{ 
-                                    scale: (mode === 'review' || currentSelectedAnswer !== undefined) ? 1 : 0.9,
-                                    opacity: (mode === 'review' || currentSelectedAnswer !== undefined) ? 1 : 0.5,
-                                    y: (mode === 'review' || currentSelectedAnswer !== undefined) ? 0 : 10
-                                }}
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                style={{ 
-                                    padding: '16px 40px', borderRadius: '100px', border: 'none',
-                                    backgroundColor: Styles.colors.loading, color: 'white', fontSize: '16px', fontWeight: '700',
-                                    cursor: (mode === 'review' || currentSelectedAnswer !== undefined) ? 'pointer' : 'not-allowed',
-                                    display: 'flex', alignItems: 'center', gap: '10px',
-                                    boxShadow: '0 10px 20px rgba(0,0,0,0.1)'
-                                }}
-                            >
+                            <motion.button onClick={handleNext} disabled={mode === 'quiz' && currentSelectedAnswer === undefined} animate={{ scale: (mode === 'review' || currentSelectedAnswer !== undefined) ? 1 : 0.9, opacity: (mode === 'review' || currentSelectedAnswer !== undefined) ? 1 : 0.5, y: (mode === 'review' || currentSelectedAnswer !== undefined) ? 0 : 10 }} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} style={{ padding: '16px 40px', borderRadius: '100px', border: 'none', backgroundColor: Styles.colors.loading, color: 'white', fontSize: '16px', fontWeight: '700', cursor: (mode === 'review' || currentSelectedAnswer !== undefined) ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', gap: '10px', boxShadow: '0 10px 20px rgba(0,0,0,0.1)' }}>
                                 {currentQuestionIndex === MOCK_EXAM_QUESTIONS.length - 1 ? (mode === 'review' ? "Đóng" : "Nộp bài") : "Tiếp tục"} <ArrowRight size={20} />
                             </motion.button>
                         </div>
                     )}
-                    
                     <div style={{ textAlign: 'center', marginTop: '10px' }}>
-                        <p style={{ fontSize: '11px', color: '#94a3b8', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
-                            <AlertCircle size={12} /> Đây là đề thi mẫu, mô phỏng cho chức năng tạo lập đề thi.
-                        </p>
+                        <p style={{ fontSize: '11px', color: '#94a3b8', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}><AlertCircle size={12} /> Đây là đề thi mẫu, mô phỏng cho chức năng tạo lập đề thi.</p>
                     </div>
                 </div>
-
             </motion.div>
         </div>
     );
 };
 
-// --- SECTION: ANIMATED FOLDER UPLOAD ---
+// Component Folder Upload: Hiệu ứng 3D khi rê chuột
 const FolderUpload = ({ onFileSelect }) => {
     return (
         <div style={{ position: 'relative', width: '100%', height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <motion.div
-                whileHover="hover"
-                initial="rest"
-                className="relative"
-                style={{ width: 120, height: 90, position: 'relative', cursor: 'pointer' }}
-            >
-                <input 
-                    type="file" 
-                    onChange={onFileSelect} 
-                    accept=".pdf"
-                    style={{ position: 'absolute', inset: -50, opacity: 0, zIndex: 100, cursor: 'pointer' }} 
-                />
-
-                <div style={{ 
-                    position: 'absolute', width: '100%', height: '100%', 
-                    backgroundColor: Styles.colors.loading, 
-                    borderRadius: '12px',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                }} />
-                
-                <div style={{ 
-                    position: 'absolute', top: -12, left: 0, 
-                    width: '40%', height: 12, 
-                    backgroundColor: Styles.colors.loading, 
-                    borderRadius: '8px 8px 0 0' 
-                }} />
-
-                <motion.div
-                    variants={{ rest: { y: 0 }, hover: { y: -15, rotate: -5 } }}
-                    style={{ 
-                        position: 'absolute', bottom: 10, left: 10, right: 10, height: '80%', 
-                        backgroundColor: 'white', borderRadius: '4px',
-                        boxShadow: '0 10px 20px rgba(0,0,0,0.15)', 
-                        zIndex: 2
-                    }}
-                />
-                
-                <motion.div
-                    variants={{ rest: { y: 0 }, hover: { y: -25, rotate: 5 } }}
-                    style={{ 
-                        position: 'absolute', bottom: 10, left: 10, right: 10, height: '80%', 
-                        backgroundColor: 'white', borderRadius: '4px',
-                        boxShadow: '0 10px 20px rgba(0,0,0,0.15)', 
-                        zIndex: 3,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center'
-                    }}
-                >
-                    <div style={{ width: '60%', height: '4px', backgroundColor: '#F3F4F6', borderRadius: '2px' }} />
-                </motion.div>
-
-                <motion.div
-                    variants={{ rest: { rotateX: 0, y: 0 }, hover: { rotateX: -15, y: 5 } }}
-                    style={{ 
-                        position: 'absolute', bottom: 0, left: 0, width: '100%', height: '85%', 
-                        backgroundColor: Styles.colors.loading, 
-                        borderRadius: '0 0 12px 12px',
-                        zIndex: 10,
-                        transformOrigin: 'bottom',
-                        perspective: 1000,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center'
-                    }}
-                >
-                    <UploadCloud color="white" size={32} />
-                </motion.div>
-                
-                <motion.div
-                    variants={{ rest: { opacity: 0 }, hover: { opacity: 0.2 } }}
-                    style={{ 
-                        position: 'absolute', bottom: 0, left: 0, width: '100%', height: '85%', 
-                        background: 'linear-gradient(to bottom, rgba(255,255,255,0.5), transparent)', 
-                        borderRadius: '0 0 12px 12px',
-                        zIndex: 11,
-                        pointerEvents: 'none'
-                    }}
-                />
+            <motion.div whileHover="hover" initial="rest" className="relative" style={{ width: 120, height: 90, position: 'relative', cursor: 'pointer' }}>
+                <input type="file" onChange={onFileSelect} accept=".pdf" style={{ position: 'absolute', inset: -50, opacity: 0, zIndex: 100, cursor: 'pointer' }} />
+                <div style={{ position: 'absolute', width: '100%', height: '100%', backgroundColor: Styles.colors.loading, borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
+                <div style={{ position: 'absolute', top: -12, left: 0, width: '40%', height: 12, backgroundColor: Styles.colors.loading, borderRadius: '8px 8px 0 0' }} />
+                <motion.div variants={{ rest: { y: 0 }, hover: { y: -15, rotate: -5 } }} style={{ position: 'absolute', bottom: 10, left: 10, right: 10, height: '80%', backgroundColor: 'white', borderRadius: '4px', boxShadow: '0 10px 20px rgba(0,0,0,0.15)', zIndex: 2 }} />
+                <motion.div variants={{ rest: { y: 0 }, hover: { y: -25, rotate: 5 } }} style={{ position: 'absolute', bottom: 10, left: 10, right: 10, height: '80%', backgroundColor: 'white', borderRadius: '4px', boxShadow: '0 10px 20px rgba(0,0,0,0.15)', zIndex: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ width: '60%', height: '4px', backgroundColor: '#F3F4F6', borderRadius: '2px' }} /></motion.div>
+                <motion.div variants={{ rest: { rotateX: 0, y: 0 }, hover: { rotateX: -15, y: 5 } }} style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '85%', backgroundColor: Styles.colors.loading, borderRadius: '0 0 12px 12px', zIndex: 10, transformOrigin: 'bottom', perspective: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><UploadCloud color="white" size={32} /></motion.div>
+                <motion.div variants={{ rest: { opacity: 0 }, hover: { opacity: 0.2 } }} style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '85%', background: 'linear-gradient(to bottom, rgba(255,255,255,0.5), transparent)', borderRadius: '0 0 12px 12px', zIndex: 11, pointerEvents: 'none' }} />
             </motion.div>
         </div>
     )
 }
 
-// --- 6. SECTIONS ---
+const UploadModal = ({ isOpen, onClose, formData, setFormData, onFileSelect, onRemoveFile, onUpload, uploading, documents }) => {
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [filteredSuggestions, setFilteredSuggestions] = useState([]);
+
+    useEffect(() => {
+        if (documents && formData.major) {
+            const subjects = new Set();
+            documents.forEach(d => { subjects.add(d.title); subjects.add(d.major); });
+            const term = Utils.removeTones(formData.major.toLowerCase());
+            const filtered = Array.from(subjects).filter(s => Utils.removeTones(s.toLowerCase()).includes(term));
+            setFilteredSuggestions(filtered);
+        } else { setFilteredSuggestions([]); }
+    }, [formData.major, documents]);
+
+    if (!isOpen) return null;
+    return (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200 }}>
+           <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '24px', width: '90%', maxWidth: '450px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.1)' }}>
+             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', alignItems: 'center' }}>
+                 <h2 style={{ margin: 0, fontSize: '20px', color: '#1d1d1f' }}>Đóng góp tài liệu</h2>
+                 <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#1d1d1f' }}><X size={20}/></button>
+             </div>
+             {!formData.file ? ( <FolderUpload onFileSelect={onFileSelect} /> ) : (
+                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                     <div style={{ backgroundColor: '#F5F5F7', padding: '12px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}><FileText color="#E53935" size={20}/><div style={{ overflow: 'hidden' }}><div style={{ fontWeight: '600', fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px', color: '#1d1d1f' }}>{formData.file.name}</div></div></div>
+                         <button onClick={onRemoveFile} style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}><Trash2 size={18} color="#FF4D4F"/></button>
+                     </div>
+                     <input style={Styles.input} placeholder="Tên hiển thị" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} />
+                     <div>
+                        <div style={{ fontSize: '14px', fontWeight: '600', color: '#1d1d1f', marginBottom: '8px' }}>Chọn khóa:</div>
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                            {['K49', 'K50', 'K51'].map(k => (
+                                <button key={k} onClick={() => setFormData({...formData, year: k})} style={{ flex: 1, padding: '10px', borderRadius: '10px', border: formData.year === k ? `1px solid ${Styles.colors.primary}` : '1px solid #e0e0e0', backgroundColor: formData.year === k ? Styles.colors.primary : 'transparent', color: formData.year === k ? '#fff' : '#1d1d1f', cursor: 'pointer', fontWeight: '600', fontSize: '14px', transition: 'all 0.2s' }}>{k}</button>
+                            ))}
+                        </div>
+                     </div>
+                     <div style={{ position: 'relative' }}>
+                        <input style={Styles.input} placeholder="Môn (VD: CNTT, Giải tích 1...)" value={formData.major} onChange={e => setFormData({...formData, major: e.target.value})} onFocus={() => setShowSuggestions(true)} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} />
+                        {showSuggestions && filteredSuggestions.length > 0 && (
+                            <div style={{ ...Styles.suggestionBox, maxHeight: '200px', overflowY: 'auto' }}>
+                                {filteredSuggestions.map((s, i) => (
+                                    <div key={i} style={{ ...Styles.suggestionItem, cursor: 'pointer' }} onMouseDown={() => setFormData({...formData, major: s})}>{s}</div>
+                                ))}
+                            </div>
+                        )}
+                     </div>
+                     <input style={Styles.input} placeholder="Ghi chú thêm..." value={formData.desc} onChange={e => setFormData({...formData, desc: e.target.value})} />
+                     <InteractiveButton primary={true} onClick={onUpload} disabled={uploading} isDarkBg={false} style={{marginTop: '10px'}}>{uploading ? <Loader className="animate-spin" size={16}/> : "Tải lên ngay"}</InteractiveButton>
+                 </div>
+             )}
+           </div>
+        </div>
+    );
+};
+
+/**
+ * ============================================================================
+ * 8. SECTIONS (MAIN PAGE BLOCKS)
+ * Navbar, Hero, Dashboard, FAQ, Footer...
+ * ============================================================================
+ */
 
 const Navbar = ({ view, setView, setIsModalOpen, onNavigate, showToast, setIsExamOpen }) => {
     const isHome = view === 'home';
@@ -1067,12 +706,8 @@ const Navbar = ({ view, setView, setIsModalOpen, onNavigate, showToast, setIsExa
                 <NavButton onClick={() => onNavigate('all')} isActive={view === 'all'} isDarkBg={isHome}>Tài liệu</NavButton>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingRight: '4px' }}>
-                <InteractiveButton onClick={() => setIsExamOpen(true)} primary={false} isDarkBg={isHome} isNav={true} isUpload={true} style={{ width: '44px', height: '44px', padding: 0, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <FilePenLine size={20} />
-                </InteractiveButton>
-                <InteractiveButton onClick={() => setIsModalOpen(true)} primary={false} isDarkBg={isHome} isNav={true} isUpload={true} style={{ width: '44px', height: '44px', padding: 0, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <UploadCloud size={20} />
-                </InteractiveButton>
+                <InteractiveButton onClick={() => setIsExamOpen(true)} primary={false} isDarkBg={isHome} isNav={true} isUpload={true} style={{ width: '44px', height: '44px', padding: 0, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FilePenLine size={20} /></InteractiveButton>
+                <InteractiveButton onClick={() => setIsModalOpen(true)} primary={false} isDarkBg={isHome} isNav={true} isUpload={true} style={{ width: '44px', height: '44px', padding: 0, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><UploadCloud size={20} /></InteractiveButton>
             </div>
         </nav>
     );
@@ -1094,12 +729,99 @@ const HeroSection = ({ scrollY, points }) => {
                     <motion.h1 initial={{ x: 100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 1.2, delay: 0.2, ease: "easeOut" }} style={{ x: floatRight, fontSize: 'clamp(50px, 9vw, 100px)', fontWeight: '800', color: '#ffffff', margin: 0, lineHeight: 1 }}>More Knowledge.</motion.h1>
                 </div>
             </motion.header>
-
-            {/* NEW POINTS WIDGET INSIDE HERO */}
             <PointsWidget points={points} />
         </div>
     );
 };
+
+const ImpactDashboard = () => {
+    const totalViews = 12500; 
+    const papersSaved = totalViews * 5;
+    const waterSaved = Math.floor(papersSaved * 0.01); 
+    const co2Reduced = (papersSaved * 0.005).toFixed(1); 
+    const [hoveredCard, setHoveredCard] = useState(1);
+
+    const cards = [
+        { id: 1, label: "Papers Saved", sub: "Chuyển đổi số giúp hạn chế khai thác gỗ, giữ lại lá phổi xanh vô giá cho Trái Đất.", value: papersSaved, icon: <FileText size={16} color="white" />, image: CONFIG.DASHBOARD_IMGS.PAPER, color: "#4CAF50" },
+        { id: 2, label: "Water Saved", sub: "Tiết kiệm nguồn nước sạch quý báu vốn bị tiêu tốn khổng lồ trong công nghiệp sản xuất giấy.", value: waterSaved, icon: <Droplets size={16} color="white" />, image: CONFIG.DASHBOARD_IMGS.WATER, color: "#2196F3" },
+        { id: 3, label: "CO2 Reduced", sub: "Cắt giảm khí thải từ quy trình in ấn và vận chuyển, chung tay đẩy lùi biến đổi khí hậu.", value: co2Reduced, unit: "kg", icon: <Wind size={16} color="white" />, image: CONFIG.DASHBOARD_IMGS.CO2, color: "#FF9800" }
+    ];
+
+    return (
+        <div style={{ maxWidth: '1200px', margin: '80px auto 40px', padding: '0 40px' }}>
+            <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+                <ScrollFloat as="h2" style={{ fontSize: 'clamp(36px, 5vw, 56px)', fontWeight: '900', lineHeight: 1, margin: '0 0 16px 0', color: '#1d1d1f', letterSpacing: '-1px' }}>"Tác Động Xanh"</ScrollFloat>
+                <ScrollFloat as="p" style={{ fontSize: '18px', color: '#666', maxWidth: '600px', margin: '0 auto' }}>Mỗi lượt xem tài liệu hay tạo đề thi không chỉ giúp học tập hiệu quả hơn mà còn góp phần bảo vệ môi trường.</ScrollFloat>
+            </div>
+
+            <div style={{ display: 'flex', gap: '20px', height: '400px' }}>
+                {cards.map((card) => {
+                    const isActive = hoveredCard === card.id;
+                    return (
+                        <motion.div key={card.id} onHoverStart={() => setHoveredCard(card.id)} layout transition={{ type: "spring", stiffness: 120, damping: 20 }} style={{ flex: isActive ? 3 : 1, position: 'relative', borderRadius: '32px', overflow: 'hidden', cursor: 'pointer', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', minWidth: '100px' }}>
+                            <motion.div animate={{ scale: isActive ? 1.05 : 1 }} transition={{ duration: 0.8 }} style={{ position: 'absolute', inset: 0, backgroundImage: `url(${card.image})`, backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 0 }} />
+                            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.4) 100%)', zIndex: 1 }} />
+                            <div style={{ position: 'absolute', inset: 0, zIndex: 2, padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                    <div style={{ width: '100%', paddingRight: '10px' }}>
+                                        <motion.h3 layout="position" style={{ color: 'white', fontSize: '24px', fontWeight: '800', margin: '0 0 8px 0', lineHeight: 1.1 }}>{card.label}</motion.h3>
+                                        <motion.p layout="position" style={{ color: 'rgba(255,255,255,0.8)', fontSize: '14px', margin: 0 }}>{card.sub}</motion.p>
+                                    </div>
+                                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'black', boxShadow: '0 4px 10px rgba(0,0,0,0.2)', flexShrink: 0 }}><ArrowRight size={20} /></div>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                                    <div style={{ backgroundColor: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(8px)', padding: '8px 16px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                        {card.icon}
+                                        {isActive && <motion.span initial={{opacity:0}} animate={{opacity:1}} style={{ color: 'white', fontSize: '13px', fontWeight: '600', whiteSpace:'nowrap' }}>Live Data</motion.span>}
+                                    </div>
+                                     <motion.div layout="position" style={{ fontSize: '40px', fontWeight: '800', color: 'white', lineHeight: 1, textAlign: 'right' }}>
+                                        {card.value}{card.unit && <span style={{ fontSize: '20px', marginLeft: '4px' }}>{card.unit}</span>}
+                                    </motion.div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+};
+
+const FAQSection = () => {
+    const [activeIndex, setActiveIndex] = useState(null);
+    const FAQS = [
+        { q: "Tài liệu được kiểm duyệt như thế nào?", a: "Trong thời gian tới, hệ thống sẽ bổ sung cơ chế kiểm duyệt chặt chẽ hơn để đảm bảo tính chính xác, học thuật và chất lượng của toàn bộ nội dung." },
+        { q: "Tài khoản người dùng hoạt động thế nào?", a: "Tính năng tài khoản hiện vẫn đang trong giai đoạn phát triển. Trong tương lai, người dùng sẽ có hồ sơ cá nhân, lịch sử đóng góp, quyền quản lý điểm và nhiều tiện ích bổ sung khác phục vụ học tập và cộng đồng." },
+        { q: "Nền tảng có miễn phí không?", a: "Hiện tại, mọi tính năng đều hoàn toàn miễn phí. Trong tương lai, nền tảng có thể bổ sung các gói đặc quyền nâng cao, nhưng cốt lõi truy cập tài liệu và chia sẻ tri thức sẽ luôn được duy trì ở mức phi lợi nhuận cho sinh viên." },
+        { q: "Điểm dùng để làm gì?", a: "Điểm là đơn vị giá trị trong hệ thống, được sử dụng để mở khóa các đặc quyền và đổi lấy những lợi ích khác khi nền tảng mở rộng trong tương lai." },
+    ];
+
+    return (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '50px 20px' }}>
+            <div style={{ width: '100%', maxWidth: '800px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    {FAQS.map((item, i) => (
+                        <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 1, delay: i * 0.1 }} style={{ borderRadius: '32px', overflow: 'hidden', cursor: 'pointer', backgroundColor: 'white', border: '1px solid #1d1d1f', color: '#1d1d1f' }}>
+                            <div onClick={() => setActiveIndex(activeIndex === i ? null : i)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px 32px' }}>
+                                <h3 style={{ fontSize: '1.1rem', fontWeight: 600, margin: 0, color: '#1d1d1f' }}>{item.q}</h3>
+                                <div style={{ width: '44px', height: '44px', borderRadius: '50%', backgroundColor: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(0,0,0,0.1)', flexShrink: 0 }}>
+                                    <motion.div animate={{ rotate: activeIndex === i ? 180 : 0 }} transition={{ duration: 0.3 }}><ChevronDown size={20} color="#1d1d1f"/></motion.div>
+                                </div>
+                            </div>
+                            <AnimatePresence>
+                                {activeIndex === i && (
+                                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3, ease: "easeInOut" }}>
+                                        <div style={{ padding: '0 32px 32px 32px' }}><p style={{ margin: 0, color: '#666', lineHeight: 1.6, fontSize: '1rem' }}>{item.a}</p></div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </motion.div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    )
+}
 
 const SearchSection = ({ searchTerm, setSearchTerm, suggestions, onSelectSuggestion }) => {
     const [showSuggestions, setShowSuggestions] = useState(false);
@@ -1115,16 +837,7 @@ const SearchSection = ({ searchTerm, setSearchTerm, suggestions, onSelectSuggest
         <div style={{ marginBottom: '40px', display: 'flex', justifyContent: 'center' }}>
             <div ref={searchContainerRef} style={{ position: 'relative', width: '100%', maxWidth: '600px' }}>
                 <Search color="#999" style={{ position: 'absolute', left: '25px', top: '50%', transform: 'translateY(-50%)', zIndex: 1 }} />
-                <input 
-                    placeholder="Tìm kiếm tài liệu (VD: Giải tích)..." 
-                    style={Styles.searchStyleFixed} 
-                    value={searchTerm} 
-                    onChange={(e) => { 
-                        setSearchTerm(e.target.value); 
-                        if(e.target.value.length > 0) setShowSuggestions(true); 
-                    }} 
-                    onFocus={() => { if(searchTerm.length > 0) setShowSuggestions(true); }} 
-                />
+                <input placeholder="Tìm kiếm tài liệu (VD: Giải tích)..." style={Styles.searchStyleFixed} value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); if(e.target.value.length > 0) setShowSuggestions(true); }} onFocus={() => { if(searchTerm.length > 0) setShowSuggestions(true); }} />
                 <AnimatePresence>
                     {showSuggestions && suggestions.length > 0 && (
                         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} style={Styles.suggestionBox}>
@@ -1145,13 +858,7 @@ const SearchSection = ({ searchTerm, setSearchTerm, suggestions, onSelectSuggest
 
 const FeedbackSection = ({ onSend }) => {
     const [value, setValue] = useState("");
-
-    const handleSubmit = () => {
-        if (!value.trim()) return;
-        onSend(value);
-        setValue("");
-    };
-
+    const handleSubmit = () => { if (!value.trim()) return; onSend(value); setValue(""); };
     const socialLinks = [
         { icon: <Instagram size={20} />, url: "https://www.instagram.com/21sep.pty/" },
         { icon: <Facebook size={20} />, url: "https://www.facebook.com/gmpty2109/" },
@@ -1166,35 +873,13 @@ const FeedbackSection = ({ onSend }) => {
             <div style={{ position: 'relative', zIndex: 2, width: '90%', maxWidth: '500px', textAlign: 'center', color: '#fff', marginBottom: '40px' }}>
                 <h2 style={{ fontSize: '40px', fontWeight: '800', marginBottom: '20px' }}>Đóng góp ý kiến</h2>
                 <div style={{ display: 'flex', gap: '5px', backgroundColor: 'rgba(255,255,255,0.9)', padding: '6px', borderRadius: '50px' }}>
-                    <input 
-                        placeholder="Bạn nghĩ gì..." 
-                        style={{ flex: 1, background: 'transparent', border: 'none', padding: '12px 20px', fontSize: '15px', color: '#000', outline: 'none' }}
-                        value={value}
-                        onChange={(e) => setValue(e.target.value)}
-                    />
+                    <input placeholder="Bạn nghĩ gì..." style={{ flex: 1, background: 'transparent', border: 'none', padding: '12px 20px', fontSize: '15px', color: '#000', outline: 'none' }} value={value} onChange={(e) => setValue(e.target.value)} />
                     <InteractiveButton onClick={handleSubmit} primary={true} style={{ padding: '12px 30px' }} isDarkBg={true} customBlackWhite={true}>Gửi</InteractiveButton>
                 </div>
             </div>
-            
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '30px', backgroundColor: 'rgba(0,0,0,0.2)', backdropFilter: 'blur(10px)', display: 'flex', justifyContent: 'center', gap: '20px', zIndex: 3 }}>
                 {socialLinks.map((item, i) => (
-                    <motion.a 
-                        key={i}
-                        href={item.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        whileHover={{ scale: 1.2, backgroundColor: 'rgba(255,255,255,0.2)', rotate: 5 }}
-                        whileTap={{ scale: 0.9 }}
-                        style={{ 
-                            width: '44px', height: '44px', borderRadius: '50%', 
-                            border: '1px solid rgba(255,255,255,0.5)', 
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                            color: 'white', cursor: 'pointer', backdropFilter: 'blur(5px)',
-                            textDecoration: 'none'
-                        }}
-                    >
-                        {item.icon}
-                    </motion.a>
+                    <motion.a key={i} href={item.url} target="_blank" rel="noopener noreferrer" whileHover={{ scale: 1.2, backgroundColor: 'rgba(255,255,255,0.2)', rotate: 5 }} whileTap={{ scale: 0.9 }} style={{ width: '44px', height: '44px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', cursor: 'pointer', backdropFilter: 'blur(5px)', textDecoration: 'none' }}>{item.icon}</motion.a>
                 ))}
             </div>
         </div>
@@ -1203,89 +888,9 @@ const FeedbackSection = ({ onSend }) => {
 
 const Footer = () => (
     <div style={{ textAlign: 'center', padding: '15px 0 30px 0', backgroundColor: '#fff', color: '#1d1d1f' }}>
-        <p style={{ margin: 0, fontSize: '15px', fontWeight: '500', opacity: 0.8 }}>
-            Made by <span style={{ fontFamily: 'Dancing Script, cursive', fontSize: '20px', fontWeight: '700' }}>Gia Man</span>
-        </p>
+        <p style={{ margin: 0, fontSize: '15px', fontWeight: '500', opacity: 0.8 }}>Made by <span style={{ fontFamily: 'Dancing Script, cursive', fontSize: '20px', fontWeight: '700' }}>Gia Man</span></p>
     </div>
 );
-
-const UploadModal = ({ isOpen, onClose, formData, setFormData, onFileSelect, onRemoveFile, onUpload, uploading, documents }) => {
-    const [showSuggestions, setShowSuggestions] = useState(false);
-    const [filteredSuggestions, setFilteredSuggestions] = useState([]);
-
-    useEffect(() => {
-        if (documents && formData.major) {
-            const subjects = new Set();
-            documents.forEach(d => {
-                subjects.add(d.title);
-                subjects.add(d.major);
-            });
-            const term = Utils.removeTones(formData.major.toLowerCase());
-            const filtered = Array.from(subjects).filter(s => Utils.removeTones(s.toLowerCase()).includes(term));
-            setFilteredSuggestions(filtered);
-        } else {
-            setFilteredSuggestions([]);
-        }
-    }, [formData.major, documents]);
-
-    if (!isOpen) return null;
-    return (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200 }}>
-           <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '24px', width: '90%', maxWidth: '450px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.1)' }}>
-             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', alignItems: 'center' }}>
-                 <h2 style={{ margin: 0, fontSize: '20px', color: '#1d1d1f' }}>Đóng góp tài liệu</h2>
-                 <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#1d1d1f' }}><X size={20}/></button>
-             </div>
-             {!formData.file ? (
-                 <FolderUpload onFileSelect={onFileSelect} />
-             ) : (
-                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                     <div style={{ backgroundColor: '#F5F5F7', padding: '12px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}><FileText color="#E53935" size={20}/><div style={{ overflow: 'hidden' }}><div style={{ fontWeight: '600', fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px', color: '#1d1d1f' }}>{formData.file.name}</div></div></div>
-                         <button onClick={onRemoveFile} style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}><Trash2 size={18} color="#FF4D4F"/></button>
-                     </div>
-                     <input style={Styles.input} placeholder="Tên hiển thị" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} />
-                     <div>
-                        <div style={{ fontSize: '14px', fontWeight: '600', color: '#1d1d1f', marginBottom: '8px' }}>Chọn khóa:</div>
-                        <div style={{ display: 'flex', gap: '10px' }}>
-                            {['K49', 'K50', 'K51'].map(k => (
-                                <button key={k} onClick={() => setFormData({...formData, year: k})} style={{ flex: 1, padding: '10px', borderRadius: '10px', border: formData.year === k ? `1px solid ${Styles.colors.primary}` : '1px solid #e0e0e0', backgroundColor: formData.year === k ? Styles.colors.primary : 'transparent', color: formData.year === k ? '#fff' : '#1d1d1f', cursor: 'pointer', fontWeight: '600', fontSize: '14px', transition: 'all 0.2s' }}>{k}</button>
-                            ))}
-                        </div>
-                     </div>
-                     
-                     <div style={{ position: 'relative' }}>
-                        <input 
-                            style={Styles.input} 
-                            placeholder="Môn (VD: CNTT, Giải tích 1...)" 
-                            value={formData.major} 
-                            onChange={e => setFormData({...formData, major: e.target.value})} 
-                            onFocus={() => setShowSuggestions(true)}
-                            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                        />
-                        {showSuggestions && filteredSuggestions.length > 0 && (
-                            <div style={{ ...Styles.suggestionBox, maxHeight: '200px', overflowY: 'auto' }}>
-                                {filteredSuggestions.map((s, i) => (
-                                    <div 
-                                        key={i} 
-                                        style={{ ...Styles.suggestionItem, cursor: 'pointer' }}
-                                        onMouseDown={() => setFormData({...formData, major: s})} // Use onMouseDown to trigger before blur
-                                    >
-                                        {s}
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                     </div>
-
-                     <input style={Styles.input} placeholder="Ghi chú thêm..." value={formData.desc} onChange={e => setFormData({...formData, desc: e.target.value})} />
-                     <InteractiveButton primary={true} onClick={onUpload} disabled={uploading} isDarkBg={false} style={{marginTop: '10px'}}>{uploading ? <Loader className="animate-spin" size={16}/> : "Tải lên ngay"}</InteractiveButton>
-                 </div>
-             )}
-           </div>
-        </div>
-    );
-};
 
 const DocumentGrid = ({ documents, onView }) => (
     <div className="menu-grid">
@@ -1293,13 +898,18 @@ const DocumentGrid = ({ documents, onView }) => (
     </div>
 );
 
-// --- 6. MAIN APP ---
+/**
+ * ============================================================================
+ * 9. MAIN APP COMPONENT
+ * Quản lý state toàn cục, routing và render chính.
+ * ============================================================================
+ */
 export default function App() {
+  // State Management
   const [view, setView] = useState('home');
   const [activeTab, setActiveTab] = useState('All');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isExamOpen, setIsExamOpen] = useState(false); 
-  const { scrollY } = useScroll();
   const [documents, setDocuments] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({ title: '', desc: '', year: '', major: '', file: null });
@@ -1309,50 +919,37 @@ export default function App() {
   const [viewingDoc, setViewingDoc] = useState(null); 
   const [isLoading, setIsLoading] = useState(true);
   const [points, setPoints] = useState(100);
+  
+  const { scrollY } = useScroll();
 
-  // --- Lenis Scroll ---
+  // Lenis Scroll Setup
   useEffect(() => {
     if (!window.Lenis) {
         const script = document.createElement('script');
         script.src = "https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js";
         script.async = true;
         script.onload = () => {
-        const lenis = new window.Lenis({
-            duration: 1.2,
-            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-            direction: 'vertical',
-            gestureDirection: 'vertical',
-            smooth: true,
-            mouseMultiplier: 1,
-            smoothTouch: false,
-            touchMultiplier: 2,
-        });
-        function raf(time) {
-            lenis.raf(time);
+            const lenis = new window.Lenis({
+                duration: 1.2, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), direction: 'vertical', gestureDirection: 'vertical', smooth: true, mouseMultiplier: 1, smoothTouch: false, touchMultiplier: 2,
+            });
+            function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
             requestAnimationFrame(raf);
-        }
-        requestAnimationFrame(raf);
         };
         document.body.appendChild(script);
     }
   }, []);
 
-  // Init Data & Fake Loading
+  // Data Initialization
   useEffect(() => { 
       const savedDocs = localStorage.getItem('hoclieuso_docs');
       if (savedDocs) { setDocuments(JSON.parse(savedDocs)); } else { setDocuments(INITIAL_DOCS); }
-      
       // Preload images
-      Object.values(CONFIG.DASHBOARD_IMGS).forEach(src => {
-          const img = new Image();
-          img.src = src;
-      });
-
+      Object.values(CONFIG.DASHBOARD_IMGS).forEach(src => { const img = new Image(); img.src = src; });
       const timer = setTimeout(() => setIsLoading(false), 2000); 
       return () => clearTimeout(timer);
   }, []);
 
-  // Search Logic
+  // Search Algorithm Hook
   useEffect(() => {
       if (searchTerm.length > 0) {
           const scoredDocs = documents.map(doc => ({ ...doc, score: Utils.calcScore(doc, searchTerm) })).filter(doc => doc.score > 0).sort((a, b) => b.score - a.score).slice(0, 5);
@@ -1360,6 +957,7 @@ export default function App() {
       } else { setSuggestions([]); }
   }, [searchTerm, documents]);
 
+  // Data Filtering Logic
   const getDisplayDocuments = () => {
       let docs = documents;
       if (activeTab !== 'All') docs = docs.filter(doc => doc.year === activeTab);
@@ -1371,22 +969,17 @@ export default function App() {
       if (view === newView) return;
       setIsLoading(true);
       setTimeout(() => {
-          setView(newView);
-          setIsLoading(false);
-          window.scrollTo({ top: 0, behavior: 'instant' });
+          setView(newView); setIsLoading(false); window.scrollTo({ top: 0, behavior: 'instant' });
       }, 800);
   };
 
   const showToast = (message) => {
-      setToastMessage(message);
-      setTimeout(() => setToastMessage(null), 3000);
+      setToastMessage(message); setTimeout(() => setToastMessage(null), 3000);
   };
 
   const handleUpload = () => {
       if (!formData.file || !formData.title || !formData.year || !formData.major) return showToast("Vui lòng nhập đủ thông tin!");
       setUploading(true);
-      
-      // Simulate network request
       setTimeout(() => {
           const reader = new FileReader();
           reader.onload = (e) => {
@@ -1394,14 +987,11 @@ export default function App() {
               const updatedDocs = [newDoc, ...documents];
               setDocuments(updatedDocs); 
               localStorage.setItem('hoclieuso_docs', JSON.stringify(updatedDocs));
-              setUploading(false); 
-              setIsModalOpen(false); 
-              setFormData({ title: '', desc: '', year: '', major: '', file: null });
-              showToast("Upload thành công! +1 Điểm thưởng");
-              setPoints(prev => prev + 1);
+              setUploading(false); setIsModalOpen(false); setFormData({ title: '', desc: '', year: '', major: '', file: null });
+              showToast("Upload thành công! +1 Điểm thưởng"); setPoints(prev => prev + 1);
           };
           reader.readAsDataURL(formData.file);
-      }, 1500); // 1.5s delay for loading effect
+      }, 1500); 
   };
 
   const handleFileSelect = (e) => {
@@ -1431,25 +1021,15 @@ export default function App() {
                             <ScrollRevealText text="Giảm thời gian tìm kiếm, tăng hiệu quả học tập. Tất cả tài liệu và đề thi được sắp xếp thông minh để bạn tiếp cận đúng thứ mình cần chỉ trong vài giây." />
                         </div>
                         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px', display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '30px' }}>
-                            <ScrollFloat 
-                                as="h2"
-                                style={{ fontSize: 'clamp(32px, 4vw, 48px)', fontWeight: '800', lineHeight: 1, margin: 0, color: '#1d1d1f' }}
-                            >
-                                "Tài Liệu Mới"
-                            </ScrollFloat>
-                            <ScrollFloat 
-                                as="div"
-                                delay={0.5}
-                            >
+                            <ScrollFloat as="h2" style={{ fontSize: 'clamp(32px, 4vw, 48px)', fontWeight: '800', lineHeight: 1, margin: 0, color: '#1d1d1f' }}>"Tài Liệu Mới"</ScrollFloat>
+                            <ScrollFloat as="div" delay={0.5}>
                                 <InteractiveButton primary={false} isDarkBg={false} onClick={() => handleNavigation('all')} customBlackWhite={true}>Xem tất cả <ArrowRight size={16}/></InteractiveButton>
                             </ScrollFloat>
                         </div>
                         <DocumentGrid documents={documents.slice(0, 4)} onView={(doc) => setViewingDoc(doc)} />
                     </div>
                     <ImpactDashboard />
-
                     <FAQSection />
-                    
                     <FeedbackSection onSend={() => showToast("Cảm ơn đóng góp của bạn!")} />
                     <Footer />
                 </motion.div>
