@@ -4,7 +4,7 @@ import {
     Search, X, ArrowRight, FileText, Instagram, Twitter, Facebook, Mail, Github, 
     UploadCloud, Loader, Trash2, Heart, CheckCircle2, Play, Pause, RotateCcw, 
     Moon, Sun, FilePenLine, TreeDeciduous, Droplets, Wind, Eye, Compass, 
-    ChevronRight, ChevronLeft, ChevronDown, Check, Leaf, AlertCircle, BookOpen, Gift 
+    ChevronRight, ChevronLeft, ChevronDown, Check, Leaf, AlertCircle, BookOpen, Gift, Download 
 } from 'lucide-react';
 
 /**
@@ -54,7 +54,6 @@ const Utils = {
   removeTones: (str) => str.normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D").toLowerCase(),
   
   // Thuật toán tính điểm khớp từ khóa cho chức năng tìm kiếm
-  // Ưu tiên khớp tiêu đề (100đ), khớp mô tả (20đ), khớp từng từ khóa (10đ/2đ)
   calcScore: (doc, searchTerm) => {
     const term = Utils.removeTones(searchTerm.trim());
     const title = Utils.removeTones(doc.title);
@@ -132,11 +131,10 @@ const Styles = {
 /**
  * ============================================================================
  * 4. PRIMITIVE UI COMPONENTS
- * Các thành phần giao diện cơ bản: Buttons, ScrollWrapper, Text Effects.
+ * Các thành phần giao diện cơ bản.
  * ============================================================================
  */
 
-// Wrapper cho hiệu ứng trồi lên khi cuộn trang
 const ScrollFloat = ({ children, style, className, as = "div", delay = 0, ...props }) => {
     const Component = motion[as] || motion.div;
     return (
@@ -154,7 +152,6 @@ const ScrollFloat = ({ children, style, className, as = "div", delay = 0, ...pro
     );
 };
 
-// Button điều hướng trên Navbar
 const NavButton = ({ children, onClick, isActive, isDarkBg }) => {
   const activeBg = isDarkBg ? Styles.colors.white : Styles.colors.primary;
   const activeColor = isDarkBg ? Styles.colors.primary : Styles.colors.white;
@@ -177,11 +174,8 @@ const NavButton = ({ children, onClick, isActive, isDarkBg }) => {
   );
 };
 
-// Button tương tác chính (Primary/Secondary) với hỗ trợ theme
 const InteractiveButton = ({ primary = true, children, onClick, style, className, disabled, icon, isDarkBg = false, customBlackWhite = false, isNav = false, isUpload = false }) => {
     let bgInitial, textInitial, borderInitial, bgHover, textHover;
-    
-    // Logic xác định màu sắc dựa trên props
     if (isUpload) {
         if (isDarkBg) { bgInitial = "transparent"; borderInitial = "#ffffff"; textInitial = Styles.colors.orange; bgHover = Styles.colors.orange; textHover = "#ffffff"; }
         else { bgInitial = "transparent"; borderInitial = "#1d1d1f"; textInitial = Styles.colors.orange; bgHover = Styles.colors.orange; textHover = "#ffffff"; }
@@ -196,12 +190,9 @@ const InteractiveButton = ({ primary = true, children, onClick, style, className
         bgHover = primary ? (isDarkBg ? "#e0e0e0" : "#333") : (isDarkBg ? "#ffffff" : "#1d1d1f"); 
         textHover = primary ? (isDarkBg ? "#1d1d1f" : "#ffffff") : (isDarkBg ? "#1d1d1f" : "#ffffff"); 
     }
-    
     return (
         <motion.button 
-            onClick={onClick} 
-            disabled={disabled} 
-            initial={false} 
+            onClick={onClick} disabled={disabled} initial={false} 
             animate={{ backgroundColor: bgInitial, color: textInitial, border: `1px solid ${borderInitial}`, opacity: disabled ? 0.7 : 1 }} 
             whileHover={!disabled ? { backgroundColor: bgHover, color: textHover, borderColor: (primary ? "transparent" : borderInitial), scale: 1.05 } : {}} 
             whileTap={!disabled ? { scale: 0.95 } : {}} 
@@ -214,7 +205,6 @@ const InteractiveButton = ({ primary = true, children, onClick, style, className
     );
 };
 
-// Card hiển thị tài liệu
 const MenuCard = ({ item, onClick }) => {
   return (
     <motion.div initial="rest" whileHover="hover" animate="rest" onClick={onClick} style={{ position: 'relative', height: '450px', borderRadius: '30px', overflow: 'hidden', cursor: 'pointer', backgroundColor: '#000', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
@@ -237,21 +227,18 @@ const MenuCard = ({ item, onClick }) => {
 /**
  * ============================================================================
  * 5. TEXT EFFECTS & ANIMATIONS
- * Các hiệu ứng chữ tương tác.
  * ============================================================================
  */
 
-// Ký tự đơn lẻ phản ứng với chuột
 const PressureChar = ({ char, mouseX }) => {
     const ref = useRef(null);
-    useEffect(() => { if (ref.current) { } }, []); // Giữ ref để tính toán vị trí
+    useEffect(() => { if (ref.current) { } }, []); 
     const distance = useTransform(mouseX, (val) => { const bounds = ref.current?.getBoundingClientRect() ?? { x: 0, width: 0 }; return val - bounds.x - bounds.width / 2; });
     const scaleY = useTransform(distance, [-200, 0, 200], [1, 0.8, 1]);
     const scaleX = useTransform(distance, [-200, 0, 200], [1, 1.1, 1]);
     return <motion.span ref={ref} style={{ display: 'inline-block', scaleY, scaleX, originY: "center", marginRight: char === ' ' ? '10px' : '0px' }}>{char}</motion.span>;
 };
 
-// Dòng chữ phản ứng co giãn khi di chuột
 const TextPressure = ({ text }) => {
     const mouseX = useMotionValue(0);
     return (
@@ -261,7 +248,6 @@ const TextPressure = ({ text }) => {
     );
 };
 
-// Hiệu ứng chữ hiện dần khi scroll tới
 const ScrollRevealText = ({ text }) => {
   const container = useRef(null);
   const { scrollYProgress } = useScroll({ target: container, offset: ["start 0.9", "end 0.6"] });
@@ -280,20 +266,15 @@ const ScrollRevealText = ({ text }) => {
 /**
  * ============================================================================
  * 6. WIDGETS & TOOLS
- * Các tiện ích nhỏ: Loader, Điểm số, Pomodoro Timer, Darkmode Switch.
  * ============================================================================
  */
 
 const SpinningLeafLoader = ({ onComplete }) => {
     const [isFinished, setIsFinished] = useState(false);
     useEffect(() => {
-        const timer = setTimeout(() => {
-            setIsFinished(true);
-            setTimeout(onComplete, 800); 
-        }, 2000); 
+        const timer = setTimeout(() => { setIsFinished(true); setTimeout(onComplete, 800); }, 2000); 
         return () => clearTimeout(timer);
     }, [onComplete]);
-
     return (
         <motion.div initial={{ opacity: 1 }} animate={isFinished ? { opacity: 0 } : { opacity: 1 }} transition={{ duration: 0.6 }} style={{ position: 'fixed', inset: 0, zIndex: 99999, backgroundColor: '#121212', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <motion.div animate={{ rotate: 360 }} transition={{ duration: 1.5, ease: "linear", repeat: Infinity }}>
@@ -305,12 +286,7 @@ const SpinningLeafLoader = ({ onComplete }) => {
 
 const PointsWidget = ({ points }) => {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.8, duration: 0.5 }}
-      style={{ position: 'absolute', bottom: '40px', left: '40px', zIndex: 20, backgroundColor: 'rgba(0, 0, 0, 0.4)', backdropFilter: 'blur(20px)', padding: '24px', borderRadius: '24px', border: '1px solid rgba(255, 255, 255, 0.2)', color: 'white', maxWidth: '280px', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)' }}
-    >
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8, duration: 0.5 }} style={{ position: 'absolute', bottom: '40px', left: '40px', zIndex: 20, backgroundColor: 'rgba(0, 0, 0, 0.4)', backdropFilter: 'blur(20px)', padding: '24px', borderRadius: '24px', border: '1px solid rgba(255, 255, 255, 0.2)', color: 'white', maxWidth: '280px', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)' }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
          <div style={{ fontSize: '32px', fontWeight: '800', lineHeight: 1.1, color: 'white' }}>{points} Điểm</div>
          <p style={{ margin: 0, fontSize: '13px', lineHeight: 1.4, opacity: 0.8 }}>Được sử dụng để quy đổi thành các phần thưởng hoặc lợi ích đặc biệt.</p>
@@ -324,19 +300,16 @@ const PomodoroHeaderWidget = () => {
     const [timeLeft, setTimeLeft] = useState(WORK_TIME); 
     const [isActive, setIsActive] = useState(false); 
     const [mode, setMode] = useState('work'); 
-    
     useEffect(() => {
         let interval = null;
         if (isActive && timeLeft > 0) { interval = setInterval(() => setTimeLeft(timeLeft - 1), 1000); } 
         else if (timeLeft === 0) { const nextMode = mode === 'work' ? 'break' : 'work'; setMode(nextMode); setTimeLeft(nextMode === 'work' ? WORK_TIME : BREAK_TIME); setIsActive(false); }
         return () => clearInterval(interval);
     }, [isActive, timeLeft, mode]);
-
     const toggleTimer = () => setIsActive(!isActive);
     const resetTimer = () => { setIsActive(false); setMode('work'); setTimeLeft(WORK_TIME); };
     const formatTime = (seconds) => { const mins = Math.floor(seconds / 60); const secs = seconds % 60; return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`; };
     const themeColor = mode === 'work' ? Styles.colors.orange : Styles.colors.green;
-
     return (
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '4px 10px', backgroundColor: '#f5f5f7', borderRadius: '30px', border: '1px solid #e0e0e0', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
             <div style={{ fontSize: '14px', fontWeight: '700', color: themeColor, minWidth: '45px', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{formatTime(timeLeft)}</div>
@@ -361,40 +334,51 @@ const ThemeSwitchFixed = ({ isNightMode, toggle }) => {
     )
 }
 
-const AnimatedCounter = ({ from, to, duration = 2 }) => {
-    const nodeRef = useRef();
-    const isInView = useInView(nodeRef, { once: true });
-    
-    useEffect(() => {
-      if (!isInView) return;
-      const node = nodeRef.current;
-      let startTime;
-      const step = (timestamp) => {
-          if (!startTime) startTime = timestamp;
-          const progress = Math.min((timestamp - startTime) / (duration * 1000), 1);
-          const easedProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
-          const currentValue = Math.floor(from + (to - from) * easedProgress);
-          if (node) { node.textContent = currentValue.toLocaleString(); }
-          if (progress < 1) { requestAnimationFrame(step); }
-      };
-      requestAnimationFrame(step);
-    }, [from, to, duration, isInView]);
-    return <span ref={nodeRef}>{from}</span>;
-};
-
 /**
  * ============================================================================
  * 7. MODALS & OVERLAYS
- * Các cửa sổ nổi: Xem tài liệu, Toast thông báo, Thi trắc nghiệm, Upload.
  * ============================================================================
  */
 
-// Modal xem chi tiết tài liệu (hỗ trợ Darkmode riêng)
+// ĐÃ SỬA: Chuyển đổi Base64 thành Blob URL để tránh lỗi hiển thị màn hình trắng
 const DocViewer = ({ doc, onClose }) => {
     const [isNightMode, setIsNightMode] = useState(false);
+    const [blobUrl, setBlobUrl] = useState(null);
+
+    useEffect(() => {
+        if (!doc) return;
+        
+        // Nếu là data URI (base64) thì chuyển sang Blob URL
+        if (doc.fileUrl && doc.fileUrl.startsWith('data:')) {
+            try {
+                // Tách header data:application/pdf;base64,...
+                const arr = doc.fileUrl.split(',');
+                const mime = arr[0].match(/:(.*?);/)[1];
+                const bstr = atob(arr[1]);
+                let n = bstr.length;
+                const u8arr = new Uint8Array(n);
+                while (n--) {
+                    u8arr[n] = bstr.charCodeAt(n);
+                }
+                const blob = new Blob([u8arr], { type: mime });
+                const url = URL.createObjectURL(blob);
+                setBlobUrl(url);
+                
+                // Cleanup khi component unmount
+                return () => {
+                    URL.revokeObjectURL(url);
+                };
+            } catch (error) {
+                console.error("Error converting base64 to blob:", error);
+                setBlobUrl(doc.fileUrl); // Fallback
+            }
+        } else {
+            setBlobUrl(doc.fileUrl);
+        }
+    }, [doc]);
+
     if (!doc) return null;
     
-    // Cấu hình màu sắc động
     const contentFilter = isNightMode ? 'invert(1) hue-rotate(180deg)' : 'none';
     const bgColor = isNightMode ? '#1a1a1a' : 'white';
     const headerBg = isNightMode ? '#222' : '#fff';
@@ -415,13 +399,26 @@ const DocViewer = ({ doc, onClose }) => {
                         </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        {doc.fileUrl && doc.fileUrl !== "#" && (
+                            <a href={blobUrl || doc.fileUrl} download={`${doc.title}.pdf`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: isNightMode ? '#333' : '#f5f5f7', color: textColor, border: 'none', cursor: 'pointer' }} title="Tải xuống">
+                                <Download size={20} />
+                            </a>
+                        )}
                         <PomodoroHeaderWidget />
                         <ThemeSwitchFixed isNightMode={isNightMode} toggle={() => setIsNightMode(!isNightMode)} />
                         <button onClick={onClose} style={{ padding: '8px', borderRadius: '50%', border: 'none', backgroundColor: isNightMode ? '#333' : '#f5f5f7', cursor: 'pointer', color: textColor, flexShrink: 0, transition: 'all 0.3s ease' }}><X size={20}/></button>
                     </div>
                 </div>
                 <div style={{ flex: 1, backgroundColor: isNightMode ? '#121212' : '#f9fafb', position: 'relative', filter: contentFilter, transition: 'all 0.3s ease' }}>
-                    {doc.fileUrl && doc.fileUrl !== "#" ? (<iframe src={doc.fileUrl} style={{ width: '100%', height: '100%', border: 'none' }} title="Document Viewer" />) : (<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#999', gap: '16px' }}><div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FileText size={32} color="#ccc" /></div><p style={{ fontSize: '15px' }}>Đây là dữ liệu mẫu, chưa có file đính kèm.</p></div>)}
+                    {/* Sử dụng iframe với blobUrl thay vì dataUrl trực tiếp */}
+                    {blobUrl && blobUrl !== "#" ? (
+                        <iframe src={blobUrl} width="100%" height="100%" style={{ border: 'none' }} title="Document Viewer" />
+                    ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#999', gap: '16px' }}>
+                            <div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FileText size={32} color="#ccc" /></div>
+                            <p style={{ fontSize: '15px' }}>Đây là dữ liệu mẫu, chưa có file đính kèm.</p>
+                        </div>
+                    )}
                 </div>
             </motion.div>
         </div>
@@ -435,7 +432,6 @@ const Toast = ({ message }) => (
     </motion.div>
 );
 
-// Modal Thi trắc nghiệm: Quản lý State Machine (Setup -> Generating -> Quiz -> Score)
 const ExamModal = ({ isOpen, onClose }) => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [answers, setAnswers] = useState({});
@@ -447,14 +443,12 @@ const ExamModal = ({ isOpen, onClose }) => {
 
     const subjects = ["Giải tích 1", "Triết học", "Vật lý đại cương", "Tin học đại cương", "Pháp luật", "Kinh tế vi mô", "Tiếng Anh", "Xác suất thống kê"];
 
-    // Khóa cuộn trang khi mở modal
     useEffect(() => {
         if (isOpen) document.body.style.overflow = 'hidden';
         else document.body.style.overflow = 'unset';
         return () => { document.body.style.overflow = 'unset'; }
     }, [isOpen]);
 
-    // Reset state khi mở lại modal
     useEffect(() => {
         if (isOpen) {
             setCurrentQuestionIndex(0); setAnswers({}); setIsFinished(false);
@@ -462,161 +456,69 @@ const ExamModal = ({ isOpen, onClose }) => {
         }
     }, [isOpen]);
 
-    // Xử lý chọn đáp án
-    const handleSelectAnswer = (optionIndex) => {
-        if (mode === 'review') return; 
-        setAnswers(prev => ({ ...prev, [currentQuestionIndex]: optionIndex }));
-    };
-
-    // Điều hướng câu hỏi
-    const handleNext = () => {
-        if (currentQuestionIndex < MOCK_EXAM_QUESTIONS.length - 1) {
-            setDirection(1); setCurrentQuestionIndex(prev => prev + 1);
-        } else {
-            setMode('score'); setIsFinished(true);
-        }
-    };
-
-    const handlePrev = () => {
-        if (currentQuestionIndex > 0) {
-            setDirection(-1); setCurrentQuestionIndex(prev => prev - 1);
-        }
-    };
-
-    const calculateScore = () => {
-        let correctCount = 0;
-        MOCK_EXAM_QUESTIONS.forEach((q, index) => {
-            if (answers[index] === q.correctAnswer) correctCount++;
-        });
-        return correctCount;
-    };
-
-    const handleStartExam = () => {
-        setMode('generating');
-        setTimeout(() => { setMode('quiz'); }, 2000); 
-    };
+    const handleSelectAnswer = (optionIndex) => { if (mode === 'review') return; setAnswers(prev => ({ ...prev, [currentQuestionIndex]: optionIndex })); };
+    const handleNext = () => { if (currentQuestionIndex < MOCK_EXAM_QUESTIONS.length - 1) { setDirection(1); setCurrentQuestionIndex(prev => prev + 1); } else { setMode('score'); setIsFinished(true); } };
+    const handlePrev = () => { if (currentQuestionIndex > 0) { setDirection(-1); setCurrentQuestionIndex(prev => prev - 1); } };
+    const calculateScore = () => { let correctCount = 0; MOCK_EXAM_QUESTIONS.forEach((q, index) => { if (answers[index] === q.correctAnswer) correctCount++; }); return correctCount; };
+    const handleStartExam = () => { setMode('generating'); setTimeout(() => { setMode('quiz'); }, 2000); };
 
     if (!isOpen) return null;
-
     const currentQ = MOCK_EXAM_QUESTIONS[currentQuestionIndex];
     const currentSelectedAnswer = answers[currentQuestionIndex];
     const score = calculateScore();
-
-    // Animation Variants cho chuyển slide câu hỏi
-    const slideVariants = {
-        enter: (direction) => ({ x: direction > 0 ? 400 : -400, opacity: 0, scale: 0.9, filter: 'blur(10px)' }),
-        center: { zIndex: 1, x: 0, opacity: 1, scale: 1, filter: 'blur(0px)' },
-        exit: (direction) => ({ zIndex: 0, x: direction < 0 ? 400 : -400, opacity: 0, scale: 0.9, filter: 'blur(10px)' })
-    };
+    const slideVariants = { enter: (direction) => ({ x: direction > 0 ? 400 : -400, opacity: 0, scale: 0.9, filter: 'blur(10px)' }), center: { zIndex: 1, x: 0, opacity: 1, scale: 1, filter: 'blur(0px)' }, exit: (direction) => ({ zIndex: 0, x: direction < 0 ? 400 : -400, opacity: 0, scale: 0.9, filter: 'blur(10px)' }) };
 
     return (
         <div style={{ position: 'fixed', inset: 0, zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }} />
             <motion.div layout initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }} transition={{ type: "spring", stiffness: 120, damping: 20 }} style={{ position: 'relative', width: '100%', maxWidth: '1200px', height: '85vh', backgroundColor: '#f8fafc', borderRadius: '40px', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', display: 'flex', flexDirection: 'column' }}>
                 <div style={{ padding: '20px 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'transparent', zIndex: 10 }}>
-                    <div style={{ display: 'flex', gap: '4px' }}>
-                         {(mode === 'quiz' || mode === 'review') && MOCK_EXAM_QUESTIONS.map((_, idx) => (
-                            <div key={idx} style={{ width: '30px', height: '4px', borderRadius: '2px', backgroundColor: idx <= currentQuestionIndex ? (mode === 'review' ? '#64748b' : Styles.colors.loading) : '#e2e8f0', transition: 'all 0.3s' }} />
-                        ))}
-                    </div>
+                    <div style={{ display: 'flex', gap: '4px' }}>{(mode === 'quiz' || mode === 'review') && MOCK_EXAM_QUESTIONS.map((_, idx) => (<div key={idx} style={{ width: '30px', height: '4px', borderRadius: '2px', backgroundColor: idx <= currentQuestionIndex ? (mode === 'review' ? '#64748b' : Styles.colors.loading) : '#e2e8f0', transition: 'all 0.3s' }} />))}</div>
                     <button onClick={onClose} style={{ width: '40px', height: '40px', backgroundColor: 'white', border: 'none', cursor: 'pointer', padding: '0', borderRadius: '50%', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={20} color="#1d1d1f" /></button>
                 </div>
-
                 <div data-lenis-prevent style={{ flex: 1, position: 'relative', overflowY: (mode === 'setup' || mode === 'score') ? 'auto' : 'hidden', overflowX: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: (mode === 'setup' || mode === 'score') ? 'flex-start' : 'center', paddingBottom: '20px', overscrollBehavior: 'contain' }}>
                     <AnimatePresence initial={false} custom={direction} mode="wait">
-                        {/* SETUP MODE */}
                         {mode === 'setup' && (
                              <motion.div key="setup" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} style={{ width: '80%', maxWidth: '600px', textAlign: 'center', margin: '40px auto' }}>
                                 <h2 style={{ fontSize: '32px', fontWeight: '800', color: '#1d1d1f', marginBottom: '30px' }}>Thiết lập đề thi</h2>
                                 <div style={{ marginBottom: '30px', textAlign: 'left' }}>
                                     <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#64748b', marginBottom: '10px' }}>Chọn khóa</label>
-                                    <div style={{ display: 'flex', gap: '10px' }}>
-                                        {['K49', 'K50', 'K51'].map(k => (
-                                            <button key={k} onClick={() => setSelectedCohort(k)} style={{ flex: 1, padding: '12px', borderRadius: '12px', border: selectedCohort === k ? `2px solid ${Styles.colors.loading}` : '1px solid #e2e8f0', backgroundColor: selectedCohort === k ? '#f0fdfa' : 'white', color: selectedCohort === k ? Styles.colors.loading : '#1d1d1f', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s' }}>{k}</button>
-                                        ))}
-                                    </div>
+                                    <div style={{ display: 'flex', gap: '10px' }}>{['K49', 'K50', 'K51'].map(k => (<button key={k} onClick={() => setSelectedCohort(k)} style={{ flex: 1, padding: '12px', borderRadius: '12px', border: selectedCohort === k ? `2px solid ${Styles.colors.loading}` : '1px solid #e2e8f0', backgroundColor: selectedCohort === k ? '#f0fdfa' : 'white', color: selectedCohort === k ? Styles.colors.loading : '#1d1d1f', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s' }}>{k}</button>))}</div>
                                 </div>
                                 <div style={{ marginBottom: '40px', textAlign: 'left' }}>
                                     <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#64748b', marginBottom: '10px' }}>Chọn môn học</label>
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                                        {subjects.map(sub => (
-                                            <button key={sub} onClick={() => setSelectedSubject(sub)} style={{ padding: '12px', borderRadius: '12px', border: selectedSubject === sub ? `2px solid ${Styles.colors.loading}` : '1px solid #e2e8f0', backgroundColor: selectedSubject === sub ? '#f0fdfa' : 'white', color: selectedSubject === sub ? Styles.colors.loading : '#1d1d1f', fontWeight: '500', fontSize: '14px', cursor: 'pointer', transition: 'all 0.2s', textAlign: 'left' }}>{sub}</button>
-                                        ))}
-                                    </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>{subjects.map(sub => (<button key={sub} onClick={() => setSelectedSubject(sub)} style={{ padding: '12px', borderRadius: '12px', border: selectedSubject === sub ? `2px solid ${Styles.colors.loading}` : '1px solid #e2e8f0', backgroundColor: selectedSubject === sub ? '#f0fdfa' : 'white', color: selectedSubject === sub ? Styles.colors.loading : '#1d1d1f', fontWeight: '500', fontSize: '14px', cursor: 'pointer', transition: 'all 0.2s', textAlign: 'left' }}>{sub}</button>))}</div>
                                 </div>
-                                <motion.div animate={{ opacity: (!selectedCohort || !selectedSubject) ? 0.5 : 1, y: (!selectedCohort || !selectedSubject) ? 10 : 0 }}>
-                                    <InteractiveButton onClick={handleStartExam} disabled={!selectedCohort || !selectedSubject} primary={true} style={{ width: '100%', justifyContent: 'center', backgroundColor: (!selectedCohort || !selectedSubject) ? '#cbd5e1' : Styles.colors.loading, border: 'none' }}>Tạo đề ngay</InteractiveButton>
-                                </motion.div>
+                                <motion.div animate={{ opacity: (!selectedCohort || !selectedSubject) ? 0.5 : 1, y: (!selectedCohort || !selectedSubject) ? 10 : 0 }}><InteractiveButton onClick={handleStartExam} disabled={!selectedCohort || !selectedSubject} primary={true} style={{ width: '100%', justifyContent: 'center', backgroundColor: (!selectedCohort || !selectedSubject) ? '#cbd5e1' : Styles.colors.loading, border: 'none' }}>Tạo đề ngay</InteractiveButton></motion.div>
                             </motion.div>
                         )}
-                        {/* GENERATING MODE */}
-                        {mode === 'generating' && (
-                            <motion.div key="generating" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ textAlign: 'center' }}>
-                                <div className="loader"></div>
-                                <h3 style={{ fontSize: '20px', fontWeight: '600', color: '#1d1d1f' }}>Đang tạo đề thi...</h3>
-                                <p style={{ color: '#64748b' }}>Đang tổng hợp câu hỏi từ ngân hàng dữ liệu...</p>
-                            </motion.div>
-                        )}
-                        {/* QUIZ / REVIEW MODE */}
+                        {mode === 'generating' && (<motion.div key="generating" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ textAlign: 'center' }}><div className="loader"></div><h3 style={{ fontSize: '20px', fontWeight: '600', color: '#1d1d1f' }}>Đang tạo đề thi...</h3><p style={{ color: '#64748b' }}>Đang tổng hợp câu hỏi từ ngân hàng dữ liệu...</p></motion.div>)}
                         {(mode === 'quiz' || mode === 'review') && (
                             <motion.div layout key={currentQ.id} custom={direction} variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ x: { type: "spring", stiffness: 300, damping: 30 }, opacity: { duration: 0.2 } }} style={{ width: '80%', backgroundColor: '#fff', borderRadius: '32px', padding: '30px', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', display: 'flex', flexDirection: 'column', gap: '20px', maxHeight: '100%', overflowY: 'auto', overscrollBehavior: 'contain', margin: 'auto' }}>
                                 <motion.div layout="position" style={{ fontSize: '13px', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>{mode === 'review' ? 'Xem lại: ' : ''}Câu hỏi {currentQuestionIndex + 1} / {MOCK_EXAM_QUESTIONS.length}</motion.div>
                                 <motion.h2 layout="position" style={{ fontSize: '20px', fontWeight: '700', color: '#1d1d1f', margin: 0, lineHeight: 1.3 }}>{currentQ.question}</motion.h2>
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px', paddingBottom: '10px' }}>
                                     {currentQ.options.map((opt, idx) => {
-                                        let isSelected = currentSelectedAnswer === idx;
-                                        let borderColor = 'transparent'; let bgColor = '#f8fafc'; let textColor = '#475569'; let Icon = null;
-                                        if (mode === 'quiz') {
-                                            if (isSelected) { borderColor = Styles.colors.loading; bgColor = '#f0fdfa'; textColor = Styles.colors.loading; Icon = <CheckCircle2 size={20} color={Styles.colors.loading} />; }
-                                        } else if (mode === 'review') {
-                                            if (idx === currentQ.correctAnswer) { borderColor = Styles.colors.green; bgColor = '#f0fdf4'; textColor = Styles.colors.green; Icon = <Check size={20} color={Styles.colors.green} />; } 
-                                            else if (isSelected && idx !== currentQ.correctAnswer) { borderColor = Styles.colors.red; bgColor = '#fef2f2'; textColor = Styles.colors.red; Icon = <X size={20} color={Styles.colors.red} />; } 
-                                            else if (isSelected) { borderColor = Styles.colors.green; bgColor = '#f0fdf4'; textColor = Styles.colors.green; Icon = <Check size={20} color={Styles.colors.green} />; }
-                                        }
-                                        return (
-                                            <motion.div layout key={idx} onClick={() => handleSelectAnswer(idx)} whileHover={mode === 'quiz' ? { scale: 1.02 } : {}} whileTap={mode === 'quiz' ? { scale: 0.98 } : {}} style={{ padding: '16px 24px', borderRadius: '16px', backgroundColor: bgColor, border: `2px solid ${borderColor}`, color: textColor, fontSize: '15px', fontWeight: '600', cursor: mode === 'quiz' ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'all 0.2s' }}>{opt}{Icon}</motion.div>
-                                        );
+                                        let isSelected = currentSelectedAnswer === idx; let borderColor = 'transparent'; let bgColor = '#f8fafc'; let textColor = '#475569'; let Icon = null;
+                                        if (mode === 'quiz') { if (isSelected) { borderColor = Styles.colors.loading; bgColor = '#f0fdfa'; textColor = Styles.colors.loading; Icon = <CheckCircle2 size={20} color={Styles.colors.loading} />; } } 
+                                        else if (mode === 'review') { if (idx === currentQ.correctAnswer) { borderColor = Styles.colors.green; bgColor = '#f0fdf4'; textColor = Styles.colors.green; Icon = <Check size={20} color={Styles.colors.green} />; } else if (isSelected && idx !== currentQ.correctAnswer) { borderColor = Styles.colors.red; bgColor = '#fef2f2'; textColor = Styles.colors.red; Icon = <X size={20} color={Styles.colors.red} />; } else if (isSelected) { borderColor = Styles.colors.green; bgColor = '#f0fdf4'; textColor = Styles.colors.green; Icon = <Check size={20} color={Styles.colors.green} />; } }
+                                        return (<motion.div layout key={idx} onClick={() => handleSelectAnswer(idx)} whileHover={mode === 'quiz' ? { scale: 1.02 } : {}} whileTap={mode === 'quiz' ? { scale: 0.98 } : {}} style={{ padding: '16px 24px', borderRadius: '16px', backgroundColor: bgColor, border: `2px solid ${borderColor}`, color: textColor, fontSize: '15px', fontWeight: '600', cursor: mode === 'quiz' ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'all 0.2s' }}>{opt}{Icon}</motion.div>);
                                     })}
                                 </div>
                             </motion.div>
                         )}
-                        {/* SCORE MODE */}
-                        {mode === 'score' && (
-                            <motion.div layout key="result" initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} style={{ textAlign: 'center', padding: '40px', backgroundColor: 'white', borderRadius: '32px', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', margin: 'auto' }}>
-                                <div style={{ width: '100px', height: '100px', borderRadius: '50%', backgroundColor: '#dcfce7', color: '#16a34a', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto' }}><Check size={50} strokeWidth={4} /></div>
-                                <h2 style={{ fontSize: '32px', fontWeight: '800', color: '#1d1d1f', marginBottom: '12px' }}>Hoàn thành!</h2>
-                                <p style={{ color: '#64748b', fontSize: '18px', marginBottom: '8px' }}>Số câu đúng: <span style={{ fontWeight: 'bold', color: '#16a34a' }}>{score}/{MOCK_EXAM_QUESTIONS.length}</span></p>
-                                <p style={{ color: '#64748b', fontSize: '18px', marginBottom: '30px' }}>Điểm số: <span style={{ fontWeight: 'bold', color: '#16a34a' }}>{(score / MOCK_EXAM_QUESTIONS.length) * 10}</span></p>
-                                <div style={{ display: 'flex', gap: '10px' }}>
-                                    <InteractiveButton onClick={() => { setMode('review'); setCurrentQuestionIndex(0); setDirection(0); }} primary={false} style={{ width: '100%', justifyContent: 'center', backgroundColor: '#f1f5f9', color: '#1d1d1f' }}>Xem lại</InteractiveButton>
-                                    <InteractiveButton onClick={onClose} primary={true} style={{ width: '100%', justifyContent: 'center', backgroundColor: '#16a34a' }}>Đóng</InteractiveButton>
-                                </div>
-                            </motion.div>
-                        )}
+                        {mode === 'score' && (<motion.div layout key="result" initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} style={{ textAlign: 'center', padding: '40px', backgroundColor: 'white', borderRadius: '32px', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', margin: 'auto' }}><div style={{ width: '100px', height: '100px', borderRadius: '50%', backgroundColor: '#dcfce7', color: '#16a34a', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto' }}><Check size={50} strokeWidth={4} /></div><h2 style={{ fontSize: '32px', fontWeight: '800', color: '#1d1d1f', marginBottom: '12px' }}>Hoàn thành!</h2><p style={{ color: '#64748b', fontSize: '18px', marginBottom: '8px' }}>Số câu đúng: <span style={{ fontWeight: 'bold', color: '#16a34a' }}>{score}/{MOCK_EXAM_QUESTIONS.length}</span></p><p style={{ color: '#64748b', fontSize: '18px', marginBottom: '30px' }}>Điểm số: <span style={{ fontWeight: 'bold', color: '#16a34a' }}>{(score / MOCK_EXAM_QUESTIONS.length) * 10}</span></p><div style={{ display: 'flex', gap: '10px' }}><InteractiveButton onClick={() => { setMode('review'); setCurrentQuestionIndex(0); setDirection(0); }} primary={false} style={{ width: '100%', justifyContent: 'center', backgroundColor: '#f1f5f9', color: '#1d1d1f' }}>Xem lại</InteractiveButton><InteractiveButton onClick={onClose} primary={true} style={{ width: '100%', justifyContent: 'center', backgroundColor: '#16a34a' }}>Đóng</InteractiveButton></div></motion.div>)}
                     </AnimatePresence>
                 </div>
-
                 <div style={{ padding: '20px 30px', backgroundColor: 'transparent', zIndex: 10, display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    {(mode === 'quiz' || mode === 'review') && (
-                         <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
-                            {currentQuestionIndex > 0 && (
-                                <motion.button onClick={handlePrev} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} style={{ padding: '16px 24px', borderRadius: '100px', border: 'none', backgroundColor: '#f1f5f9', color: '#1d1d1f', fontSize: '16px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', boxShadow: '0 5px 15px rgba(0,0,0,0.05)' }}><ChevronLeft size={20} /> Quay lại</motion.button>
-                            )}
-                            <motion.button onClick={handleNext} disabled={mode === 'quiz' && currentSelectedAnswer === undefined} animate={{ scale: (mode === 'review' || currentSelectedAnswer !== undefined) ? 1 : 0.9, opacity: (mode === 'review' || currentSelectedAnswer !== undefined) ? 1 : 0.5, y: (mode === 'review' || currentSelectedAnswer !== undefined) ? 0 : 10 }} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} style={{ padding: '16px 40px', borderRadius: '100px', border: 'none', backgroundColor: Styles.colors.loading, color: 'white', fontSize: '16px', fontWeight: '700', cursor: (mode === 'review' || currentSelectedAnswer !== undefined) ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', gap: '10px', boxShadow: '0 10px 20px rgba(0,0,0,0.1)' }}>
-                                {currentQuestionIndex === MOCK_EXAM_QUESTIONS.length - 1 ? (mode === 'review' ? "Đóng" : "Nộp bài") : "Tiếp tục"} <ArrowRight size={20} />
-                            </motion.button>
-                        </div>
-                    )}
-                    <div style={{ textAlign: 'center', marginTop: '10px' }}>
-                        <p style={{ fontSize: '11px', color: '#94a3b8', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}><AlertCircle size={12} /> Đây là đề thi mẫu, mô phỏng cho chức năng tạo lập đề thi.</p>
-                    </div>
+                    {(mode === 'quiz' || mode === 'review') && (<div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>{currentQuestionIndex > 0 && (<motion.button onClick={handlePrev} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} style={{ padding: '16px 24px', borderRadius: '100px', border: 'none', backgroundColor: '#f1f5f9', color: '#1d1d1f', fontSize: '16px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', boxShadow: '0 5px 15px rgba(0,0,0,0.05)' }}><ChevronLeft size={20} /> Quay lại</motion.button>)}<motion.button onClick={handleNext} disabled={mode === 'quiz' && currentSelectedAnswer === undefined} animate={{ scale: (mode === 'review' || currentSelectedAnswer !== undefined) ? 1 : 0.9, opacity: (mode === 'review' || currentSelectedAnswer !== undefined) ? 1 : 0.5, y: (mode === 'review' || currentSelectedAnswer !== undefined) ? 0 : 10 }} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} style={{ padding: '16px 40px', borderRadius: '100px', border: 'none', backgroundColor: Styles.colors.loading, color: 'white', fontSize: '16px', fontWeight: '700', cursor: (mode === 'review' || currentSelectedAnswer !== undefined) ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', gap: '10px', boxShadow: '0 10px 20px rgba(0,0,0,0.1)' }}>{currentQuestionIndex === MOCK_EXAM_QUESTIONS.length - 1 ? (mode === 'review' ? "Đóng" : "Nộp bài") : "Tiếp tục"} <ArrowRight size={20} /></motion.button></div>)}
+                    <div style={{ textAlign: 'center', marginTop: '10px' }}><p style={{ fontSize: '11px', color: '#94a3b8', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}><AlertCircle size={12} /> Đây là đề thi mẫu, mô phỏng cho chức năng tạo lập đề thi.</p></div>
                 </div>
             </motion.div>
         </div>
     );
 };
 
-// Component Folder Upload: Hiệu ứng 3D khi rê chuột
 const FolderUpload = ({ onFileSelect }) => {
     return (
         <div style={{ position: 'relative', width: '100%', height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -840,7 +742,7 @@ const SearchSection = ({ searchTerm, setSearchTerm, suggestions, onSelectSuggest
                 <input placeholder="Tìm kiếm tài liệu (VD: Giải tích)..." style={Styles.searchStyleFixed} value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); if(e.target.value.length > 0) setShowSuggestions(true); }} onFocus={() => { if(searchTerm.length > 0) setShowSuggestions(true); }} />
                 <AnimatePresence>
                     {showSuggestions && suggestions.length > 0 && (
-                        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} style={Styles.suggestionBox}>
+                        <motion.div key="suggestions" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} style={Styles.suggestionBox}>
                             {suggestions.map(doc => (
                                 <div key={doc.id} className="suggestion-item" onClick={() => { onSelectSuggestion(doc); setShowSuggestions(false); }} style={Styles.suggestionItem}>
                                     <FileText size={16} color="#666"/>
@@ -983,13 +885,16 @@ export default function App() {
       setTimeout(() => {
           const reader = new FileReader();
           reader.onload = (e) => {
-              const newDoc = { id: Date.now(), title: formData.title, desc: formData.desc || "Tài liệu sinh viên", year: formData.year, major: formData.major, type: "PDF", fileUrl: e.target.result, cover: Utils.getRandomCover(), createdAt: new Date().toISOString() };
-              const updatedDocs = [newDoc, ...documents];
-              setDocuments(updatedDocs); 
-              localStorage.setItem('hoclieuso_docs', JSON.stringify(updatedDocs));
-              setUploading(false); setIsModalOpen(false); setFormData({ title: '', desc: '', year: '', major: '', file: null });
-              showToast("Upload thành công! +1 Điểm thưởng"); setPoints(prev => prev + 1);
+              try {
+                  const newDoc = { id: Date.now(), title: formData.title, desc: formData.desc || "Tài liệu sinh viên", year: formData.year, major: formData.major, type: "PDF", fileUrl: e.target.result, cover: Utils.getRandomCover(), createdAt: new Date().toISOString() };
+                  const updatedDocs = [newDoc, ...documents];
+                  setDocuments(updatedDocs); 
+                  try { localStorage.setItem('hoclieuso_docs', JSON.stringify(updatedDocs)); } catch (e) { console.warn("Quota exceeded"); }
+                  setUploading(false); setIsModalOpen(false); setFormData({ title: '', desc: '', year: '', major: '', file: null });
+                  showToast("Upload thành công! +1 Điểm thưởng"); setPoints(prev => prev + 1);
+              } catch(err) { console.error(err); setUploading(false); showToast("Lỗi xử lý file"); }
           };
+          reader.onerror = () => { setUploading(false); showToast("Lỗi đọc file"); };
           reader.readAsDataURL(formData.file);
       }, 1500); 
   };
@@ -1006,9 +911,9 @@ export default function App() {
       <Navbar view={view} setView={setView} setIsModalOpen={setIsModalOpen} onNavigate={handleNavigation} showToast={showToast} setIsExamOpen={setIsExamOpen} />
 
       <AnimatePresence>
-          {isLoading && <SpinningLeafLoader onComplete={() => setIsLoading(false)} />}
-          {toastMessage && <Toast message={toastMessage} />}
-          {viewingDoc && <DocViewer doc={viewingDoc} onClose={() => setViewingDoc(null)} />}
+          {isLoading && <SpinningLeafLoader key="loader" onComplete={() => setIsLoading(false)} />}
+          {toastMessage && <Toast key="toast" message={toastMessage} />}
+          {viewingDoc && <DocViewer key="doc-viewer" doc={viewingDoc} onClose={() => setViewingDoc(null)} />}
       </AnimatePresence>
 
       <div style={{ position: 'relative', minHeight: '100vh', backgroundColor: '#ffffff' }}>
