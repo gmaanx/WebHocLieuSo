@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, useScroll, useTransform, AnimatePresence, useMotionValue, useInView } from 'framer-motion';
+import { motion, useScroll, useTransform, AnimatePresence, useMotionValue } from 'framer-motion';
 import { 
     Search, X, ArrowRight, FileText, Instagram, Twitter, Facebook, Mail, Github, 
     UploadCloud, Loader, Trash2, Heart, CheckCircle2, Play, Pause, RotateCcw, 
     Moon, Sun, FilePenLine, TreeDeciduous, Droplets, Wind, Eye, Compass, 
-    ChevronRight, ChevronLeft, ChevronDown, Check, Leaf, AlertCircle, BookOpen, Gift, Download 
+    ChevronRight, ChevronLeft, ChevronDown, Check, Leaf, AlertCircle, BookOpen, Gift, Download, Menu 
 } from 'lucide-react';
 
+import MotherlandFont from './assets/fonts/NVN-Motherland-Signature-1.ttf'; 
 /**
  * ============================================================================
  * 1. CONFIGURATION & MOCK DATA
- * Chứa các hằng số, đường dẫn ảnh và dữ liệu mẫu khởi tạo.
  * ============================================================================
  */
 const CONFIG = {
@@ -46,14 +46,11 @@ const MOCK_EXAM_QUESTIONS = [
 /**
  * ============================================================================
  * 2. UTILITIES & ALGORITHMS
- * Các hàm hỗ trợ xử lý logic: tìm kiếm, tính điểm, random.
  * ============================================================================
  */
 const Utils = {
-  // Loại bỏ dấu tiếng Việt để tìm kiếm không dấu
   removeTones: (str) => str.normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D").toLowerCase(),
   
-  // Thuật toán tính điểm khớp từ khóa cho chức năng tìm kiếm
   calcScore: (doc, searchTerm) => {
     const term = Utils.removeTones(searchTerm.trim());
     const title = Utils.removeTones(doc.title);
@@ -80,7 +77,6 @@ const Utils = {
 /**
  * ============================================================================
  * 3. STYLES & GLOBAL CSS
- * Định nghĩa màu sắc, global CSS injection và các style object tái sử dụng.
  * ============================================================================
  */
 const Styles = {
@@ -98,15 +94,37 @@ const Styles = {
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap'); 
         @import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
-
+        @font-face {
+            font-family: 'NVN-Motherland-Signature-1';
+            src: url('${MotherlandFont}') format('truetype'); 
+            font-weight: normal;
+            font-style: normal;
+        }
         :root, body, #root { width: 100%; margin: 0; padding: 0; background-color: #ffffff; font-family: "Montserrat", sans-serif; overflow-x: hidden; scroll-behavior: auto !important; }
         html.lenis { height: auto; } 
         .lenis.lenis-smooth { scroll-behavior: auto; } 
         .lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; } 
         .lenis.lenis-stopped { overflow: hidden; } 
         .lenis.lenis-scrolling iframe { pointer-events: none; } 
+        
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; max-width: 1200px; margin: 0 auto; padding: 40px; }
-        @media (max-width: 768px) { .menu-grid { grid-template-columns: 1fr; padding: 20px; } }
+        
+        .dashboard-container { display: flex; gap: 20px; height: 400px; }
+        .dashboard-card { flex: 1; min-width: 100px; }
+
+        @media (max-width: 768px) { 
+            .menu-grid { grid-template-columns: 1fr; padding: 20px; } 
+            .desktop-nav { display: none !important; }
+            .mobile-menu-container { display: flex !important; }
+            
+            .dashboard-container { flex-direction: column; height: auto !important; }
+            .dashboard-card { width: 100% !important; height: 280px !important; flex: none !important; }
+        }
+        @media (min-width: 769px) {
+            .mobile-menu-container { display: none !important; }
+            .desktop-nav { display: flex !important; }
+        }
+
         ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: #f1f1f1; } ::-webkit-scrollbar-thumb { background: #bbb; border-radius: 10px; }
         .suggestion-item:hover { background-color: #f5f5f7; cursor: pointer; }
 
@@ -131,7 +149,6 @@ const Styles = {
 /**
  * ============================================================================
  * 4. PRIMITIVE UI COMPONENTS
- * Các thành phần giao diện cơ bản.
  * ============================================================================
  */
 
@@ -141,7 +158,7 @@ const ScrollFloat = ({ children, style, className, as = "div", delay = 0, ...pro
         <Component 
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, margin: "-50px" }}
+            viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 1, delay: delay, ease: "easeOut" }}
             style={style}
             className={className}
@@ -205,9 +222,41 @@ const InteractiveButton = ({ primary = true, children, onClick, style, className
     );
 };
 
-const MenuCard = ({ item, onClick }) => {
+const MenuCard = ({ item, onClick, activeMobileId, setActiveMobileId }) => {
+  const [isMobile, setIsMobile] = useState(false);
+  const [isDesktopHovered, setIsDesktopHovered] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.matchMedia("(max-width: 768px)").matches);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  const isMobileActive = activeMobileId === item.id;
+  const isHovered = isMobile ? isMobileActive : isDesktopHovered;
+
+  const handleClick = () => {
+    if (isMobile) {
+      if (isMobileActive) {
+        onClick(); 
+      } else {
+        setActiveMobileId(item.id); 
+      }
+    } else {
+      onClick(); 
+    }
+  };
+
   return (
-    <motion.div initial="rest" whileHover="hover" animate="rest" onClick={onClick} style={{ position: 'relative', height: '450px', borderRadius: '30px', overflow: 'hidden', cursor: 'pointer', backgroundColor: '#000', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
+    <motion.div 
+        initial="rest" 
+        animate={isHovered ? "hover" : "rest"}
+        onMouseEnter={() => !isMobile && setIsDesktopHovered(true)} 
+        onMouseLeave={() => !isMobile && setIsDesktopHovered(false)}
+        onClick={handleClick} 
+        style={{ position: 'relative', height: '450px', borderRadius: '30px', overflow: 'hidden', cursor: 'pointer', backgroundColor: '#000', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', willChange: 'transform' }}
+    >
       <motion.div variants={{ rest: { scale: 1 }, hover: { scale: 1.1 } }} transition={{ duration: 0.8, ease: "easeInOut" }} style={{ position: 'absolute', inset: 0, backgroundImage: `url(${item.cover})`, backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 0 }} />
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.6) 100%)', zIndex: 1 }} />
       <motion.div variants={{ rest: { backgroundColor: "rgba(255,255,255,0)", color: "#ffffff", scale: 1 }, hover: { backgroundColor: "rgba(255,255,255,0.2)", backdropFilter: "blur(16px)" } }} transition={{ duration: 0.3 }} style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 3, width: '48px', height: '48px', borderRadius: '50%', border: '1px solid #ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}> <ArrowRight size={24} /> </motion.div>
@@ -229,24 +278,6 @@ const MenuCard = ({ item, onClick }) => {
  * 5. TEXT EFFECTS & ANIMATIONS
  * ============================================================================
  */
-
-const PressureChar = ({ char, mouseX }) => {
-    const ref = useRef(null);
-    useEffect(() => { if (ref.current) { } }, []); 
-    const distance = useTransform(mouseX, (val) => { const bounds = ref.current?.getBoundingClientRect() ?? { x: 0, width: 0 }; return val - bounds.x - bounds.width / 2; });
-    const scaleY = useTransform(distance, [-200, 0, 200], [1, 0.8, 1]);
-    const scaleX = useTransform(distance, [-200, 0, 200], [1, 1.1, 1]);
-    return <motion.span ref={ref} style={{ display: 'inline-block', scaleY, scaleX, originY: "center", marginRight: char === ' ' ? '10px' : '0px' }}>{char}</motion.span>;
-};
-
-const TextPressure = ({ text }) => {
-    const mouseX = useMotionValue(0);
-    return (
-        <div onMouseMove={(e) => mouseX.set(e.clientX)} onMouseLeave={() => mouseX.set(Infinity)} style={{ display: 'flex', justifyContent: 'center', cursor: 'default', overflow: 'hidden', padding: '10px 0', fontSize: 'clamp(30px, 5vw, 60px)', fontWeight: '900', color: '#1d1d1f', textTransform: 'uppercase', lineHeight: 1 }}>
-            {text.split('').map((char, i) => (<PressureChar key={i} char={char} mouseX={mouseX} />))}
-        </div>
-    );
-};
 
 const ScrollRevealText = ({ text }) => {
   const container = useRef(null);
@@ -340,7 +371,6 @@ const ThemeSwitchFixed = ({ isNightMode, toggle }) => {
  * ============================================================================
  */
 
-// ĐÃ SỬA: Chuyển đổi Base64 thành Blob URL để tránh lỗi hiển thị màn hình trắng
 const DocViewer = ({ doc, onClose }) => {
     const [isNightMode, setIsNightMode] = useState(false);
     const [blobUrl, setBlobUrl] = useState(null);
@@ -348,10 +378,8 @@ const DocViewer = ({ doc, onClose }) => {
     useEffect(() => {
         if (!doc) return;
         
-        // Nếu là data URI (base64) thì chuyển sang Blob URL
         if (doc.fileUrl && doc.fileUrl.startsWith('data:')) {
             try {
-                // Tách header data:application/pdf;base64,...
                 const arr = doc.fileUrl.split(',');
                 const mime = arr[0].match(/:(.*?);/)[1];
                 const bstr = atob(arr[1]);
@@ -363,14 +391,10 @@ const DocViewer = ({ doc, onClose }) => {
                 const blob = new Blob([u8arr], { type: mime });
                 const url = URL.createObjectURL(blob);
                 setBlobUrl(url);
-                
-                // Cleanup khi component unmount
-                return () => {
-                    URL.revokeObjectURL(url);
-                };
+                return () => { URL.revokeObjectURL(url); };
             } catch (error) {
                 console.error("Error converting base64 to blob:", error);
-                setBlobUrl(doc.fileUrl); // Fallback
+                setBlobUrl(doc.fileUrl); 
             }
         } else {
             setBlobUrl(doc.fileUrl);
@@ -410,7 +434,6 @@ const DocViewer = ({ doc, onClose }) => {
                     </div>
                 </div>
                 <div style={{ flex: 1, backgroundColor: isNightMode ? '#121212' : '#f9fafb', position: 'relative', filter: contentFilter, transition: 'all 0.3s ease' }}>
-                    {/* Sử dụng iframe với blobUrl thay vì dataUrl trực tiếp */}
                     {blobUrl && blobUrl !== "#" ? (
                         <iframe src={blobUrl} width="100%" height="100%" style={{ border: 'none' }} title="Document Viewer" />
                     ) : (
@@ -598,10 +621,83 @@ const UploadModal = ({ isOpen, onClose, formData, setFormData, onFileSelect, onR
  * ============================================================================
  */
 
+// Mobile Menu Component (Updated: Matching FAQ Style & Behavior)
+const MobileMenu = ({ onNavigate, setIsModalOpen, setIsExamOpen }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    
+    return (
+        <div className="mobile-menu-container" style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 1000, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', width: 'auto' }}>
+            <motion.div 
+                // Xóa layout prop để tránh morphing shape
+                // layout 
+                initial={false}
+                animate={{ height: 'auto' }}
+                style={{ 
+                    backgroundColor: 'rgba(0, 0, 0, 0.4)', // Độ trong suốt giống PointsWidget
+                    backdropFilter: 'blur(20px)',
+                    WebkitBackdropFilter: 'blur(20px)',
+                    borderRadius: '18px', // Bo góc nhẹ 18px như yêu cầu
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    overflow: 'hidden', 
+                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
+                    // Đặt min-width để đảm bảo khung không bị quá nhỏ khi đóng
+                    minWidth: '200px'
+                }}
+            >
+                {/* Header / Trigger - Luôn hiển thị ở trên cùng */}
+                <div 
+                    onClick={() => setIsOpen(!isOpen)} 
+                    style={{ 
+                        padding: '12px 24px', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'space-between',
+                        cursor: 'pointer',
+                        userSelect: 'none'
+                    }}
+                >
+                    <span style={{ color: 'white', fontWeight: '700', fontSize: '16px', marginRight: '10px' }}>HocLieuSo</span>
+                    <motion.div 
+                        animate={{ rotate: isOpen ? 180 : 0 }}
+                        transition={{ duration: 0.3 }}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    >
+                        {/* Icon màu cam */}
+                       {isOpen ? <X color={Styles.colors.orange} size={24} /> : <Menu color={Styles.colors.orange} size={24} />}
+                    </motion.div>
+                </div>
+
+                {/* Content - Trượt xuống (Accordion) giống FAQ */}
+                <AnimatePresence>
+                    {isOpen && (
+                        <motion.div 
+                            initial={{ height: 0, opacity: 0 }} 
+                            animate={{ height: 'auto', opacity: 1 }} 
+                            exit={{ height: 0, opacity: 0 }} 
+                            transition={{ duration: 0.3, ease: "easeInOut" }}
+                            style={{ overflow: 'hidden' }}
+                        >
+                            <div style={{ padding: '0 24px 24px 24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                {/* Đường gạch ngang mờ ngăn cách */}
+                                <div style={{ height: '1px', backgroundColor: 'rgba(255,255,255,0.15)', marginBottom: '5px' }} />
+                                
+                                <div onClick={() => {onNavigate('home'); setIsOpen(false)}} style={{ color: 'rgba(255,255,255,0.9)', fontWeight: '600', fontSize: '15px', cursor: 'pointer' }}>Trang chủ</div>
+                                <div onClick={() => {onNavigate('all'); setIsOpen(false)}} style={{ color: 'rgba(255,255,255,0.9)', fontWeight: '600', fontSize: '15px', cursor: 'pointer' }}>Tài liệu</div>
+                                <div onClick={() => {setIsExamOpen(true); setIsOpen(false)}} style={{ color: 'rgba(255,255,255,0.9)', fontWeight: '600', fontSize: '15px', cursor: 'pointer' }}>Tạo đề thi</div>
+                                <div onClick={() => {setIsModalOpen(true); setIsOpen(false)}} style={{ color: 'rgba(255,255,255,0.9)', fontWeight: '600', fontSize: '15px', cursor: 'pointer' }}>Đóng góp</div>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </motion.div>
+        </div>
+    );
+}
+
 const Navbar = ({ view, setView, setIsModalOpen, onNavigate, showToast, setIsExamOpen }) => {
     const isHome = view === 'home';
     return (
-        <nav style={{ position: 'absolute', top: isHome ? '30px' : '20px', left: '50%', transform: 'translateX(-50%)', width: isHome ? 'calc(100% - 60px)' : '100%', maxWidth: '1200px', backgroundColor: isHome ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.8)', backdropFilter: 'blur(12px)', border: isHome ? '1px solid rgba(255,255,255,0.3)' : '1px solid rgba(0,0,0,0.1)', borderRadius: '100px', padding: '8px 20px', boxSizing: 'border-box', display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 100, color: isHome ? 'white' : '#1d1d1f' }}>
+        <nav className="desktop-nav" style={{ position: 'absolute', top: isHome ? '30px' : '20px', left: '50%', transform: 'translateX(-50%)', width: isHome ? 'calc(100% - 60px)' : '100%', maxWidth: '1200px', backgroundColor: isHome ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.8)', backdropFilter: 'blur(12px)', border: isHome ? '1px solid rgba(255,255,255,0.3)' : '1px solid rgba(0,0,0,0.1)', borderRadius: '100px', padding: '8px 20px', boxSizing: 'border-box', display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 100, color: isHome ? 'white' : '#1d1d1f' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800', fontSize: '18px', cursor: 'pointer', paddingLeft: '10px' }} onClick={() => onNavigate('home')}>HocLieuSo</div>
             <div style={{ display: 'flex', gap: '4px' }}>
                 <NavButton onClick={() => onNavigate('home')} isActive={view === 'home'} isDarkBg={isHome}>Trang chủ</NavButton>
@@ -627,8 +723,8 @@ const HeroSection = ({ scrollY, points }) => {
             <motion.header style={{ position: 'relative', zIndex: 10, textAlign: 'center', color: 'white', opacity: heroOpacity }}>
                 <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} style={{ marginBottom: '20px', display: 'inline-block', backgroundColor: 'rgba(255,255,255,0.2)', color: '#fff', padding: '8px 20px', borderRadius: '30px', fontWeight: '600', fontSize: '13px', backdropFilter: 'blur(5px)' }}>KHO TÀI LIỆU SINH VIÊN</motion.div>
                 <div style={{ overflow: 'visible' }}>
-                    <motion.h1 initial={{ x: -100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 1.2, ease: "easeOut" }} style={{ x: floatLeft, fontSize: 'clamp(40px, 7vw, 80px)', fontWeight: '800', color: '#ffffff', margin: 0, lineHeight: 1 }}>Less Paper</motion.h1>
-                    <motion.h1 initial={{ x: 100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 1.2, delay: 0.2, ease: "easeOut" }} style={{ x: floatRight, fontSize: 'clamp(50px, 9vw, 100px)', fontWeight: '800', color: '#ffffff', margin: 0, lineHeight: 1 }}>More Knowledge.</motion.h1>
+                    <motion.h1 initial={{ x: -100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 1.2, ease: "easeOut" }} style={{ x: floatLeft, fontSize: 'clamp(28px, 7vw, 80px)', fontWeight: '800', color: '#ffffff', margin: 0, lineHeight: 1 }}>Less Paper</motion.h1>
+                    <motion.h1 initial={{ x: 100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 1.2, delay: 0.2, ease: "easeOut" }} style={{ x: floatRight, fontSize: 'clamp(36px, 9vw, 100px)', fontWeight: '800', color: '#ffffff', margin: 0, lineHeight: 1 }}>More Knowledge.</motion.h1>
                 </div>
             </motion.header>
             <PointsWidget points={points} />
@@ -656,11 +752,11 @@ const ImpactDashboard = () => {
                 <ScrollFloat as="p" style={{ fontSize: '18px', color: '#666', maxWidth: '600px', margin: '0 auto' }}>Mỗi lượt xem tài liệu hay tạo đề thi không chỉ giúp học tập hiệu quả hơn mà còn góp phần bảo vệ môi trường.</ScrollFloat>
             </div>
 
-            <div style={{ display: 'flex', gap: '20px', height: '400px' }}>
+            <div className="dashboard-container">
                 {cards.map((card) => {
                     const isActive = hoveredCard === card.id;
                     return (
-                        <motion.div key={card.id} onHoverStart={() => setHoveredCard(card.id)} layout transition={{ type: "spring", stiffness: 120, damping: 20 }} style={{ flex: isActive ? 3 : 1, position: 'relative', borderRadius: '32px', overflow: 'hidden', cursor: 'pointer', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', minWidth: '100px' }}>
+                        <motion.div key={card.id} className="dashboard-card" onHoverStart={() => setHoveredCard(card.id)} layout transition={{ type: "spring", stiffness: 120, damping: 20 }} style={{ flex: isActive ? 3 : 1, position: 'relative', borderRadius: '32px', overflow: 'hidden', cursor: 'pointer', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', height: '100%' }}>
                             <motion.div animate={{ scale: isActive ? 1.05 : 1 }} transition={{ duration: 0.8 }} style={{ position: 'absolute', inset: 0, backgroundImage: `url(${card.image})`, backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 0 }} />
                             <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.4) 100%)', zIndex: 1 }} />
                             <div style={{ position: 'absolute', inset: 0, zIndex: 2, padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
@@ -703,7 +799,7 @@ const FAQSection = () => {
             <div style={{ width: '100%', maxWidth: '800px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     {FAQS.map((item, i) => (
-                        <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 1, delay: i * 0.1 }} style={{ borderRadius: '32px', overflow: 'hidden', cursor: 'pointer', backgroundColor: 'white', border: '1px solid #1d1d1f', color: '#1d1d1f' }}>
+                        <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }} transition={{ duration: 1, delay: i * 0.1 }} style={{ borderRadius: '32px', overflow: 'hidden', cursor: 'pointer', backgroundColor: 'white', border: '1px solid #1d1d1f', color: '#1d1d1f' }}>
                             <div onClick={() => setActiveIndex(activeIndex === i ? null : i)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px 32px' }}>
                                 <h3 style={{ fontSize: '1.1rem', fontWeight: 600, margin: 0, color: '#1d1d1f' }}>{item.q}</h3>
                                 <div style={{ width: '44px', height: '44px', borderRadius: '50%', backgroundColor: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(0,0,0,0.1)', flexShrink: 0 }}>
@@ -762,7 +858,7 @@ const FeedbackSection = ({ onSend }) => {
     const [value, setValue] = useState("");
     const handleSubmit = () => { if (!value.trim()) return; onSend(value); setValue(""); };
     const socialLinks = [
-        { icon: <Instagram size={20} />, url: "https://www.instagram.com/21sep.pty/" },
+        { icon: <Instagram size={20} />, url: "https://www.instagram.com/xxisep.gm/" },
         { icon: <Facebook size={20} />, url: "https://www.facebook.com/gmpty2109/" },
         { icon: <Github size={20} />, url: "https://github.com/gmaanx" },
         { icon: <FilePenLine size={20} />, url: "https://docs.google.com/forms/d/e/1FAIpQLSc1BbDc9aNBQtEvXNbc1fcriQEjcCCRPxptXL3F7rI0TympBA/viewform" } 
@@ -790,24 +886,34 @@ const FeedbackSection = ({ onSend }) => {
 
 const Footer = () => (
     <div style={{ textAlign: 'center', padding: '15px 0 30px 0', backgroundColor: '#fff', color: '#1d1d1f' }}>
-        <p style={{ margin: 0, fontSize: '15px', fontWeight: '500', opacity: 0.8 }}>Made by <span style={{ fontFamily: 'Dancing Script, cursive', fontSize: '20px', fontWeight: '700' }}>Gia Man</span></p>
+        <p style={{ margin: 0, fontSize: '15px', fontWeight: '500', opacity: 0.8 }}>Made by <span style={{ fontFamily: 'NVN-Motherland-Signature-1, cursive', fontSize: '20px', fontWeight: '700' }}>Gia Man</span></p>
     </div>
 );
 
-const DocumentGrid = ({ documents, onView }) => (
+const DocumentGrid = ({ documents, onView, activeMobileDocId, setActiveMobileDocId }) => (
     <div className="menu-grid">
-        {documents.length > 0 ? ( documents.map(item => (<MenuCard key={item.id} item={item} onClick={() => onView(item)} />)) ) : ( <div style={{ gridColumn: 'span 2', textAlign: 'center', padding: '60px', color: '#999' }}>Không tìm thấy tài liệu phù hợp.</div> )}
+        {documents.length > 0 ? ( 
+            documents.map(item => (
+                <MenuCard 
+                    key={item.id} 
+                    item={item} 
+                    onClick={() => onView(item)} 
+                    activeMobileId={activeMobileDocId}
+                    setActiveMobileId={setActiveMobileDocId}
+                />
+            )) 
+        ) : ( 
+            <div style={{ gridColumn: 'span 2', textAlign: 'center', padding: '60px', color: '#999' }}>Không tìm thấy tài liệu phù hợp.</div> 
+        )}
     </div>
 );
 
 /**
  * ============================================================================
  * 9. MAIN APP COMPONENT
- * Quản lý state toàn cục, routing và render chính.
  * ============================================================================
  */
 export default function App() {
-  // State Management
   const [view, setView] = useState('home');
   const [activeTab, setActiveTab] = useState('All');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -821,10 +927,10 @@ export default function App() {
   const [viewingDoc, setViewingDoc] = useState(null); 
   const [isLoading, setIsLoading] = useState(true);
   const [points, setPoints] = useState(100);
+  const [activeMobileDocId, setActiveMobileDocId] = useState(null);
   
   const { scrollY } = useScroll();
 
-  // Lenis Scroll Setup
   useEffect(() => {
     if (!window.Lenis) {
         const script = document.createElement('script');
@@ -841,17 +947,14 @@ export default function App() {
     }
   }, []);
 
-  // Data Initialization
   useEffect(() => { 
       const savedDocs = localStorage.getItem('hoclieuso_docs');
       if (savedDocs) { setDocuments(JSON.parse(savedDocs)); } else { setDocuments(INITIAL_DOCS); }
-      // Preload images
       Object.values(CONFIG.DASHBOARD_IMGS).forEach(src => { const img = new Image(); img.src = src; });
       const timer = setTimeout(() => setIsLoading(false), 2000); 
       return () => clearTimeout(timer);
   }, []);
 
-  // Search Algorithm Hook
   useEffect(() => {
       if (searchTerm.length > 0) {
           const scoredDocs = documents.map(doc => ({ ...doc, score: Utils.calcScore(doc, searchTerm) })).filter(doc => doc.score > 0).sort((a, b) => b.score - a.score).slice(0, 5);
@@ -859,7 +962,6 @@ export default function App() {
       } else { setSuggestions([]); }
   }, [searchTerm, documents]);
 
-  // Data Filtering Logic
   const getDisplayDocuments = () => {
       let docs = documents;
       if (activeTab !== 'All') docs = docs.filter(doc => doc.year === activeTab);
@@ -909,6 +1011,8 @@ export default function App() {
     <>
       <style>{Styles.global}</style>
       <Navbar view={view} setView={setView} setIsModalOpen={setIsModalOpen} onNavigate={handleNavigation} showToast={showToast} setIsExamOpen={setIsExamOpen} />
+      
+      <MobileMenu onNavigate={handleNavigation} setIsModalOpen={setIsModalOpen} setIsExamOpen={setIsExamOpen} />
 
       <AnimatePresence>
           {isLoading && <SpinningLeafLoader key="loader" onComplete={() => setIsLoading(false)} />}
@@ -931,7 +1035,12 @@ export default function App() {
                                 <InteractiveButton primary={false} isDarkBg={false} onClick={() => handleNavigation('all')} customBlackWhite={true}>Xem tất cả <ArrowRight size={16}/></InteractiveButton>
                             </ScrollFloat>
                         </div>
-                        <DocumentGrid documents={documents.slice(0, 4)} onView={(doc) => setViewingDoc(doc)} />
+                        <DocumentGrid 
+                            documents={documents.slice(0, 4)} 
+                            onView={(doc) => setViewingDoc(doc)} 
+                            activeMobileDocId={activeMobileDocId}
+                            setActiveMobileDocId={setActiveMobileDocId}
+                        />
                     </div>
                     <ImpactDashboard />
                     <FAQSection />
@@ -944,7 +1053,7 @@ export default function App() {
                 <motion.div key="all" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} style={{ paddingTop: '100px', minHeight: '100vh', color: '#1d1d1f', position: 'relative', zIndex: 10 }}>
                     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px' }}>
                         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-                            <TextPressure text="KHO TÀI LIỆU" />
+                            <h1 style={{ fontSize: 'clamp(30px, 5vw, 60px)', fontWeight: '900', color: '#1d1d1f', margin: '0 0 20px 0', textTransform: 'uppercase', letterSpacing: '-1px' }}>KHO TÀI LIỆU</h1>
                             <p style={{ fontSize: '16px', color: '#666', maxWidth: '600px', margin: '0 auto', lineHeight: 1.6 }}>Truy cập không giới hạn vào kho tàng tri thức.</p>
                         </div>
                         <SearchSection searchTerm={searchTerm} setSearchTerm={setSearchTerm} suggestions={suggestions} onSelectSuggestion={(doc) => setSearchTerm(doc.title)} />
@@ -953,7 +1062,12 @@ export default function App() {
                                 <InteractiveButton key={tab} primary={activeTab === tab} onClick={() => setActiveTab(tab)} style={{ padding: '10px 32px', fontSize: '15px' }} isDarkBg={false}>{tab === 'All' ? 'Tất cả' : `Khóa ${tab}`}</InteractiveButton>
                             ))}
                         </div>
-                        <DocumentGrid documents={getDisplayDocuments()} onView={(doc) => setViewingDoc(doc)} />
+                        <DocumentGrid 
+                            documents={getDisplayDocuments()} 
+                            onView={(doc) => setViewingDoc(doc)} 
+                            activeMobileDocId={activeMobileDocId}
+                            setActiveMobileDocId={setActiveMobileDocId}
+                        />
                     </div>
                 </motion.div>
             )}
