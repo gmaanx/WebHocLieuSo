@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 
 import MotherlandFont from './assets/fonts/NVN-Motherland-Signature-1.ttf'; 
+import styled from 'styled-components';
 /**
  * ============================================================================
  * 1. CONFIGURATION & MOCK DATA
@@ -95,10 +96,15 @@ const Styles = {
         @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap'); 
         @import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
         @font-face {
+
             font-family: 'NVN-Motherland-Signature-1';
+
             src: url('${MotherlandFont}') format('truetype'); 
+
             font-weight: normal;
+
             font-style: normal;
+
         }
         :root, body, #root { width: 100%; margin: 0; padding: 0; background-color: #ffffff; font-family: "Montserrat", sans-serif; overflow-x: hidden; scroll-behavior: auto !important; }
         html.lenis { height: auto; } 
@@ -128,16 +134,95 @@ const Styles = {
         ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: #f1f1f1; } ::-webkit-scrollbar-thumb { background: #bbb; border-radius: 10px; }
         .suggestion-item:hover { background-color: #f5f5f7; cursor: pointer; }
 
+        /* SQUARE LOADER CSS */
+        @keyframes square-animation {
+            0% { left: 0; top: 0; }
+            10.5% { left: 0; top: 0; }
+            12.5% { left: 32px; top: 0; }
+            23% { left: 32px; top: 0; }
+            25% { left: 64px; top: 0; }
+            35.5% { left: 64px; top: 0; }
+            37.5% { left: 64px; top: 32px; }
+            48% { left: 64px; top: 32px; }
+            50% { left: 32px; top: 32px; }
+            60.5% { left: 32px; top: 32px; }
+            62.5% { left: 32px; top: 64px; }
+            73% { left: 32px; top: 64px; }
+            75% { left: 0; top: 64px; }
+            85.5% { left: 0; top: 64px; }
+            87.5% { left: 0; top: 32px; }
+            98% { left: 0; top: 32px; }
+            100% { left: 0; top: 0; }
+        }
+
         .loader {
-          width: 80px; height: 70px; border: 5px solid #007E6E; padding: 0 8px; box-sizing: border-box;
-          background: linear-gradient(#fff 0 0) 0 0/8px 20px, linear-gradient(#fff 0 0) 100% 0/8px 20px, radial-gradient(farthest-side,#fff 90%,#0000) 0 5px/8px 8px content-box, #007E6E;
-          background-repeat: no-repeat; animation: l3 2s infinite linear; margin: 0 auto 20px auto;
+            position: relative;
+            width: 96px;
+            height: 96px;
+            transform: rotate(45deg);
+            margin: 0 auto 20px auto;
         }
-        @keyframes l3{
-          25% {background-position: 0 0, 100% 100%, 100% calc(100% - 5px)}
-          50% {background-position: 0 100%, 100% 100%, 0 calc(100% - 5px)}
-          75% {background-position: 0 100%, 100% 0, 100% 5px}
+
+        .loader-square {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 28px;
+            height: 28px;
+            margin: 2px;
+            border-radius: 0px;
+            background: white;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            animation: square-animation 10s ease-in-out infinite both;
         }
+
+        .loader-square:nth-of-type(0) { animation-delay: 0s; }
+        .loader-square:nth-of-type(1) { animation-delay: -1.4285714286s; }
+        .loader-square:nth-of-type(2) { animation-delay: -2.8571428571s; }
+        .loader-square:nth-of-type(3) { animation-delay: -4.2857142857s; }
+        .loader-square:nth-of-type(4) { animation-delay: -5.7142857143s; }
+        .loader-square:nth-of-type(5) { animation-delay: -7.1428571429s; }
+        .loader-square:nth-of-type(6) { animation-delay: -8.5714285714s; }
+        .loader-square:nth-of-type(7) { animation-delay: -10s; }
+
+        /* THEME SWITCH CSS */
+        .switch { position: relative; display: inline-block; width: 60px; height: 34px; }
+        .switch #input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #2196f3; transition: 0.4s; z-index: 0; overflow: hidden; }
+        .sun-moon { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: yellow; transition: 0.4s; }
+        #input:checked + .slider { background-color: black; }
+        #input:focus + .slider { box-shadow: 0 0 1px #2196f3; }
+        #input:checked + .slider .sun-moon { transform: translateX(26px); background-color: white; animation: rotate-center 0.6s ease-in-out both; }
+        .moon-dot { opacity: 0; transition: 0.4s; fill: gray; }
+        #input:checked + .slider .sun-moon .moon-dot { opacity: 1; }
+        .slider.round { border-radius: 34px; }
+        .slider.round .sun-moon { border-radius: 50%; }
+        #moon-dot-1 { left: 10px; top: 3px; position: absolute; width: 6px; height: 6px; z-index: 4; }
+        #moon-dot-2 { left: 2px; top: 10px; position: absolute; width: 10px; height: 10px; z-index: 4; }
+        #moon-dot-3 { left: 16px; top: 18px; position: absolute; width: 3px; height: 3px; z-index: 4; }
+        #light-ray-1 { left: -8px; top: -8px; position: absolute; width: 43px; height: 43px; z-index: -1; fill: white; opacity: 0.1; }
+        #light-ray-2 { left: -50%; top: -50%; position: absolute; width: 55px; height: 55px; z-index: -1; fill: white; opacity: 0.1; }
+        #light-ray-3 { left: -18px; top: -18px; position: absolute; width: 60px; height: 60px; z-index: -1; fill: white; opacity: 0.1; }
+        .cloud-light { position: absolute; fill: #eee; animation: cloud-move 6s infinite; }
+        .cloud-dark { position: absolute; fill: #ccc; animation: cloud-move 6s infinite; animation-delay: 1s; }
+        #cloud-1 { left: 30px; top: 15px; width: 40px; }
+        #cloud-2 { left: 44px; top: 10px; width: 20px; }
+        #cloud-3 { left: 18px; top: 24px; width: 30px; }
+        #cloud-4 { left: 36px; top: 18px; width: 40px; }
+        #cloud-5 { left: 48px; top: 14px; width: 20px; }
+        #cloud-6 { left: 22px; top: 26px; width: 30px; }
+        @keyframes cloud-move { 0% { transform: translateX(0px); } 40% { transform: translateX(4px); } 80% { transform: translateX(-4px); } 100% { transform: translateX(0px); } }
+        .stars { transform: translateY(-32px); opacity: 0; transition: 0.4s; }
+        .star { fill: white; position: absolute; transition: 0.4s; animation: star-twinkle 2s infinite; }
+        #input:checked + .slider .stars { transform: translateY(0); opacity: 1; }
+        #star-1 { width: 20px; top: 2px; left: 3px; animation-delay: 0.3s; }
+        #star-2 { width: 6px; top: 16px; left: 3px; }
+        #star-3 { width: 12px; top: 20px; left: 10px; animation-delay: 0.6s; }
+        #star-4 { width: 18px; top: 0px; left: 18px; animation-delay: 1.3s; }
+        @keyframes star-twinkle { 0% { transform: scale(1); } 40% { transform: scale(1.2); } 80% { transform: scale(0.8); } 100% { transform: scale(1); } }
+        @keyframes rotate-center { 0% { transform: translateX(0) rotate(0); } 100% { transform: translateX(26px) rotate(360deg); } }
     `,
     searchStyleFixed: { width: '100%', padding: '18px 140px 18px 50px', borderRadius: '50px', backgroundColor: '#fff', fontSize: '15px', outline: 'none', boxSizing: 'border-box', border: '1px solid #e0e0e0', color: '#1d1d1f' },
     suggestionBox: { position: 'absolute', top: '100%', left: '20px', right: '20px', backgroundColor: 'white', borderRadius: '20px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', zIndex: 100, overflow: 'hidden', marginTop: '10px', border: '1px solid #f0f0f0' },
@@ -300,7 +385,7 @@ const ScrollRevealText = ({ text }) => {
  * ============================================================================
  */
 
-const SpinningLeafLoader = ({ onComplete }) => {
+const IntroLoader = ({ onComplete }) => {
     const [isFinished, setIsFinished] = useState(false);
     useEffect(() => {
         const timer = setTimeout(() => { setIsFinished(true); setTimeout(onComplete, 800); }, 2000); 
@@ -308,9 +393,15 @@ const SpinningLeafLoader = ({ onComplete }) => {
     }, [onComplete]);
     return (
         <motion.div initial={{ opacity: 1 }} animate={isFinished ? { opacity: 0 } : { opacity: 1 }} transition={{ duration: 0.6 }} style={{ position: 'fixed', inset: 0, zIndex: 99999, backgroundColor: '#121212', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <motion.div animate={{ rotate: 360 }} transition={{ duration: 1.5, ease: "linear", repeat: Infinity }}>
-                <Leaf size={64} color={Styles.colors.loading} fill={Styles.colors.loading} />
-            </motion.div>
+            <div className="loader">
+                <div className="loader-square"></div>
+                <div className="loader-square"></div>
+                <div className="loader-square"></div>
+                <div className="loader-square"></div>
+                <div className="loader-square"></div>
+                <div className="loader-square"></div>
+                <div className="loader-square"></div>
+            </div>
         </motion.div>
     );
 };
@@ -355,12 +446,69 @@ const PomodoroHeaderWidget = () => {
 
 const ThemeSwitchFixed = ({ isNightMode, toggle }) => {
     return (
-        <div onClick={toggle} style={{ width: '56px', height: '32px', backgroundColor: isNightMode ? '#27272a' : '#f4f4f5', borderRadius: '99px', display: 'flex', alignItems: 'center', padding: '4px', cursor: 'pointer', border: `1px solid ${isNightMode ? '#3f3f46' : '#e4e4e7'}`, justifyContent: isNightMode ? 'flex-end' : 'flex-start' }}>
-            <motion.div layout transition={{ type: "spring", stiffness: 500, damping: 30 }} style={{ width: '24px', height: '24px', backgroundColor: '#ffffff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-                 <AnimatePresence mode='wait'>
-                    <motion.div key={isNightMode ? 'moon' : 'sun'} initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.5, opacity: 0 }} transition={{ duration: 0.2 }}>{isNightMode ? <Moon size={14} color="#1d1d1f" /> : <Sun size={14} color={Styles.colors.orange} fill={Styles.colors.orange} />}</motion.div>
-                 </AnimatePresence>
-            </motion.div>
+        <div style={{ transform: 'scale(0.8)' }}>
+            <label className="switch">
+                <input 
+                    id="input" 
+                    type="checkbox" 
+                    checked={isNightMode} 
+                    onChange={toggle} 
+                />
+                <div className="slider round">
+                    <div className="sun-moon">
+                        <svg id="moon-dot-1" className="moon-dot" viewBox="0 0 100 100">
+                            <circle cx={50} cy={50} r={50} />
+                        </svg>
+                        <svg id="moon-dot-2" className="moon-dot" viewBox="0 0 100 100">
+                            <circle cx={50} cy={50} r={50} />
+                        </svg>
+                        <svg id="moon-dot-3" className="moon-dot" viewBox="0 0 100 100">
+                            <circle cx={50} cy={50} r={50} />
+                        </svg>
+                        <svg id="light-ray-1" className="light-ray" viewBox="0 0 100 100">
+                            <circle cx={50} cy={50} r={50} />
+                        </svg>
+                        <svg id="light-ray-2" className="light-ray" viewBox="0 0 100 100">
+                            <circle cx={50} cy={50} r={50} />
+                        </svg>
+                        <svg id="light-ray-3" className="light-ray" viewBox="0 0 100 100">
+                            <circle cx={50} cy={50} r={50} />
+                        </svg>
+                        <svg id="cloud-1" className="cloud-dark" viewBox="0 0 100 100">
+                            <circle cx={50} cy={50} r={50} />
+                        </svg>
+                        <svg id="cloud-2" className="cloud-dark" viewBox="0 0 100 100">
+                            <circle cx={50} cy={50} r={50} />
+                        </svg>
+                        <svg id="cloud-3" className="cloud-dark" viewBox="0 0 100 100">
+                            <circle cx={50} cy={50} r={50} />
+                        </svg>
+                        <svg id="cloud-4" className="cloud-light" viewBox="0 0 100 100">
+                            <circle cx={50} cy={50} r={50} />
+                        </svg>
+                        <svg id="cloud-5" className="cloud-light" viewBox="0 0 100 100">
+                            <circle cx={50} cy={50} r={50} />
+                        </svg>
+                        <svg id="cloud-6" className="cloud-light" viewBox="0 0 100 100">
+                            <circle cx={50} cy={50} r={50} />
+                        </svg>
+                    </div>
+                    <div className="stars">
+                        <svg id="star-1" className="star" viewBox="0 0 20 20">
+                            <path d="M 0 10 C 10 10,10 10 ,0 10 C 10 10 , 10 10 , 10 20 C 10 10 , 10 10 , 20 10 C 10 10 , 10 10 , 10 0 C 10 10,10 10 ,0 10 Z" />
+                        </svg>
+                        <svg id="star-2" className="star" viewBox="0 0 20 20">
+                            <path d="M 0 10 C 10 10,10 10 ,0 10 C 10 10 , 10 10 , 10 20 C 10 10 , 10 10 , 20 10 C 10 10 , 10 10 , 10 0 C 10 10,10 10 ,0 10 Z" />
+                        </svg>
+                        <svg id="star-3" className="star" viewBox="0 0 20 20">
+                            <path d="M 0 10 C 10 10,10 10 ,0 10 C 10 10 , 10 10 , 10 20 C 10 10 , 10 10 , 20 10 C 10 10 , 10 10 , 10 0 C 10 10,10 10 ,0 10 Z" />
+                        </svg>
+                        <svg id="star-4" className="star" viewBox="0 0 20 20">
+                            <path d="M 0 10 C 10 10,10 10 ,0 10 C 10 10 , 10 10 , 10 20 C 10 10 , 10 10 , 20 10 C 10 10 , 10 10 , 10 0 C 10 10,10 10 ,0 10 Z" />
+                        </svg>
+                    </div>
+                </div>
+            </label>
         </div>
     )
 }
@@ -723,8 +871,8 @@ const HeroSection = ({ scrollY, points }) => {
             <motion.header style={{ position: 'relative', zIndex: 10, textAlign: 'center', color: 'white', opacity: heroOpacity }}>
                 <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} style={{ marginBottom: '20px', display: 'inline-block', backgroundColor: 'rgba(255,255,255,0.2)', color: '#fff', padding: '8px 20px', borderRadius: '30px', fontWeight: '600', fontSize: '13px', backdropFilter: 'blur(5px)' }}>KHO TÀI LIỆU SINH VIÊN</motion.div>
                 <div style={{ overflow: 'visible' }}>
-                    <motion.h1 initial={{ x: -100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 1.2, ease: "easeOut" }} style={{ x: floatLeft, fontSize: 'clamp(28px, 7vw, 80px)', fontWeight: '800', color: '#ffffff', margin: 0, lineHeight: 1 }}>Less Paper</motion.h1>
-                    <motion.h1 initial={{ x: 100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 1.2, delay: 0.2, ease: "easeOut" }} style={{ x: floatRight, fontSize: 'clamp(36px, 9vw, 100px)', fontWeight: '800', color: '#ffffff', margin: 0, lineHeight: 1 }}>More Knowledge.</motion.h1>
+                    <motion.h1 initial={{ x: -100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 1.2, ease: "easeOut" }} style={{ x: floatLeft, fontSize: 'clamp(40px, 7vw, 80px)', fontWeight: '800', color: '#ffffff', margin: 0, lineHeight: 1 }}>Less Paper</motion.h1>
+                    <motion.h1 initial={{ x: 100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 1.2, delay: 0.2, ease: "easeOut" }} style={{ x: floatRight, fontSize: 'clamp(50px, 9vw, 100px)', fontWeight: '800', color: '#ffffff', margin: 0, lineHeight: 1 }}>More Knowledge.</motion.h1>
                 </div>
             </motion.header>
             <PointsWidget points={points} />
@@ -756,7 +904,7 @@ const ImpactDashboard = () => {
                 {cards.map((card) => {
                     const isActive = hoveredCard === card.id;
                     return (
-                        <motion.div key={card.id} className="dashboard-card" onHoverStart={() => setHoveredCard(card.id)} layout transition={{ type: "spring", stiffness: 120, damping: 20 }} style={{ flex: isActive ? 3 : 1, position: 'relative', borderRadius: '32px', overflow: 'hidden', cursor: 'pointer', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', height: '100%' }}>
+                        <motion.div key={card.id} className="dashboard-card" onHoverStart={() => setHoveredCard(card.id)} layout transition={{ type: "spring", stiffness: 120, damping: 20 }} style={{ flex: isActive ? 3 : 1, position: 'relative', borderRadius: '32px', overflow: 'hidden', cursor: 'pointer', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', minWidth: '100px' }}>
                             <motion.div animate={{ scale: isActive ? 1.05 : 1 }} transition={{ duration: 0.8 }} style={{ position: 'absolute', inset: 0, backgroundImage: `url(${card.image})`, backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 0 }} />
                             <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.4) 100%)', zIndex: 1 }} />
                             <div style={{ position: 'absolute', inset: 0, zIndex: 2, padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
@@ -1015,7 +1163,7 @@ export default function App() {
       <MobileMenu onNavigate={handleNavigation} setIsModalOpen={setIsModalOpen} setIsExamOpen={setIsExamOpen} />
 
       <AnimatePresence>
-          {isLoading && <SpinningLeafLoader key="loader" onComplete={() => setIsLoading(false)} />}
+          {isLoading && <IntroLoader key="loader" onComplete={() => setIsLoading(false)} />}
           {toastMessage && <Toast key="toast" message={toastMessage} />}
           {viewingDoc && <DocViewer key="doc-viewer" doc={viewingDoc} onClose={() => setViewingDoc(null)} />}
       </AnimatePresence>
