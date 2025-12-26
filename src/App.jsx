@@ -1,19 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, useScroll, useTransform, AnimatePresence, useMotionValue } from 'framer-motion';
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { 
-    Search, X, ArrowRight, FileText, Instagram, Twitter, Facebook, Mail, Github, 
-    UploadCloud, Loader, Trash2, Heart, CheckCircle2, Play, Pause, RotateCcw, 
-    Moon, Sun, FilePenLine, TreeDeciduous, Droplets, Wind, Eye, Compass, 
-    ChevronRight, ChevronLeft, ChevronDown, Check, Leaf, AlertCircle, BookOpen, Gift, Download, Menu 
+    Search, X, ArrowRight, FileText, Instagram, Facebook, Github, 
+    UploadCloud, Loader, Trash2, CheckCircle2, FilePenLine, 
+    Droplets, Wind, ChevronLeft, ChevronDown, Check, AlertCircle, Menu 
 } from 'lucide-react';
-
 import MotherlandFont from './assets/fonts/NVN-Motherland-Signature-1.ttf'; 
-import styled from 'styled-components';
-/**
- * ============================================================================
- * 1. CONFIGURATION & MOCK DATA
- * ============================================================================
- */
 const CONFIG = {
   COVERS: ["./img/cover1.jpg", "./img/cover2.jpg", "./img/cover3.jpg", "./img/cover4.jpg"],
   FEEDBACK_BG: "./img/feedback-bg.jpg",
@@ -44,11 +36,6 @@ const MOCK_EXAM_QUESTIONS = [
     { id: 5, question: "Câu hỏi 5", options: ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"], correctAnswer: 0 }
 ];
 
-/**
- * ============================================================================
- * 2. UTILITIES & ALGORITHMS
- * ============================================================================
- */
 const Utils = {
   removeTones: (str) => str.normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D").toLowerCase(),
   
@@ -75,11 +62,6 @@ const Utils = {
   getRandomCover: () => CONFIG.COVERS[Math.floor(Math.random() * CONFIG.COVERS.length)]
 };
 
-/**
- * ============================================================================
- * 3. STYLES & GLOBAL CSS
- * ============================================================================
- */
 const Styles = {
     colors: { 
         primary: '#1d1d1f', 
@@ -95,16 +77,13 @@ const Styles = {
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap'); 
         @import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
-        @font-face {
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap');
 
+         @font-face {
             font-family: 'NVN-Motherland-Signature-1';
-
             src: url('${MotherlandFont}') format('truetype'); 
-
             font-weight: normal;
-
             font-style: normal;
-
         }
         :root, body, #root { width: 100%; margin: 0; padding: 0; background-color: #ffffff; font-family: "Montserrat", sans-serif; overflow-x: hidden; scroll-behavior: auto !important; }
         html.lenis { height: auto; } 
@@ -125,59 +104,33 @@ const Styles = {
             
             .dashboard-container { flex-direction: column; height: auto !important; }
             .dashboard-card { width: 100% !important; height: 280px !important; flex: none !important; }
+            .doc-viewer-header-right { gap: 8px !important; flex-shrink: 0; }
+            .doc-title-container { flex: 1; width: 0; min-width: 0; }
         }
         @media (min-width: 769px) {
             .mobile-menu-container { display: none !important; }
             .desktop-nav { display: flex !important; }
         }
 
+        .upload-modal-box {
+            background-color: #fff; padding: 30px; border-radius: 24px; width: 90%; max-width: 450px;
+            max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.1); transition: all 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .upload-modal-box { width: 85%; height: auto; max-height: 80vh; border-radius: 40px; padding: 24px; display: flex; flex-direction: column; }
+            .upload-modal-box > div { width: 100%; }
+        }
+
         ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: #f1f1f1; } ::-webkit-scrollbar-thumb { background: #bbb; border-radius: 10px; }
         .suggestion-item:hover { background-color: #f5f5f7; cursor: pointer; }
 
-        /* SQUARE LOADER CSS */
         @keyframes square-animation {
-            0% { left: 0; top: 0; }
-            10.5% { left: 0; top: 0; }
-            12.5% { left: 32px; top: 0; }
-            23% { left: 32px; top: 0; }
-            25% { left: 64px; top: 0; }
-            35.5% { left: 64px; top: 0; }
-            37.5% { left: 64px; top: 32px; }
-            48% { left: 64px; top: 32px; }
-            50% { left: 32px; top: 32px; }
-            60.5% { left: 32px; top: 32px; }
-            62.5% { left: 32px; top: 64px; }
-            73% { left: 32px; top: 64px; }
-            75% { left: 0; top: 64px; }
-            85.5% { left: 0; top: 64px; }
-            87.5% { left: 0; top: 32px; }
-            98% { left: 0; top: 32px; }
-            100% { left: 0; top: 0; }
+            0% { left: 0; top: 0; } 10.5% { left: 0; top: 0; } 12.5% { left: 32px; top: 0; } 23% { left: 32px; top: 0; } 25% { left: 64px; top: 0; } 35.5% { left: 64px; top: 0; } 37.5% { left: 64px; top: 32px; } 48% { left: 64px; top: 32px; } 50% { left: 32px; top: 32px; } 60.5% { left: 32px; top: 32px; } 62.5% { left: 32px; top: 64px; } 73% { left: 32px; top: 64px; } 75% { left: 0; top: 64px; } 85.5% { left: 0; top: 64px; } 87.5% { left: 0; top: 32px; } 98% { left: 0; top: 32px; } 100% { left: 0; top: 0; }
         }
 
-        .loader {
-            position: relative;
-            width: 96px;
-            height: 96px;
-            transform: rotate(45deg);
-            margin: 0 auto 20px auto;
-        }
-
-        .loader-square {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 28px;
-            height: 28px;
-            margin: 2px;
-            border-radius: 0px;
-            background: white;
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            animation: square-animation 10s ease-in-out infinite both;
-        }
-
+        .loader { position: relative; width: 96px; height: 96px; transform: rotate(45deg); margin: 0 auto 20px auto; }
+        .loader-square { position: absolute; top: 0; left: 0; width: 28px; height: 28px; margin: 2px; border-radius: 0px; background: white; background-size: cover; background-position: center; background-attachment: fixed; animation: square-animation 10s ease-in-out infinite both; }
         .loader-square:nth-of-type(0) { animation-delay: 0s; }
         .loader-square:nth-of-type(1) { animation-delay: -1.4285714286s; }
         .loader-square:nth-of-type(2) { animation-delay: -2.8571428571s; }
@@ -186,43 +139,19 @@ const Styles = {
         .loader-square:nth-of-type(5) { animation-delay: -7.1428571429s; }
         .loader-square:nth-of-type(6) { animation-delay: -8.5714285714s; }
         .loader-square:nth-of-type(7) { animation-delay: -10s; }
+        
+        .liquid-3-container { display: flex; align-items: center; justify-content: center; }
+        .liquid-3 { --time: 0.6s; appearance: none; position: relative; cursor: pointer; width: 50px; height: 25px; background: var(--primary); border-radius: 50px; box-shadow: 0 0 0 2px var(--secondary); transform: translateX(0); transition: transform var(--time) cubic-bezier(0.75, 0, 0.75, 50); filter: blur(1px) contrast(20); overflow: hidden; outline: none; -webkit-tap-highlight-color: transparent; }
+        .liquid-3::before { content: ""; position: absolute; width: 200%; height: 100%; transform: translate(-25%, -50%); left: 50%; top: 50%; background: radial-gradient(closest-side circle at 12.5% 50%, var(--secondary) 50%, transparent 0), radial-gradient(closest-side circle at 87.5% 50%, var(--secondary) 50%, transparent 0); transition: transform var(--time) cubic-bezier(0.75, 0, 0.75, 1.3); }
+        .liquid-3:checked::before { transform: translate(-75%, -50%); }
 
-        /* THEME SWITCH CSS */
-        .switch { position: relative; display: inline-block; width: 60px; height: 34px; }
-        .switch #input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #2196f3; transition: 0.4s; z-index: 0; overflow: hidden; }
-        .sun-moon { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: yellow; transition: 0.4s; }
-        #input:checked + .slider { background-color: black; }
-        #input:focus + .slider { box-shadow: 0 0 1px #2196f3; }
-        #input:checked + .slider .sun-moon { transform: translateX(26px); background-color: white; animation: rotate-center 0.6s ease-in-out both; }
-        .moon-dot { opacity: 0; transition: 0.4s; fill: gray; }
-        #input:checked + .slider .sun-moon .moon-dot { opacity: 1; }
-        .slider.round { border-radius: 34px; }
-        .slider.round .sun-moon { border-radius: 50%; }
-        #moon-dot-1 { left: 10px; top: 3px; position: absolute; width: 6px; height: 6px; z-index: 4; }
-        #moon-dot-2 { left: 2px; top: 10px; position: absolute; width: 10px; height: 10px; z-index: 4; }
-        #moon-dot-3 { left: 16px; top: 18px; position: absolute; width: 3px; height: 3px; z-index: 4; }
-        #light-ray-1 { left: -8px; top: -8px; position: absolute; width: 43px; height: 43px; z-index: -1; fill: white; opacity: 0.1; }
-        #light-ray-2 { left: -50%; top: -50%; position: absolute; width: 55px; height: 55px; z-index: -1; fill: white; opacity: 0.1; }
-        #light-ray-3 { left: -18px; top: -18px; position: absolute; width: 60px; height: 60px; z-index: -1; fill: white; opacity: 0.1; }
-        .cloud-light { position: absolute; fill: #eee; animation: cloud-move 6s infinite; }
-        .cloud-dark { position: absolute; fill: #ccc; animation: cloud-move 6s infinite; animation-delay: 1s; }
-        #cloud-1 { left: 30px; top: 15px; width: 40px; }
-        #cloud-2 { left: 44px; top: 10px; width: 20px; }
-        #cloud-3 { left: 18px; top: 24px; width: 30px; }
-        #cloud-4 { left: 36px; top: 18px; width: 40px; }
-        #cloud-5 { left: 48px; top: 14px; width: 20px; }
-        #cloud-6 { left: 22px; top: 26px; width: 30px; }
-        @keyframes cloud-move { 0% { transform: translateX(0px); } 40% { transform: translateX(4px); } 80% { transform: translateX(-4px); } 100% { transform: translateX(0px); } }
-        .stars { transform: translateY(-32px); opacity: 0; transition: 0.4s; }
-        .star { fill: white; position: absolute; transition: 0.4s; animation: star-twinkle 2s infinite; }
-        #input:checked + .slider .stars { transform: translateY(0); opacity: 1; }
-        #star-1 { width: 20px; top: 2px; left: 3px; animation-delay: 0.3s; }
-        #star-2 { width: 6px; top: 16px; left: 3px; }
-        #star-3 { width: 12px; top: 20px; left: 10px; animation-delay: 0.6s; }
-        #star-4 { width: 18px; top: 0px; left: 18px; animation-delay: 1.3s; }
-        @keyframes star-twinkle { 0% { transform: scale(1); } 40% { transform: scale(1.2); } 80% { transform: scale(0.8); } 100% { transform: scale(1); } }
-        @keyframes rotate-center { 0% { transform: translateX(0) rotate(0); } 100% { transform: translateX(26px) rotate(360deg); } }
+        .slider-style { --slider-width: 100%; --slider-height: 6px; --slider-bg: #e5e7eb; --slider-border-radius: 999px; --level-color: #f97316; --level-transition-duration: .1s; cursor: pointer; display: inline-flex; align-items: center; width: 100%; }
+        .slider-style .level { -webkit-appearance: none; -moz-appearance: none; appearance: none; width: var(--slider-width); height: var(--slider-height); background: var(--slider-bg); overflow: hidden; border-radius: var(--slider-border-radius); transition: height var(--level-transition-duration); cursor: pointer; outline: none; }
+        .slider-style .level::-webkit-slider-thumb { -webkit-appearance: none; width: 0; height: 0; -webkit-box-shadow: -1000px 0 0 1000px var(--level-color); box-shadow: -1000px 0 0 1000px var(--level-color); }
+        .slider-style:hover .level { height: 14px; }
+        .slider-wrapper .value-tooltip { opacity: 0; transition: opacity 0.2s; }
+        .slider-wrapper:hover .value-tooltip { opacity: 1; }
+        .slider-wrapper:active .value-tooltip { opacity: 1; }
     `,
     searchStyleFixed: { width: '100%', padding: '18px 140px 18px 50px', borderRadius: '50px', backgroundColor: '#fff', fontSize: '15px', outline: 'none', boxSizing: 'border-box', border: '1px solid #e0e0e0', color: '#1d1d1f' },
     suggestionBox: { position: 'absolute', top: '100%', left: '20px', right: '20px', backgroundColor: 'white', borderRadius: '20px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', zIndex: 100, overflow: 'hidden', marginTop: '10px', border: '1px solid #f0f0f0' },
@@ -230,12 +159,6 @@ const Styles = {
     input: { width: '100%', padding: '12px', borderRadius: '10px', backgroundColor: '#f5f5f7', border: 'none', fontSize: '14px', outline: 'none', boxSizing: 'border-box', color: '#1d1d1f', fontWeight: '500' },
     glassTag: { fontSize: '11px', fontWeight: '700', backgroundColor: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: '10px', color: '#fff', backdropFilter: 'blur(5px)' }
 };
-
-/**
- * ============================================================================
- * 4. PRIMITIVE UI COMPONENTS
- * ============================================================================
- */
 
 const ScrollFloat = ({ children, style, className, as = "div", delay = 0, ...props }) => {
     const Component = motion[as] || motion.div;
@@ -276,36 +199,109 @@ const NavButton = ({ children, onClick, isActive, isDarkBg }) => {
   );
 };
 
-const InteractiveButton = ({ primary = true, children, onClick, style, className, disabled, icon, isDarkBg = false, customBlackWhite = false, isNav = false, isUpload = false }) => {
-    let bgInitial, textInitial, borderInitial, bgHover, textHover;
+const InteractiveButton = ({ 
+    children, 
+    onClick, 
+    style, 
+    className, 
+    disabled, 
+    icon, 
+    primary = true, 
+    isDarkBg = false, 
+    customBlackWhite = false, 
+    isNav = false, 
+    isUpload = false 
+}) => {
+    let bgInitial, textInitial, borderInitial, bgHover, textHover, borderHover;
+
     if (isUpload) {
-        if (isDarkBg) { bgInitial = "transparent"; borderInitial = "#ffffff"; textInitial = Styles.colors.orange; bgHover = Styles.colors.orange; textHover = "#ffffff"; }
-        else { bgInitial = "transparent"; borderInitial = "#1d1d1f"; textInitial = Styles.colors.orange; bgHover = Styles.colors.orange; textHover = "#ffffff"; }
+        bgInitial = "transparent";
+        textInitial = Styles.colors.orange;
+        borderInitial = isDarkBg ? "#ffffff" : "#1d1d1f";
+        bgHover = Styles.colors.orange;
+        textHover = "#ffffff";
     } else if (isNav && isDarkBg) { 
-        bgInitial = "transparent"; textInitial = "#ffffff"; borderInitial = "#ffffff"; bgHover = "#ffffff"; textHover = "#1d1d1f"; 
+        bgInitial = "transparent"; 
+        textInitial = "#ffffff"; 
+        borderInitial = "#ffffff"; 
+        bgHover = "#ffffff"; 
+        textHover = "#1d1d1f"; 
     } else if (customBlackWhite) { 
-        bgInitial = "#1d1d1f"; textInitial = "#ffffff"; borderInitial = "#1d1d1f"; bgHover = "#ffffff"; textHover = "#1d1d1f"; 
+        bgInitial = "#1d1d1f"; 
+        textInitial = "#ffffff"; 
+        borderInitial = "#1d1d1f"; 
+        bgHover = "#ffffff"; 
+        textHover = "#1d1d1f"; 
+        borderHover = "#1d1d1f"; // Explicitly set black border on hover
     } else { 
         bgInitial = primary ? (isDarkBg ? "#ffffff" : "#1d1d1f") : "transparent"; 
         textInitial = primary ? (isDarkBg ? "#1d1d1f" : "#ffffff") : (isDarkBg ? "#ffffff" : "#1d1d1f"); 
         borderInitial = primary ? "transparent" : (isDarkBg ? "#ffffff" : "#1d1d1f"); 
+        
         bgHover = primary ? (isDarkBg ? "#e0e0e0" : "#333") : (isDarkBg ? "#ffffff" : "#1d1d1f"); 
         textHover = primary ? (isDarkBg ? "#1d1d1f" : "#ffffff") : (isDarkBg ? "#1d1d1f" : "#ffffff"); 
     }
+
     return (
         <motion.button 
-            onClick={onClick} disabled={disabled} initial={false} 
-            animate={{ backgroundColor: bgInitial, color: textInitial, border: `1px solid ${borderInitial}`, opacity: disabled ? 0.7 : 1 }} 
-            whileHover={!disabled ? { backgroundColor: bgHover, color: textHover, borderColor: (primary ? "transparent" : borderInitial), scale: 1.05 } : {}} 
+            type="button"
+            onClick={onClick} 
+            disabled={disabled} 
+            initial={false} 
+            animate={{ 
+                backgroundColor: bgInitial, 
+                color: textInitial, 
+                border: `1px solid ${borderInitial}`, 
+                opacity: disabled ? 0.7 : 1 
+            }} 
+            whileHover={!disabled ? { 
+                backgroundColor: bgHover, 
+                color: textHover, 
+                borderColor: borderHover || (primary ? "transparent" : borderInitial), 
+                scale: 1.05 
+            } : {}} 
             whileTap={!disabled ? { scale: 0.95 } : {}} 
             transition={{ duration: 0.2 }} 
-            style={{ padding: '12px 28px', borderRadius: '50px', fontWeight: '700', fontSize: '14px', cursor: disabled ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', ...style }} 
+            style={{ 
+                padding: '12px 28px', 
+                borderRadius: '50px', 
+                fontWeight: '700', 
+                fontSize: '14px', 
+                cursor: disabled ? 'not-allowed' : 'pointer', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                gap: '8px', 
+                ...style 
+            }} 
             className={className}
         >
             {children} {icon && icon}
         </motion.button>
     );
 };
+
+const downloadButtonCss = `
+  .download-btn { width: 40px; height: 40px; border: none; border-radius: 50%; background-color: rgb(27, 27, 27); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; transition-duration: .3s; box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.11); padding: 0; text-decoration: none; overflow: hidden; }
+  .download-btn .svgIcon { fill: white; width: 16px; height: 16px; transition: transform 0.3s ease; }
+  .download-btn:hover { background-color: black; transform: scale(1.05); }
+  .download-btn:active { transform: scale(0.95); }
+  .download-btn:hover .svgIcon { fill: white; animation: slide-in-top 0.6s cubic-bezier(0.250, 0.460, 0.450, 0.940) both; }
+  @keyframes slide-in-top { 0% { transform: translateY(-10px); opacity: 0; } 100% { transform: translateY(0px); opacity: 1; } }
+`;
+
+const DownloadButton = ({ href, downloadName }) => {
+    return (
+        <>
+            <style>{downloadButtonCss}</style>
+            <a href={href} download={downloadName} className="download-btn" title="Tải xuống">
+                <svg className="svgIcon" viewBox="0 0 384 512" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M169.4 470.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 370.8 224 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 306.7L54.6 265.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z" />
+                </svg>
+            </a>
+        </>
+    )
+}
 
 const MenuCard = ({ item, onClick, activeMobileId, setActiveMobileId }) => {
   const [isMobile, setIsMobile] = useState(false);
@@ -323,14 +319,8 @@ const MenuCard = ({ item, onClick, activeMobileId, setActiveMobileId }) => {
 
   const handleClick = () => {
     if (isMobile) {
-      if (isMobileActive) {
-        onClick(); 
-      } else {
-        setActiveMobileId(item.id); 
-      }
-    } else {
-      onClick(); 
-    }
+      if (isMobileActive) { onClick(); } else { setActiveMobileId(item.id); }
+    } else { onClick(); }
   };
 
   return (
@@ -344,7 +334,18 @@ const MenuCard = ({ item, onClick, activeMobileId, setActiveMobileId }) => {
     >
       <motion.div variants={{ rest: { scale: 1 }, hover: { scale: 1.1 } }} transition={{ duration: 0.8, ease: "easeInOut" }} style={{ position: 'absolute', inset: 0, backgroundImage: `url(${item.cover})`, backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 0 }} />
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.6) 100%)', zIndex: 1 }} />
-      <motion.div variants={{ rest: { backgroundColor: "rgba(255,255,255,0)", color: "#ffffff", scale: 1 }, hover: { backgroundColor: "rgba(255,255,255,0.2)", backdropFilter: "blur(16px)" } }} transition={{ duration: 0.3 }} style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 3, width: '48px', height: '48px', borderRadius: '50%', border: '1px solid #ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}> <ArrowRight size={24} /> </motion.div>
+      
+      <motion.div 
+          variants={{ 
+              rest: { backgroundColor: "rgba(255,255,255,0)", color: "#ffffff", scale: 1, borderColor: "#ffffff" }, 
+              hover: { backgroundColor: "#ffffff", color: "#000000", scale: 1.1, borderColor: "#ffffff" } 
+          }} 
+          transition={{ duration: 0.3 }} 
+          style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 3, width: '48px', height: '48px', borderRadius: '50%', border: '1px solid #ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+      > 
+          <ArrowRight size={24} /> 
+      </motion.div>
+
       <div style={{ position: 'absolute', bottom: '20px', left: '20px', right: '20px', zIndex: 3 }}>
           <motion.div variants={{ rest: { backgroundColor: "rgba(255,255,255,0)", backdropFilter: "blur(0px)" }, hover: { backgroundColor: "rgba(255,255,255,0.2)", backdropFilter: "blur(16px)" } }} transition={{ duration: 0.5 }} style={{ borderRadius: '24px', padding: '24px', border: '1px solid rgba(255,255,255,0)', overflow: 'hidden' }}>
               <motion.h3 layout style={{ color: 'white', fontSize: '32px', margin: 0, fontWeight: '800', lineHeight: 1, textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>{item.title}</motion.h3>
@@ -357,12 +358,6 @@ const MenuCard = ({ item, onClick, activeMobileId, setActiveMobileId }) => {
     </motion.div>
   );
 };
-
-/**
- * ============================================================================
- * 5. TEXT EFFECTS & ANIMATIONS
- * ============================================================================
- */
 
 const ScrollRevealText = ({ text }) => {
   const container = useRef(null);
@@ -379,12 +374,6 @@ const ScrollRevealText = ({ text }) => {
   );
 };
 
-/**
- * ============================================================================
- * 6. WIDGETS & TOOLS
- * ============================================================================
- */
-
 const IntroLoader = ({ onComplete }) => {
     const [isFinished, setIsFinished] = useState(false);
     useEffect(() => {
@@ -394,17 +383,50 @@ const IntroLoader = ({ onComplete }) => {
     return (
         <motion.div initial={{ opacity: 1 }} animate={isFinished ? { opacity: 0 } : { opacity: 1 }} transition={{ duration: 0.6 }} style={{ position: 'fixed', inset: 0, zIndex: 99999, backgroundColor: '#121212', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <div className="loader">
-                <div className="loader-square"></div>
-                <div className="loader-square"></div>
-                <div className="loader-square"></div>
-                <div className="loader-square"></div>
-                <div className="loader-square"></div>
-                <div className="loader-square"></div>
-                <div className="loader-square"></div>
+                {[...Array(7)].map((_, i) => <div key={i} className="loader-square" />)}
             </div>
         </motion.div>
     );
 };
+
+const banterLoaderCss = `
+.banter-loader { position: absolute; left: 50%; top: 50%; width: 72px; height: 72px; margin-left: -36px; margin-top: -36px; }
+.banter-loader__box { float: left; position: relative; width: 20px; height: 20px; margin-right: 6px; }
+.banter-loader__box:before { content: ""; position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: ${Styles.colors.loading}; border-radius: 4px; }
+.banter-loader__box:nth-child(3n) { margin-right: 0; margin-bottom: 6px; }
+.banter-loader__box:nth-child(1):before, .banter-loader__box:nth-child(4):before { margin-left: 26px; }
+.banter-loader__box:nth-child(3):before { margin-top: 52px; }
+.banter-loader__box:last-child { margin-bottom: 0; }
+@keyframes moveBox-1 { 9.09% { transform: translate(-26px, 0); } 18.18% { transform: translate(0px, 0); } 27.27% { transform: translate(0px, 0); } 36.36% { transform: translate(26px, 0); } 45.45% { transform: translate(26px, 26px); } 54.54% { transform: translate(26px, 26px); } 63.63% { transform: translate(26px, 26px); } 72.72% { transform: translate(26px, 0px); } 81.81% { transform: translate(0px, 0px); } 90.9% { transform: translate(-26px, 0px); } 100% { transform: translate(0px, 0px); } }
+.banter-loader__box:nth-child(1) { animation: moveBox-1 4s infinite; }
+@keyframes moveBox-2 { 9.09% { transform: translate(0, 0); } 18.18% { transform: translate(26px, 0); } 27.27% { transform: translate(0px, 0); } 36.36% { transform: translate(26px, 0); } 45.45% { transform: translate(26px, 26px); } 54.54% { transform: translate(26px, 26px); } 63.63% { transform: translate(26px, 26px); } 72.72% { transform: translate(26px, 26px); } 81.81% { transform: translate(0px, 26px); } 90.9% { transform: translate(0px, 26px); } 100% { transform: translate(0px, 0px); } }
+.banter-loader__box:nth-child(2) { animation: moveBox-2 4s infinite; }
+@keyframes moveBox-3 { 9.09% { transform: translate(-26px, 0); } 18.18% { transform: translate(-26px, 0); } 27.27% { transform: translate(0px, 0); } 36.36% { transform: translate(-26px, 0); } 45.45% { transform: translate(-26px, 0); } 54.54% { transform: translate(-26px, 0); } 63.63% { transform: translate(-26px, 0); } 72.72% { transform: translate(-26px, 0); } 81.81% { transform: translate(-26px, -26px); } 90.9% { transform: translate(0px, -26px); } 100% { transform: translate(0px, 0px); } }
+.banter-loader__box:nth-child(3) { animation: moveBox-3 4s infinite; }
+@keyframes moveBox-4 { 9.09% { transform: translate(-26px, 0); } 18.18% { transform: translate(-26px, 0); } 27.27% { transform: translate(-26px, -26px); } 36.36% { transform: translate(0px, -26px); } 45.45% { transform: translate(0px, 0px); } 54.54% { transform: translate(0px, -26px); } 63.63% { transform: translate(0px, -26px); } 72.72% { transform: translate(0px, -26px); } 81.81% { transform: translate(-26px, -26px); } 90.9% { transform: translate(-26px, 0px); } 100% { transform: translate(0px, 0px); } }
+.banter-loader__box:nth-child(4) { animation: moveBox-4 4s infinite; }
+@keyframes moveBox-5 { 9.09% { transform: translate(0, 0); } 18.18% { transform: translate(0, 0); } 27.27% { transform: translate(0, 0); } 36.36% { transform: translate(26px, 0); } 45.45% { transform: translate(26px, 0); } 54.54% { transform: translate(26px, 0); } 63.63% { transform: translate(26px, 0); } 72.72% { transform: translate(26px, 0); } 81.81% { transform: translate(26px, -26px); } 90.9% { transform: translate(0px, -26px); } 100% { transform: translate(0px, 0px); } }
+.banter-loader__box:nth-child(5) { animation: moveBox-5 4s infinite; }
+@keyframes moveBox-6 { 9.09% { transform: translate(0, 0); } 18.18% { transform: translate(-26px, 0); } 27.27% { transform: translate(-26px, 0); } 36.36% { transform: translate(0px, 0); } 45.45% { transform: translate(0px, 0); } 54.54% { transform: translate(0px, 0); } 63.63% { transform: translate(0px, 0); } 72.72% { transform: translate(0px, 26px); } 81.81% { transform: translate(-26px, 26px); } 90.9% { transform: translate(-26px, 0px); } 100% { transform: translate(0px, 0px); } }
+.banter-loader__box:nth-child(6) { animation: moveBox-6 4s infinite; }
+@keyframes moveBox-7 { 9.09% { transform: translate(26px, 0); } 18.18% { transform: translate(26px, 0); } 27.27% { transform: translate(26px, 0); } 36.36% { transform: translate(0px, 0); } 45.45% { transform: translate(0px, -26px); } 54.54% { transform: translate(26px, -26px); } 63.63% { transform: translate(0px, -26px); } 72.72% { transform: translate(0px, -26px); } 81.81% { transform: translate(0px, 0px); } 90.9% { transform: translate(26px, 0px); } 100% { transform: translate(0px, 0px); } }
+.banter-loader__box:nth-child(7) { animation: moveBox-7 4s infinite; }
+@keyframes moveBox-8 { 9.09% { transform: translate(0, 0); } 18.18% { transform: translate(-26px, 0); } 27.27% { transform: translate(-26px, -26px); } 36.36% { transform: translate(0px, -26px); } 45.45% { transform: translate(0px, -26px); } 54.54% { transform: translate(0px, -26px); } 63.63% { transform: translate(0px, -26px); } 72.72% { transform: translate(0px, -26px); } 81.81% { transform: translate(26px, -26px); } 90.9% { transform: translate(26px, 0px); } 100% { transform: translate(0px, 0px); } }
+.banter-loader__box:nth-child(8) { animation: moveBox-8 4s infinite; }
+@keyframes moveBox-9 { 9.09% { transform: translate(-26px, 0); } 18.18% { transform: translate(-26px, 0); } 27.27% { transform: translate(0px, 0); } 36.36% { transform: translate(-26px, 0); } 45.45% { transform: translate(0px, 0); } 54.54% { transform: translate(0px, 0); } 63.63% { transform: translate(-26px, 0); } 72.72% { transform: translate(-26px, 0); } 81.81% { transform: translate(-52px, 0); } 90.9% { transform: translate(-26px, 0); } 100% { transform: translate(0px, 0); } }
+.banter-loader__box:nth-child(9) { animation: moveBox-9 4s infinite; }
+`;
+
+const BanterLoader = () => (
+    <>
+        <style>{banterLoaderCss}</style>
+        <div style={{ position: 'relative', height: '100px', width: '100%' }}>
+            <div className="banter-loader">
+                {[...Array(9)].map((_, i) => <div key={i} className="banter-loader__box" />)}
+            </div>
+        </div>
+    </>
+);
 
 const PointsWidget = ({ points }) => {
   return (
@@ -433,11 +455,29 @@ const PomodoroHeaderWidget = () => {
     const formatTime = (seconds) => { const mins = Math.floor(seconds / 60); const secs = seconds % 60; return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`; };
     const themeColor = mode === 'work' ? Styles.colors.orange : Styles.colors.green;
     return (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '4px 10px', backgroundColor: '#f5f5f7', borderRadius: '30px', border: '1px solid #e0e0e0', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
+        <div className="pomodoro-widget" style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '4px 10px', backgroundColor: '#f5f5f7', borderRadius: '30px', border: '1px solid #e0e0e0', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
             <div style={{ fontSize: '14px', fontWeight: '700', color: themeColor, minWidth: '45px', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{formatTime(timeLeft)}</div>
             <div style={{ display: 'flex', gap: '6px' }}>
-                <button onClick={toggleTimer} style={{ backgroundColor: themeColor, border: 'none', borderRadius: '12px', padding: '4px 12px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'white', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{isActive ? "PAUSE" : "START"}</button>
-                <button onClick={resetTimer} style={{ backgroundColor: '#fff', border: '1px solid #ddd', borderRadius: '12px', padding: '4px 10px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#666', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase' }}>RESET</button>
+                <motion.button
+                    whileHover={{ scale: 1.05, backgroundColor: '#ffffff', color: themeColor }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={toggleTimer}
+                    style={{
+                        backgroundColor: themeColor, border: `1px solid ${themeColor}`, borderRadius: '12px', padding: '4px 12px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'white', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px'
+                    }}
+                >
+                    {isActive ? "PAUSE" : "START"}
+                </motion.button>
+                <motion.button
+                    whileHover={{ scale: 1.05, backgroundColor: '#666666', color: '#ffffff', borderColor: '#666666' }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={resetTimer}
+                    style={{
+                        backgroundColor: '#fff', border: '1px solid #ddd', borderRadius: '12px', padding: '4px 10px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#666', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase'
+                    }}
+                >
+                    RESET
+                </motion.button>
             </div>
             <span style={{ fontSize: '10px', fontWeight: '600', color: '#999', textTransform: 'uppercase', letterSpacing: '0.5px', marginLeft: '4px' }}>{mode === 'work' ? 'FOCUS' : 'BREAK'}</span>
         </div>
@@ -445,79 +485,17 @@ const PomodoroHeaderWidget = () => {
 };
 
 const ThemeSwitchFixed = ({ isNightMode, toggle }) => {
+    const primaryColor = isNightMode ? '#ffffff' : '#000000';
+    const secondaryColor = isNightMode ? '#000000' : '#ffffff';
     return (
-        <div style={{ transform: 'scale(0.8)' }}>
-            <label className="switch">
-                <input 
-                    id="input" 
-                    type="checkbox" 
-                    checked={isNightMode} 
-                    onChange={toggle} 
-                />
-                <div className="slider round">
-                    <div className="sun-moon">
-                        <svg id="moon-dot-1" className="moon-dot" viewBox="0 0 100 100">
-                            <circle cx={50} cy={50} r={50} />
-                        </svg>
-                        <svg id="moon-dot-2" className="moon-dot" viewBox="0 0 100 100">
-                            <circle cx={50} cy={50} r={50} />
-                        </svg>
-                        <svg id="moon-dot-3" className="moon-dot" viewBox="0 0 100 100">
-                            <circle cx={50} cy={50} r={50} />
-                        </svg>
-                        <svg id="light-ray-1" className="light-ray" viewBox="0 0 100 100">
-                            <circle cx={50} cy={50} r={50} />
-                        </svg>
-                        <svg id="light-ray-2" className="light-ray" viewBox="0 0 100 100">
-                            <circle cx={50} cy={50} r={50} />
-                        </svg>
-                        <svg id="light-ray-3" className="light-ray" viewBox="0 0 100 100">
-                            <circle cx={50} cy={50} r={50} />
-                        </svg>
-                        <svg id="cloud-1" className="cloud-dark" viewBox="0 0 100 100">
-                            <circle cx={50} cy={50} r={50} />
-                        </svg>
-                        <svg id="cloud-2" className="cloud-dark" viewBox="0 0 100 100">
-                            <circle cx={50} cy={50} r={50} />
-                        </svg>
-                        <svg id="cloud-3" className="cloud-dark" viewBox="0 0 100 100">
-                            <circle cx={50} cy={50} r={50} />
-                        </svg>
-                        <svg id="cloud-4" className="cloud-light" viewBox="0 0 100 100">
-                            <circle cx={50} cy={50} r={50} />
-                        </svg>
-                        <svg id="cloud-5" className="cloud-light" viewBox="0 0 100 100">
-                            <circle cx={50} cy={50} r={50} />
-                        </svg>
-                        <svg id="cloud-6" className="cloud-light" viewBox="0 0 100 100">
-                            <circle cx={50} cy={50} r={50} />
-                        </svg>
-                    </div>
-                    <div className="stars">
-                        <svg id="star-1" className="star" viewBox="0 0 20 20">
-                            <path d="M 0 10 C 10 10,10 10 ,0 10 C 10 10 , 10 10 , 10 20 C 10 10 , 10 10 , 20 10 C 10 10 , 10 10 , 10 0 C 10 10,10 10 ,0 10 Z" />
-                        </svg>
-                        <svg id="star-2" className="star" viewBox="0 0 20 20">
-                            <path d="M 0 10 C 10 10,10 10 ,0 10 C 10 10 , 10 10 , 10 20 C 10 10 , 10 10 , 20 10 C 10 10 , 10 10 , 10 0 C 10 10,10 10 ,0 10 Z" />
-                        </svg>
-                        <svg id="star-3" className="star" viewBox="0 0 20 20">
-                            <path d="M 0 10 C 10 10,10 10 ,0 10 C 10 10 , 10 10 , 10 20 C 10 10 , 10 10 , 20 10 C 10 10 , 10 10 , 10 0 C 10 10,10 10 ,0 10 Z" />
-                        </svg>
-                        <svg id="star-4" className="star" viewBox="0 0 20 20">
-                            <path d="M 0 10 C 10 10,10 10 ,0 10 C 10 10 , 10 10 , 10 20 C 10 10 , 10 10 , 20 10 C 10 10 , 10 10 , 10 0 C 10 10,10 10 ,0 10 Z" />
-                        </svg>
-                    </div>
-                </div>
-            </label>
+        <div className="liquid-3-container">
+            <input 
+                type="checkbox" role="switch" className="liquid-3" checked={isNightMode} onChange={toggle} 
+                style={{ '--primary': primaryColor, '--secondary': secondaryColor }}
+            />
         </div>
     )
 }
-
-/**
- * ============================================================================
- * 7. MODALS & OVERLAYS
- * ============================================================================
- */
 
 const DocViewer = ({ doc, onClose }) => {
     const [isNightMode, setIsNightMode] = useState(false);
@@ -525,7 +503,6 @@ const DocViewer = ({ doc, onClose }) => {
 
     useEffect(() => {
         if (!doc) return;
-        
         if (doc.fileUrl && doc.fileUrl.startsWith('data:')) {
             try {
                 const arr = doc.fileUrl.split(',');
@@ -533,20 +510,13 @@ const DocViewer = ({ doc, onClose }) => {
                 const bstr = atob(arr[1]);
                 let n = bstr.length;
                 const u8arr = new Uint8Array(n);
-                while (n--) {
-                    u8arr[n] = bstr.charCodeAt(n);
-                }
+                while (n--) { u8arr[n] = bstr.charCodeAt(n); }
                 const blob = new Blob([u8arr], { type: mime });
                 const url = URL.createObjectURL(blob);
                 setBlobUrl(url);
                 return () => { URL.revokeObjectURL(url); };
-            } catch (error) {
-                console.error("Error converting base64 to blob:", error);
-                setBlobUrl(doc.fileUrl); 
-            }
-        } else {
-            setBlobUrl(doc.fileUrl);
-        }
+            } catch (error) { setBlobUrl(doc.fileUrl); }
+        } else { setBlobUrl(doc.fileUrl); }
     }, [doc]);
 
     if (!doc) return null;
@@ -565,20 +535,16 @@ const DocViewer = ({ doc, onClose }) => {
                 <div style={{ padding: '12px 24px', borderBottom: `1px solid ${borderColor}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: headerBg, transition: 'background-color 0.3s ease' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1, overflow: 'hidden' }}>
                         <div style={{ padding: '8px', borderRadius: '8px', backgroundColor: isNightMode ? '#333' : '#f5f5f7', flexShrink: 0, transition: 'background-color 0.3s ease' }}><FileText size={20} color={textColor}/></div>
-                        <div style={{ minWidth: 0, flex: 1 }}>
+                        <div className="doc-title-container" style={{ minWidth: 0, flex: 1 }}>
                             <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: textColor, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', transition: 'color 0.3s ease' }}>{doc.title}</h3>
                             <p style={{ margin: 0, fontSize: '12px', color: subTextColor, transition: 'color 0.3s ease' }}>{doc.year} • {doc.major}</p>
                         </div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                        {doc.fileUrl && doc.fileUrl !== "#" && (
-                            <a href={blobUrl || doc.fileUrl} download={`${doc.title}.pdf`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: isNightMode ? '#333' : '#f5f5f7', color: textColor, border: 'none', cursor: 'pointer' }} title="Tải xuống">
-                                <Download size={20} />
-                            </a>
-                        )}
+                    <div className="doc-viewer-header-right" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <DownloadButton href={blobUrl || doc.fileUrl} downloadName={`${doc.title}.pdf`} />
                         <PomodoroHeaderWidget />
                         <ThemeSwitchFixed isNightMode={isNightMode} toggle={() => setIsNightMode(!isNightMode)} />
-                        <button onClick={onClose} style={{ padding: '8px', borderRadius: '50%', border: 'none', backgroundColor: isNightMode ? '#333' : '#f5f5f7', cursor: 'pointer', color: textColor, flexShrink: 0, transition: 'all 0.3s ease' }}><X size={20}/></button>
+                        <InteractiveButton onClick={onClose} primary={false} customBlackWhite={!isNightMode} isDarkBg={isNightMode} style={{ width: '40px', height: '40px', padding: 0, borderRadius: '50%' }}><X size={20} /></InteractiveButton>
                     </div>
                 </div>
                 <div style={{ flex: 1, backgroundColor: isNightMode ? '#121212' : '#f9fafb', position: 'relative', filter: contentFilter, transition: 'all 0.3s ease' }}>
@@ -606,12 +572,10 @@ const Toast = ({ message }) => (
 const ExamModal = ({ isOpen, onClose }) => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [answers, setAnswers] = useState({});
-    const [isFinished, setIsFinished] = useState(false);
     const [direction, setDirection] = useState(0); 
     const [mode, setMode] = useState('setup'); 
     const [selectedCohort, setSelectedCohort] = useState('');
     const [selectedSubject, setSelectedSubject] = useState('');
-
     const subjects = ["Giải tích 1", "Triết học", "Vật lý đại cương", "Tin học đại cương", "Pháp luật", "Kinh tế vi mô", "Tiếng Anh", "Xác suất thống kê"];
 
     useEffect(() => {
@@ -622,13 +586,13 @@ const ExamModal = ({ isOpen, onClose }) => {
 
     useEffect(() => {
         if (isOpen) {
-            setCurrentQuestionIndex(0); setAnswers({}); setIsFinished(false);
+            setCurrentQuestionIndex(0); setAnswers({});
             setDirection(0); setMode('setup'); setSelectedCohort(''); setSelectedSubject('');
         }
     }, [isOpen]);
 
     const handleSelectAnswer = (optionIndex) => { if (mode === 'review') return; setAnswers(prev => ({ ...prev, [currentQuestionIndex]: optionIndex })); };
-    const handleNext = () => { if (currentQuestionIndex < MOCK_EXAM_QUESTIONS.length - 1) { setDirection(1); setCurrentQuestionIndex(prev => prev + 1); } else { setMode('score'); setIsFinished(true); } };
+    const handleNext = () => { if (currentQuestionIndex < MOCK_EXAM_QUESTIONS.length - 1) { setDirection(1); setCurrentQuestionIndex(prev => prev + 1); } else { setMode('score'); } };
     const handlePrev = () => { if (currentQuestionIndex > 0) { setDirection(-1); setCurrentQuestionIndex(prev => prev - 1); } };
     const calculateScore = () => { let correctCount = 0; MOCK_EXAM_QUESTIONS.forEach((q, index) => { if (answers[index] === q.correctAnswer) correctCount++; }); return correctCount; };
     const handleStartExam = () => { setMode('generating'); setTimeout(() => { setMode('quiz'); }, 2000); };
@@ -645,7 +609,7 @@ const ExamModal = ({ isOpen, onClose }) => {
             <motion.div layout initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }} transition={{ type: "spring", stiffness: 120, damping: 20 }} style={{ position: 'relative', width: '100%', maxWidth: '1200px', height: '85vh', backgroundColor: '#f8fafc', borderRadius: '40px', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', display: 'flex', flexDirection: 'column' }}>
                 <div style={{ padding: '20px 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'transparent', zIndex: 10 }}>
                     <div style={{ display: 'flex', gap: '4px' }}>{(mode === 'quiz' || mode === 'review') && MOCK_EXAM_QUESTIONS.map((_, idx) => (<div key={idx} style={{ width: '30px', height: '4px', borderRadius: '2px', backgroundColor: idx <= currentQuestionIndex ? (mode === 'review' ? '#64748b' : Styles.colors.loading) : '#e2e8f0', transition: 'all 0.3s' }} />))}</div>
-                    <button onClick={onClose} style={{ width: '40px', height: '40px', backgroundColor: 'white', border: 'none', cursor: 'pointer', padding: '0', borderRadius: '50%', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={20} color="#1d1d1f" /></button>
+                    <InteractiveButton onClick={onClose} customBlackWhite={true} primary={false} style={{ width: '40px', height: '40px', padding: 0, borderRadius: '50%' }}><X size={20} /></InteractiveButton>
                 </div>
                 <div data-lenis-prevent style={{ flex: 1, position: 'relative', overflowY: (mode === 'setup' || mode === 'score') ? 'auto' : 'hidden', overflowX: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: (mode === 'setup' || mode === 'score') ? 'flex-start' : 'center', paddingBottom: '20px', overscrollBehavior: 'contain' }}>
                     <AnimatePresence initial={false} custom={direction} mode="wait">
@@ -663,7 +627,13 @@ const ExamModal = ({ isOpen, onClose }) => {
                                 <motion.div animate={{ opacity: (!selectedCohort || !selectedSubject) ? 0.5 : 1, y: (!selectedCohort || !selectedSubject) ? 10 : 0 }}><InteractiveButton onClick={handleStartExam} disabled={!selectedCohort || !selectedSubject} primary={true} style={{ width: '100%', justifyContent: 'center', backgroundColor: (!selectedCohort || !selectedSubject) ? '#cbd5e1' : Styles.colors.loading, border: 'none' }}>Tạo đề ngay</InteractiveButton></motion.div>
                             </motion.div>
                         )}
-                        {mode === 'generating' && (<motion.div key="generating" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ textAlign: 'center' }}><div className="loader"></div><h3 style={{ fontSize: '20px', fontWeight: '600', color: '#1d1d1f' }}>Đang tạo đề thi...</h3><p style={{ color: '#64748b' }}>Đang tổng hợp câu hỏi từ ngân hàng dữ liệu...</p></motion.div>)}
+                        {mode === 'generating' && (
+                            <motion.div key="generating" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ textAlign: 'center' }}>
+                                <BanterLoader />
+                                <h3 style={{ fontSize: '20px', fontWeight: '600', color: '#1d1d1f', marginTop: '20px' }}>Đang tạo đề thi...</h3>
+                                <p style={{ color: '#64748b' }}>Đang tổng hợp câu hỏi từ ngân hàng dữ liệu...</p>
+                            </motion.div>
+                        )}
                         {(mode === 'quiz' || mode === 'review') && (
                             <motion.div layout key={currentQ.id} custom={direction} variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ x: { type: "spring", stiffness: 300, damping: 30 }, opacity: { duration: 0.2 } }} style={{ width: '80%', backgroundColor: '#fff', borderRadius: '32px', padding: '30px', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', display: 'flex', flexDirection: 'column', gap: '20px', maxHeight: '100%', overflowY: 'auto', overscrollBehavior: 'contain', margin: 'auto' }}>
                                 <motion.div layout="position" style={{ fontSize: '13px', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>{mode === 'review' ? 'Xem lại: ' : ''}Câu hỏi {currentQuestionIndex + 1} / {MOCK_EXAM_QUESTIONS.length}</motion.div>
@@ -723,10 +693,10 @@ const UploadModal = ({ isOpen, onClose, formData, setFormData, onFileSelect, onR
     if (!isOpen) return null;
     return (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200 }}>
-           <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '24px', width: '90%', maxWidth: '450px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.1)' }}>
+           <div className="upload-modal-box">
              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', alignItems: 'center' }}>
                  <h2 style={{ margin: 0, fontSize: '20px', color: '#1d1d1f' }}>Đóng góp tài liệu</h2>
-                 <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#1d1d1f' }}><X size={20}/></button>
+                 <InteractiveButton onClick={onClose} customBlackWhite={true} primary={false} style={{ width: '36px', height: '36px', padding: 0, borderRadius: '50%' }}><X size={20} /></InteractiveButton>
              </div>
              {!formData.file ? ( <FolderUpload onFileSelect={onFileSelect} /> ) : (
                  <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
@@ -747,9 +717,7 @@ const UploadModal = ({ isOpen, onClose, formData, setFormData, onFileSelect, onR
                         <input style={Styles.input} placeholder="Môn (VD: CNTT, Giải tích 1...)" value={formData.major} onChange={e => setFormData({...formData, major: e.target.value})} onFocus={() => setShowSuggestions(true)} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} />
                         {showSuggestions && filteredSuggestions.length > 0 && (
                             <div style={{ ...Styles.suggestionBox, maxHeight: '200px', overflowY: 'auto' }}>
-                                {filteredSuggestions.map((s, i) => (
-                                    <div key={i} style={{ ...Styles.suggestionItem, cursor: 'pointer' }} onMouseDown={() => setFormData({...formData, major: s})}>{s}</div>
-                                ))}
+                                {filteredSuggestions.map((s, i) => <div key={i} style={{ ...Styles.suggestionItem, cursor: 'pointer' }} onMouseDown={() => setFormData({...formData, major: s})}>{s}</div>)}
                             </div>
                         )}
                      </div>
@@ -762,73 +730,23 @@ const UploadModal = ({ isOpen, onClose, formData, setFormData, onFileSelect, onR
     );
 };
 
-/**
- * ============================================================================
- * 8. SECTIONS (MAIN PAGE BLOCKS)
- * Navbar, Hero, Dashboard, FAQ, Footer...
- * ============================================================================
- */
-
-// Mobile Menu Component (Updated: Matching FAQ Style & Behavior)
 const MobileMenu = ({ onNavigate, setIsModalOpen, setIsExamOpen }) => {
     const [isOpen, setIsOpen] = useState(false);
-    
     return (
         <div className="mobile-menu-container" style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 1000, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', width: 'auto' }}>
             <motion.div 
-                // Xóa layout prop để tránh morphing shape
-                // layout 
-                initial={false}
-                animate={{ height: 'auto' }}
-                style={{ 
-                    backgroundColor: 'rgba(0, 0, 0, 0.4)', // Độ trong suốt giống PointsWidget
-                    backdropFilter: 'blur(20px)',
-                    WebkitBackdropFilter: 'blur(20px)',
-                    borderRadius: '18px', // Bo góc nhẹ 18px như yêu cầu
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    overflow: 'hidden', 
-                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
-                    // Đặt min-width để đảm bảo khung không bị quá nhỏ khi đóng
-                    minWidth: '200px'
-                }}
+                initial={false} animate={{ height: 'auto' }}
+                style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderRadius: '18px', border: '1px solid rgba(255, 255, 255, 0.2)', overflow: 'hidden', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)', minWidth: '200px' }}
             >
-                {/* Header / Trigger - Luôn hiển thị ở trên cùng */}
-                <div 
-                    onClick={() => setIsOpen(!isOpen)} 
-                    style={{ 
-                        padding: '12px 24px', 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'space-between',
-                        cursor: 'pointer',
-                        userSelect: 'none'
-                    }}
-                >
+                <div onClick={() => setIsOpen(!isOpen)} style={{ padding: '12px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', userSelect: 'none' }}>
                     <span style={{ color: 'white', fontWeight: '700', fontSize: '16px', marginRight: '10px' }}>HocLieuSo</span>
-                    <motion.div 
-                        animate={{ rotate: isOpen ? 180 : 0 }}
-                        transition={{ duration: 0.3 }}
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                    >
-                        {/* Icon màu cam */}
-                       {isOpen ? <X color={Styles.colors.orange} size={24} /> : <Menu color={Styles.colors.orange} size={24} />}
-                    </motion.div>
+                    <motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.3 }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{isOpen ? <X color={Styles.colors.orange} size={24} /> : <Menu color={Styles.colors.orange} size={24} />}</motion.div>
                 </div>
-
-                {/* Content - Trượt xuống (Accordion) giống FAQ */}
                 <AnimatePresence>
                     {isOpen && (
-                        <motion.div 
-                            initial={{ height: 0, opacity: 0 }} 
-                            animate={{ height: 'auto', opacity: 1 }} 
-                            exit={{ height: 0, opacity: 0 }} 
-                            transition={{ duration: 0.3, ease: "easeInOut" }}
-                            style={{ overflow: 'hidden' }}
-                        >
+                        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3, ease: "easeInOut" }} style={{ overflow: 'hidden' }}>
                             <div style={{ padding: '0 24px 24px 24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                                {/* Đường gạch ngang mờ ngăn cách */}
                                 <div style={{ height: '1px', backgroundColor: 'rgba(255,255,255,0.15)', marginBottom: '5px' }} />
-                                
                                 <div onClick={() => {onNavigate('home'); setIsOpen(false)}} style={{ color: 'rgba(255,255,255,0.9)', fontWeight: '600', fontSize: '15px', cursor: 'pointer' }}>Trang chủ</div>
                                 <div onClick={() => {onNavigate('all'); setIsOpen(false)}} style={{ color: 'rgba(255,255,255,0.9)', fontWeight: '600', fontSize: '15px', cursor: 'pointer' }}>Tài liệu</div>
                                 <div onClick={() => {setIsExamOpen(true); setIsOpen(false)}} style={{ color: 'rgba(255,255,255,0.9)', fontWeight: '600', fontSize: '15px', cursor: 'pointer' }}>Tạo đề thi</div>
@@ -886,7 +804,6 @@ const ImpactDashboard = () => {
     const waterSaved = Math.floor(papersSaved * 0.01); 
     const co2Reduced = (papersSaved * 0.005).toFixed(1); 
     const [hoveredCard, setHoveredCard] = useState(1);
-
     const cards = [
         { id: 1, label: "Papers Saved", sub: "Chuyển đổi số giúp hạn chế khai thác gỗ, giữ lại lá phổi xanh vô giá cho Trái Đất.", value: papersSaved, icon: <FileText size={16} color="white" />, image: CONFIG.DASHBOARD_IMGS.PAPER, color: "#4CAF50" },
         { id: 2, label: "Water Saved", sub: "Tiết kiệm nguồn nước sạch quý báu vốn bị tiêu tốn khổng lồ trong công nghiệp sản xuất giấy.", value: waterSaved, icon: <Droplets size={16} color="white" />, image: CONFIG.DASHBOARD_IMGS.WATER, color: "#2196F3" },
@@ -899,7 +816,6 @@ const ImpactDashboard = () => {
                 <ScrollFloat as="h2" style={{ fontSize: 'clamp(36px, 5vw, 56px)', fontWeight: '900', lineHeight: 1, margin: '0 0 16px 0', color: '#1d1d1f', letterSpacing: '-1px' }}>"Tác Động Xanh"</ScrollFloat>
                 <ScrollFloat as="p" style={{ fontSize: '18px', color: '#666', maxWidth: '600px', margin: '0 auto' }}>Mỗi lượt xem tài liệu hay tạo đề thi không chỉ giúp học tập hiệu quả hơn mà còn góp phần bảo vệ môi trường.</ScrollFloat>
             </div>
-
             <div className="dashboard-container">
                 {cards.map((card) => {
                     const isActive = hoveredCard === card.id;
@@ -1020,7 +936,7 @@ const FeedbackSection = ({ onSend }) => {
                 <h2 style={{ fontSize: '40px', fontWeight: '800', marginBottom: '20px' }}>Đóng góp ý kiến</h2>
                 <div style={{ display: 'flex', gap: '5px', backgroundColor: 'rgba(255,255,255,0.9)', padding: '6px', borderRadius: '50px' }}>
                     <input placeholder="Bạn nghĩ gì..." style={{ flex: 1, background: 'transparent', border: 'none', padding: '12px 20px', fontSize: '15px', color: '#000', outline: 'none' }} value={value} onChange={(e) => setValue(e.target.value)} />
-                    <InteractiveButton onClick={handleSubmit} primary={true} style={{ padding: '12px 30px' }} isDarkBg={true} customBlackWhite={true}>Gửi</InteractiveButton>
+                    <InteractiveButton onClick={handleSubmit} primary={false} style={{ padding: '12px 30px' }} isDarkBg={false} customBlackWhite={true}>Gửi</InteractiveButton>
                 </div>
             </div>
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '30px', backgroundColor: 'rgba(0,0,0,0.2)', backdropFilter: 'blur(10px)', display: 'flex', justifyContent: 'center', gap: '20px', zIndex: 3 }}>
@@ -1046,8 +962,8 @@ const DocumentGrid = ({ documents, onView, activeMobileDocId, setActiveMobileDoc
                     key={item.id} 
                     item={item} 
                     onClick={() => onView(item)} 
-                    activeMobileId={activeMobileDocId}
-                    setActiveMobileId={setActiveMobileDocId}
+                    activeMobileId={activeMobileDocId} 
+                    setActiveMobileId={setActiveMobileDocId} 
                 />
             )) 
         ) : ( 
@@ -1056,11 +972,6 @@ const DocumentGrid = ({ documents, onView, activeMobileDocId, setActiveMobileDoc
     </div>
 );
 
-/**
- * ============================================================================
- * 9. MAIN APP COMPONENT
- * ============================================================================
- */
 export default function App() {
   const [view, setView] = useState('home');
   const [activeTab, setActiveTab] = useState('All');
@@ -1159,15 +1070,12 @@ export default function App() {
     <>
       <style>{Styles.global}</style>
       <Navbar view={view} setView={setView} setIsModalOpen={setIsModalOpen} onNavigate={handleNavigation} showToast={showToast} setIsExamOpen={setIsExamOpen} />
-      
       <MobileMenu onNavigate={handleNavigation} setIsModalOpen={setIsModalOpen} setIsExamOpen={setIsExamOpen} />
-
       <AnimatePresence>
           {isLoading && <IntroLoader key="loader" onComplete={() => setIsLoading(false)} />}
           {toastMessage && <Toast key="toast" message={toastMessage} />}
           {viewingDoc && <DocViewer key="doc-viewer" doc={viewingDoc} onClose={() => setViewingDoc(null)} />}
       </AnimatePresence>
-
       <div style={{ position: 'relative', minHeight: '100vh', backgroundColor: '#ffffff' }}>
         <AnimatePresence mode="wait">
             {view === 'home' && (
@@ -1196,7 +1104,6 @@ export default function App() {
                     <Footer />
                 </motion.div>
             )}
-
             {view === 'all' && (
                 <motion.div key="all" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} style={{ paddingTop: '100px', minHeight: '100vh', color: '#1d1d1f', position: 'relative', zIndex: 10 }}>
                     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px' }}>
