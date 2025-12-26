@@ -62,6 +62,18 @@ const Utils = {
   getRandomCover: () => CONFIG.COVERS[Math.floor(Math.random() * CONFIG.COVERS.length)]
 };
 
+// Hook check mobile device
+const useIsMobile = () => {
+    const [isMobile, setIsMobile] = useState(false);
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.matchMedia("(max-width: 768px)").matches);
+        checkMobile();
+        window.addEventListener("resize", checkMobile);
+        return () => window.removeEventListener("resize", checkMobile);
+    }, []);
+    return isMobile;
+};
+
 const Styles = {
     colors: { 
         primary: '#1d1d1f', 
@@ -79,7 +91,7 @@ const Styles = {
         @import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap');
 
-         @font-face {
+        @font-face {
             font-family: 'NVN-Motherland-Signature-1';
             src: url('${MotherlandFont}') format('truetype'); 
             font-weight: normal;
@@ -304,15 +316,8 @@ const DownloadButton = ({ href, downloadName }) => {
 }
 
 const MenuCard = ({ item, onClick, activeMobileId, setActiveMobileId }) => {
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useIsMobile();
   const [isDesktopHovered, setIsDesktopHovered] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.matchMedia("(max-width: 768px)").matches);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
 
   const isMobileActive = activeMobileId === item.id;
   const isHovered = isMobile ? isMobileActive : isDesktopHovered;
@@ -500,6 +505,7 @@ const ThemeSwitchFixed = ({ isNightMode, toggle }) => {
 const DocViewer = ({ doc, onClose }) => {
     const [isNightMode, setIsNightMode] = useState(false);
     const [blobUrl, setBlobUrl] = useState(null);
+    const isMobile = useIsMobile(); // Sử dụng hook đã khai báo
 
     useEffect(() => {
         if (!doc) return;
@@ -532,21 +538,37 @@ const DocViewer = ({ doc, onClose }) => {
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }} />
             <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} style={{ position: 'relative', width: '100%', maxWidth: '1000px', height: '90vh', backgroundColor: bgColor, borderRadius: '24px', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', transition: 'background-color 0.3s ease' }}>
-                <div style={{ padding: '12px 24px', borderBottom: `1px solid ${borderColor}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: headerBg, transition: 'background-color 0.3s ease' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1, overflow: 'hidden' }}>
-                        <div style={{ padding: '8px', borderRadius: '8px', backgroundColor: isNightMode ? '#333' : '#f5f5f7', flexShrink: 0, transition: 'background-color 0.3s ease' }}><FileText size={20} color={textColor}/></div>
-                        <div className="doc-title-container" style={{ minWidth: 0, flex: 1 }}>
-                            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: textColor, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', transition: 'color 0.3s ease' }}>{doc.title}</h3>
-                            <p style={{ margin: 0, fontSize: '12px', color: subTextColor, transition: 'color 0.3s ease' }}>{doc.year} • {doc.major}</p>
+                {/* Header Container */}
+                <div style={{ padding: isMobile ? '12px 16px' : '12px 24px', borderBottom: `1px solid ${borderColor}`, backgroundColor: headerBg, transition: 'background-color 0.3s ease' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        {/* Left: Title */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1, overflow: 'hidden' }}>
+                            <div style={{ padding: '8px', borderRadius: '8px', backgroundColor: isNightMode ? '#333' : '#f5f5f7', flexShrink: 0, transition: 'background-color 0.3s ease' }}><FileText size={20} color={textColor}/></div>
+                            <div className="doc-title-container" style={{ minWidth: 0, flex: 1 }}>
+                                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: textColor, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', transition: 'color 0.3s ease' }}>{doc.title}</h3>
+                                <p style={{ margin: 0, fontSize: '12px', color: subTextColor, transition: 'color 0.3s ease' }}>{doc.year} • {doc.major}</p>
+                            </div>
+                        </div>
+                        
+                        {/* Right: Controls (Desktop: All inline, Mobile: Hide Pomodoro here) */}
+                        <div className="doc-viewer-header-right" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                            <DownloadButton href={blobUrl || doc.fileUrl} downloadName={`${doc.title}.pdf`} />
+                            
+                            {!isMobile && <PomodoroHeaderWidget />}
+                            
+                            <ThemeSwitchFixed isNightMode={isNightMode} toggle={() => setIsNightMode(!isNightMode)} />
+                            <InteractiveButton onClick={onClose} primary={false} customBlackWhite={!isNightMode} isDarkBg={isNightMode} style={{ width: '40px', height: '40px', padding: 0, borderRadius: '50%' }}><X size={20} /></InteractiveButton>
                         </div>
                     </div>
-                    <div className="doc-viewer-header-right" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                        <DownloadButton href={blobUrl || doc.fileUrl} downloadName={`${doc.title}.pdf`} />
-                        <PomodoroHeaderWidget />
-                        <ThemeSwitchFixed isNightMode={isNightMode} toggle={() => setIsNightMode(!isNightMode)} />
-                        <InteractiveButton onClick={onClose} primary={false} customBlackWhite={!isNightMode} isDarkBg={isNightMode} style={{ width: '40px', height: '40px', padding: 0, borderRadius: '50%' }}><X size={20} /></InteractiveButton>
-                    </div>
+
+                    {/* Mobile Only: Pomodoro Row */}
+                    {isMobile && (
+                        <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'center', width: '100%' }}>
+                            <PomodoroHeaderWidget />
+                        </div>
+                    )}
                 </div>
+
                 <div style={{ flex: 1, backgroundColor: isNightMode ? '#121212' : '#f9fafb', position: 'relative', filter: contentFilter, transition: 'all 0.3s ease' }}>
                     {blobUrl && blobUrl !== "#" ? (
                         <iframe src={blobUrl} width="100%" height="100%" style={{ border: 'none' }} title="Document Viewer" />
@@ -790,7 +812,7 @@ const HeroSection = ({ scrollY, points }) => {
                 <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} style={{ marginBottom: '20px', display: 'inline-block', backgroundColor: 'rgba(255,255,255,0.2)', color: '#fff', padding: '8px 20px', borderRadius: '30px', fontWeight: '600', fontSize: '13px', backdropFilter: 'blur(5px)' }}>KHO TÀI LIỆU SINH VIÊN</motion.div>
                 <div style={{ overflow: 'visible' }}>
                     <motion.h1 initial={{ x: -100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 1.2, ease: "easeOut" }} style={{ x: floatLeft, fontSize: 'clamp(40px, 7vw, 80px)', fontWeight: '800', color: '#ffffff', margin: 0, lineHeight: 1 }}>Less Paper</motion.h1>
-                    <motion.h1 initial={{ x: 100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 1.2, delay: 0.2, ease: "easeOut" }} style={{ x: floatRight, fontSize: 'clamp(50px, 9vw, 100px)', fontWeight: '800', color: '#ffffff', margin: 0, lineHeight: 1 }}>More Knowledge.</motion.h1>
+                    <motion.h1 initial={{ x: 100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 1.2, delay: 0.2, ease: "easeOut" }} style={{ x: floatRight, fontSize: 'clamp(50px, 9vw, 80px)', fontWeight: '800', color: '#ffffff', margin: 0, lineHeight: 1 }}>More Knowledge.</motion.h1>
                 </div>
             </motion.header>
             <PointsWidget points={points} />
